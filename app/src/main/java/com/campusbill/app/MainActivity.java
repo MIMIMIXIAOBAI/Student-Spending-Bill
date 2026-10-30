@@ -103,11 +103,18 @@ public class MainActivity extends AppCompatActivity {
 
         binding.panelAi.setOnClickListener(v ->
                 startActivity(new Intent(MainActivity.this, AiChatActivity.class)));
-        binding.btnViewDetail.setOnClickListener(v ->
-                startActivity(new Intent(MainActivity.this, IncomeDetailActivity.class)));
+        binding.btnViewDetail.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, IncomeDetailActivity.class);
+            intent.putExtra(IncomeDetailActivity.EXTRA_MONTH, selectedMonth.toString());
+            intent.putExtra(IncomeDetailActivity.EXTRA_TYPE, BillEntity.TYPE_EXPENSE);
+            startActivity(intent);
+        });
         binding.btnMonthPicker.setOnClickListener(v -> showMonthPicker());
-        binding.panelIncome.setOnClickListener(v ->
-                startActivity(new Intent(MainActivity.this, IncomeDetailActivity.class)));
+        binding.panelIncome.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, IncomeDetailActivity.class);
+            intent.putExtra(IncomeDetailActivity.EXTRA_MONTH, selectedMonth.toString());
+            startActivity(intent);
+        });
         binding.panelRank.setOnClickListener(v ->
                 startActivity(new Intent(MainActivity.this, MerchantRankActivity.class)));
         binding.panelCalendar.setOnClickListener(v ->

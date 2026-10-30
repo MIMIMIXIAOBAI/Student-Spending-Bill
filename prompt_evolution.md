@@ -249,3 +249,59 @@
 - app/src/main/res/values/strings.xml
 - prompt_evolution.md
 
+【序号】7
+【时间】2026-10-31
+【任务名称】收入分类详情页面开发
+【完成情况】已完成：①顶部返回键 + 标题「收入分类详情」；②本月收入饼图：环形饼图按分类金额降序取糖果色，切片内显示占比（小于 6% 的切片隐藏数字避免重叠），中心显示本月收入合计，饼图下方图例逐行展示颜色徽标 + 分类 + 金额 + 占比；③纵向时间轴自绘 View（IncomeTimelineView）：从下往上排列，最下方为当月最早日期，每个收入节点绘制分类色圆点、分类色横线（长度与该笔金额占当月最大金额的比例成正比）及「MM-dd · 分类 ¥金额」标签，背景绘制虚线主轴；④点击时间轴节点弹出详情弹窗，显示金额、分类（含颜色徽标）、商户、备注、日期时间；⑤数据按任务要求使用模拟收入数据（本月 6 笔，合计 ¥3488.00）。模拟器实机验证：饼图 51.6% / 22.9% / 17.2% 与图例 52% / 23% / 17% 对应，时间轴自下而上为 10-02 → 10-08 → 10-12 → 10-18 → 10-22 → 10-26，10-02 的 ¥1500 横线最长、10-22 的 ¥88 横线最短；点击 10-26 节点弹出 ¥300.00 / 生活费 / 家里转账 / 追加生活费 / 2026-10-26 20:15。
+【修改/新增文件】
+- app/src/main/res/layout/activity_income_detail.xml
+- app/src/main/java/com/campusbill/app/IncomeDetailActivity.java
+- app/src/main/java/com/campusbill/app/chart/IncomeTimelineView.java
+- app/src/main/res/layout/item_income_legend.xml
+- app/src/main/res/layout/dialog_income_detail.xml
+- app/src/main/res/drawable/bg_legend_dot.xml
+- app/src/main/res/values/strings.xml
+- prompt_evolution.md
+
+【序号】7
+【时间】2026-10-31
+【任务名称】收入分类详情页面开发
+【完成情况】已修复：按修改意见 ①改为读取真实账单——页面通过 DBHelper 从 Room 读取传入月份（MainActivity 通过 EXTRA_MONTH 传入当前所选月份）的全部收入账单，饼图、图例、合计、时间轴、详情弹窗全部基于真实记录，原模拟数据已移除，无数据时显示「暂无收入记录」；页面整体可下滑，可逐条查看当月所有收入节点。②时间轴节点弹窗改为自绘 Dialog：28dp 圆角 + 淡蓝(#DDEFFF)→浅蓝(#F2FAFF)→白渐变 + 白色描边，继承 Y2K 糖果风，弹窗宽 88% 屏幕，含标题「账单详情」与右上角 × 关闭，展示金额、分类（带颜色徽标）、商户、备注、日期时间。模拟器验证：2026-10 合计 ¥336.50（转账 100%，3 条记录，弹窗显示「吴彦霖(竹笙) / 转账备注:微信转账 / 2026-10-17 09:14:56」）；2026-09 合计 ¥2513.55（转账 88%、其他 9%、交通 3%、购物/餐饮各 0%），时间轴下滑可见 09-30 至 09-03 共 11 条，横线长度与金额成正比。
+【修改/新增文件】
+- app/src/main/java/com/campusbill/app/IncomeDetailActivity.java
+- app/src/main/java/com/campusbill/app/MainActivity.java
+- app/src/main/res/layout/dialog_income_detail.xml
+- app/src/main/res/drawable/bg_dialog_candy.xml
+- app/src/main/res/values/strings.xml
+- prompt_evolution.md
+
+【序号】7
+【时间】2026-10-31
+【任务名称】收入分类详情页面开发
+【完成情况】已修复（BUG）：此前「查看消费明细」与「收入分类详情」进入同一页面且都为收入数据、前者未同步月份。现为同一页面增加收支双模式：新增 EXTRA_TYPE 参数，收入入口传 TYPE_INCOME、消费明细按钮传 TYPE_EXPENSE 并同时传当前所选月份 EXTRA_MONTH；页面按类型切换标题（收入分类详情 / 消费明细）、合计标签（本月收入 / 本月消费）、时间轴标题（收入时间轴 / 消费时间轴）、空态文案，并按类型过滤账单。模拟器验证：2026-10 消费明细显示 ¥432.26（餐饮 31%、购物 30%、交通 15% 等 7 类）；切到 2026-09 再点消费明细显示 ¥3461.82；收入入口仍为 ¥336.50 / 转账 100%，两者不再相同且月份跟随主界面。
+【修改/新增文件】
+- app/src/main/java/com/campusbill/app/IncomeDetailActivity.java
+- app/src/main/java/com/campusbill/app/MainActivity.java
+- app/src/main/java/com/campusbill/app/chart/IncomeTimelineView.java
+- app/src/main/res/layout/activity_income_detail.xml
+- app/src/main/res/values/strings.xml
+- prompt_evolution.md
+
+【序号】7
+【时间】2026-10-31
+【任务名称】收入分类详情页面开发
+【完成情况】已修复：按修改意见将时间轴改为固定高度窗口（320dp，fillViewport，隐藏滚动条），账单记录在窗口内上下滑动查看，不再随记录数量拉长整页；窗口内滑动时外层页面保持不动，滑动到记录后再点击节点仍正常弹出详情弹窗；提示文案改为「在窗口内上下滑动查看全部记录，横线越长金额越大；点击节点查看详情」。模拟器验证：2026-09 消费明细（94 条支出、¥3461.82）时间轴窗口固定为 840px 高，窗口内上滑后可见 09-29 → 09-28 → 09-26 等更早记录且饼图区域未移动；点击 09-28 节点弹出 ¥18.60 / 拼多多平台商户 / 2026-09-28。
+【修改/新增文件】
+- app/src/main/res/layout/activity_income_detail.xml
+- app/src/main/res/values/strings.xml
+- prompt_evolution.md
+
+
+【序号】7
+【时间】2026-10-31
+【任务名称】收入分类详情页面开发（新拟态交互）
+【完成情况】已完成：按修改意见为点击明细与饼图增加新拟态（Neumorphism）交互，用凸起/凹下辅助表达状态。①饼图：点击切片后该切片向外弹出 12dp 形成凸起，中心文案切换为该分类「分类名 / ¥金额 / 占比」，点击空白处切片复位、中心恢复本月合计（实机验证 2026-10 消费：点击绿色切片弹出并显示「餐饮 ¥134.90 31%」，点空白恢复 ¥432.26）。②时间轴：按下某一行时该行绘制为凹下状态（#E2EDFA 浅蓝底 + 内侧描边），抬起后弹出账单详情，同时该行切换为凸起状态（纯白卡面 + 右下 3.2dp 柔和投影 + 白色高光线），选中态在弹窗关闭后保留，点其他节点时切换，按下与选中两行可同时存在；选中节点圆点放大并加白色圆环。③手指移动超过两倍 touchSlop 自动取消按下态，不影响窗口内上下滑动（实机验证窗口内滑到 10-21/10-20/10-19 时外层页面不动，选中行凸起保持）。
+【修改/新增文件】
+- app/src/main/java/com/campusbill/app/chart/IncomeTimelineView.java
+- app/src/main/java/com/campusbill/app/IncomeDetailActivity.java
+- prompt_evolution.md
