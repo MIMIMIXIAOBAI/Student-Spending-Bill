@@ -15,6 +15,7 @@ import com.campusbill.app.R.drawable;
 import com.campusbill.app.R.string;
 import com.campusbill.app.chart.CandyBarChartRenderer;
 import com.campusbill.app.chat.ai.BillAnalysisUtils;
+import com.campusbill.app.chat.ai.ReplyGenerator;
 import com.campusbill.app.data.BillEntity;
 import com.campusbill.app.data.DBHelper;
 import com.campusbill.app.databinding.ActivityMainBinding;
@@ -77,7 +78,11 @@ public class MainActivity extends AppCompatActivity {
             BillAnalysisUtils.saveBudget(MainActivity.this, MainActivity.this.parseAmount(s == null ? "" : s.toString()));
          }
       });
-      this.binding.panelAi.setOnClickListener((v) -> this.startActivity(new Intent(this, AiChatActivity.class)));
+      this.binding.panelAi.setOnClickListener((v) -> {
+         Intent intent = new Intent(this, AiChatActivity.class);
+         intent.putExtra("extra_month", this.selectedMonth.toString());
+         this.startActivity(intent);
+      });
       this.binding.btnViewDetail.setOnClickListener((v) -> {
          Intent intent = new Intent(this, IncomeDetailActivity.class);
          intent.putExtra("extra_month", this.selectedMonth.toString());
@@ -280,6 +285,28 @@ public class MainActivity extends AppCompatActivity {
       this.setupCategoryChart(categoryNames, categoryAmounts);
       this.updateBudgetPanel();
       this.updateEntriesPanel();
+      this.binding.tvAiSummary.setText(this.buildAiAdvice(expense, categoryNames, categoryAmounts));
+   }
+
+   /** 根据当月支出与分类构成，生成一句简短的 AI 消费建议 */
+   private String buildAiAdvice(double expense, String[] categoryNames, float[] categoryAmounts) {
+      if (expense <= 0 || categoryNames == null || categoryAmounts == null
+            || categoryNames.length == 0 || categoryAmounts.length == 0) {
+         return this.getString(string.ai_panel_empty);
+      }
+      int topIndex = 0;
+      for (int i = 1; i < categoryAmounts.length; i++) {
+         if (categoryAmounts[i] > categoryAmounts[topIndex]) {
+            topIndex = i;
+         }
+      }
+      String topCategory = categoryNames[topIndex];
+      double topAmount = categoryAmounts[topIndex];
+      double percent = topAmount / expense * 100;
+      String monthLabel = ReplyGenerator.monthLabel(this.selectedMonth.toString());
+      return this.getString(string.ai_panel_advice,
+            monthLabel, this.formatAmount(expense), topCategory,
+            String.format(Locale.CHINA, "%.1f", percent), this.formatAmount(topAmount * 0.9));
    }
 
    private void updateEntriesPanel() {

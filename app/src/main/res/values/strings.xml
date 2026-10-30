@@ -8,6 +8,7 @@
     <string name="ai_panel_title">AI 消费建议</string>
     <string name="ai_panel_summary">本月餐饮支出占比较高，建议把每周外卖控制在 3 次以内，预算会轻松很多。</string>
     <string name="ai_panel_more">点击查看完整建议 ›</string>
+    <string name="ai_panel_advice">%1$s 共支出 ¥%2$s，其中「%3$s」占 %4$s%%，建议把这一项控制到 ¥%5$s 以内，预算会轻松很多。</string>
 
     <!-- 主界面 - 预算面板 -->
     <string name="budget_title">月度预算</string>

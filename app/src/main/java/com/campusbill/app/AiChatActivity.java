@@ -37,12 +37,19 @@ public class AiChatActivity extends AppCompatActivity {
     private ActivityAiChatBinding binding;
     private final List<ChatMessage> messages = new ArrayList<>();
     private ChatAdapter adapter;
+    /** 主页选中的月份（yyyy-MM），预设问题按该月查询账单；缺省为当前月 */
+    private String queryMonth = YearMonth.now().toString();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityAiChatBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        String fromMain = getIntent().getStringExtra("extra_month");
+        if (fromMain != null && !fromMain.trim().isEmpty()) {
+            queryMonth = fromMain.trim();
+        }
 
         adapter = new ChatAdapter(messages);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
@@ -77,10 +84,10 @@ public class AiChatActivity extends AppCompatActivity {
         dispatch(query, placeholderIndex);
     }
 
-    /** 意图分发：按优先级匹配后查询本机账单，生成对应回复 */
+    /** 意图分发：按优先级匹配后查询本机账单，生成对应回复（按主页选中月份） */
     private void dispatch(String text, int index) {
         IntentMatcher.Intent intent = IntentMatcher.match(text);
-        String month = YearMonth.now().toString();
+        String month = queryMonth;
         String today = LocalDate.now().toString();
 
         switch (intent) {

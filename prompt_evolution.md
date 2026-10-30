@@ -435,3 +435,14 @@
 - app/src/main/java/com/campusbill/app/AiChatActivity.java（联网前构建快照）
 - app/src/main/java/com/campusbill/app/chat/ai/presets/AiPresets.java（提示词要求基于账单作答）
 - prompt_evolution.md
+
+
+【序号】13-增强2
+【时间】2026-10-31
+【任务名称】AI 消费助手预设问题与主页 AI 面板同步主页选中月份
+【完成情况】已完成：①需求：AI 对话页快捷预设问题（本月总支出/预算剩余/省钱建议等）此前固定查"当前月"（YearMonth.now()），与主页"切换月份"选中的月份不一致；主页 AI 消费建议面板此前为写死的静态文案。要求预设问题与主页面板均跟随主页选中的月份。②预设问题同步月份：MainActivity 跳 AI 页时经 Intent 传 extra_month（主页 selectedMonth）；AiChatActivity 新增 queryMonth 字段接收，dispatch() 用其替换写死的当前月，本月总支出/预算剩余/消费分类/消费排行/省钱建议全部按主页选中月份查询。③主页 AI 面板动态化：MainActivity 新增 buildAiAdvice()，renderMonth 时基于当月实际 expense + 最大支出分类生成一句简短建议（月份/总支出/分类/占比/建议额度），空数据时回退 ai_panel_empty；strings.xml 新增 ai_panel_advice 模板；主页面板与对话页"省钱建议"数据同源、口径一致。实机验证：10 月主页"共支出 ¥432.26，购物占 31.9%"；切到 9 月主页"共支出 ¥3461.82，转账占 51.0%"面板同步刷新；9 月进 AI 页点预设——本月总支出 ¥3461.82、预算剩余"已超支 ¥2461.82"、省钱建议"转账占 51.0%"，与主页完全一致。合规自查：全程本地 Room 查询，无新增权限、无联网、无第三方库；纯 Java 实现；未改动已审核历史逻辑。
+【修改/新增文件】
+- app/src/main/java/com/campusbill/app/MainActivity.java（跳 AI 页传月份 + buildAiAdvice 动态建议）
+- app/src/main/java/com/campusbill/app/AiChatActivity.java（queryMonth 按主页选中月查询）
+- app/src/main/res/values/strings.xml（新增 ai_panel_advice 模板）
+- prompt_evolution.md
