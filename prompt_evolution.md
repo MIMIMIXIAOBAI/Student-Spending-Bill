@@ -176,3 +176,76 @@
 - app/src/main/res/layout/activity_add_bill.xml
 - prompt_evolution.md
 
+【序号】6
+【时间】2026-10-31
+【任务名称】AI 对话界面开发
+【完成情况】已完成：新增 AI 消费助手对话页——顶部标题栏（‹ 返回键 + 居中标题）、中部对话列表、底部输入区（多行输入框 + 渐变「发送」按钮）；用户消息为右侧粉→柠檬渐变气泡，AI 消息为左侧白色描边气泡，样式与主界面糖果风统一。逻辑：进入页面展示一条欢迎语，用户发送后立即上屏并延时 600ms 追加一条本地模拟消费建议（6 条文案轮流），不发起任何网络请求，generateReply() 预留真实 AI 接口位；列表使用 LinearLayoutManager(stackFromEnd) 并在插入后滚动到最新消息。新增 androidx.recyclerview 依赖与 ChatMessage/ChatAdapter。模拟器实机验证：输入发送、左右气泡区分、连续 6 轮对话后最新 AI 消息完整可见、返回键回到主界面均正常（修复了 scrollToPosition 引起的「最新一条被截断」问题）。
+【修改/新增文件】
+- app/src/main/res/layout/activity_ai_chat.xml
+- app/src/main/java/com/campusbill/app/AiChatActivity.java
+- app/src/main/java/com/campusbill/app/chat/ChatMessage.java
+- app/src/main/java/com/campusbill/app/chat/ChatAdapter.java
+- app/src/main/res/layout/item_chat_ai.xml
+- app/src/main/res/layout/item_chat_user.xml
+- app/src/main/res/drawable/bg_chat_bubble_ai.xml
+- app/src/main/res/drawable/bg_chat_bubble_user.xml
+- app/src/main/res/values/strings.xml
+- app/src/main/AndroidManifest.xml
+- app/build.gradle
+- prompt_evolution.md
+
+【序号】6
+【时间】2026-10-31
+【任务名称】AI 对话界面开发
+【完成情况】已新增：按修改建议补充两项——①对话页右上角新增「API KEY」入口，点击弹出设置弹窗：输入/粘贴 API KEY、下方小字「如何获取 API KEY？」可展开/收起简易教程，保存后写入本机 SharedPreferences（ai_config），再次打开弹窗自动回显，清空后保存即删除；密钥仅存本机、不联网上传。②在 chat/ai/ 下预留 AI 配置目录：AiConfig（API KEY 与预留服务地址/模型配置）、presets/AiPresets（系统提示词与快捷提问）、skills/AiSkill 与 skills/AiSkills（内置技能：预算规划、消费诊断、记账提醒，作为后续接入真实 AI 的配置位）。模拟器实机验证：弹窗打开、教程折叠/展开、保存（Toast「API KEY 已保存到本机」、prefs 中写入 api_key=sk-test-abc123）、重新打开回显均正常；测试密钥已清除。
+【修改/新增文件】
+- app/src/main/res/layout/activity_ai_chat.xml
+- app/src/main/java/com/campusbill/app/AiChatActivity.java
+- app/src/main/res/layout/dialog_api_key.xml
+- app/src/main/res/values/strings.xml
+- app/src/main/java/com/campusbill/app/chat/ai/AiConfig.java
+- app/src/main/java/com/campusbill/app/chat/ai/presets/AiPresets.java
+- app/src/main/java/com/campusbill/app/chat/ai/skills/AiSkill.java
+- app/src/main/java/com/campusbill/app/chat/ai/skills/AiSkills.java
+- prompt_evolution.md
+
+【序号】6
+【时间】2026-10-31
+【任务名称】AI 对话界面开发
+【完成情况】已新增：按「本地消费分析助手」人物预设完成 4 个模块并接入对话页——①IntentMatcher：纯本地关键词正则，按 预算 > 总额 > 分类 > 排行 > 建议 > 帮助 > 兜底 的优先级识别 7 类意图，另提供 isTodayQuery 区分「今日」查询；②BillAnalysisUtils：封装 Room 读取（getMonthTotalExpense / getDayTotalExpense / getBudgetRemain / getCategoryRank / getMerchantTop），全部经 DBHelper 子线程执行并回主线程，预算持久化到本机 SharedPreferences（bill_settings）；③ReplyGenerator + AiReplyConstants：全部话术以字符串常量集中管理，String.format 替换金额/占比，支持分段换行；④对话页输入框上方新增横向滚动 4 个快捷提问（本月总支出 / 预算剩余 / 消费分类 / 省钱建议），点击即发送。用户提问后先展示「正在整理本机账单…」占位，数据返回后原地替换。主界面预算改为本机持久化（输入后自动保存、启动回填）。全程无网络请求、不调用任何真实 AI 接口，模拟 API KEY 仅保存本机（已验证写入 shared_prefs/ai_config.xml，未参与请求）。验证：gradlew testDebugUnitTest 6 条用例全部通过（7 类意图识别 + 今日判定 + 模板拼接 + 空数据兜底）；模拟器实机验证本月总支出 ¥432.26、预算剩余 ¥67.74（预算 500）、消费分类前 3 名（餐饮/购物/交通）、省钱建议（月度 ¥121.41 / 每周 ¥30.35）、英文输入走兜底回复，快捷按钮胶囊样式正常。
+【修改/新增文件】
+- app/src/main/java/com/campusbill/app/chat/ai/IntentMatcher.java
+- app/src/main/java/com/campusbill/app/chat/ai/BillAnalysisUtils.java
+- app/src/main/java/com/campusbill/app/chat/ai/ReplyGenerator.java
+- app/src/main/java/com/campusbill/app/chat/ai/AiReplyConstants.java
+- app/src/main/java/com/campusbill/app/AiChatActivity.java
+- app/src/main/res/layout/activity_ai_chat.xml
+- app/src/main/res/drawable/bg_quick_chip.xml
+- app/src/main/res/values/strings.xml
+- app/src/main/java/com/campusbill/app/MainActivity.java
+- app/build.gradle
+- app/src/test/java/com/campusbill/app/chat/ai/AiReplyTest.java
+- prompt_evolution.md
+
+【序号】6
+【时间】2026-10-31
+【任务名称】AI 对话界面开发
+【完成情况】已新增：按「仅 AI 对话可通过 API KEY 联网获取回复」的授权实现联网能力——①新增 AiRemoteClient（HttpURLConnection + org.json，无新增第三方库），按 OpenAI 兼容协议 POST /chat/completions，携带 system 提示词与最近 3 轮上下文，后台线程请求、主线程回调，连接 10s / 读取 20s 超时；②AiConfig 扩展接口地址与模型配置（默认 https://api.deepseek.com/chat/completions、deepseek-chat），API KEY 设置弹窗增加「接口地址」「模型名称」两个输入框并回显已保存值；③对话页按意图分流：账单相关意图（预算/总额/分类/排行/建议/帮助）继续走本机 Room 计算、不上传任何账单数据，仅「兜底/自由对话」在已配置 KEY 时联网获取回复，请求失败自动退回本地兜底文案并提示「联网获取失败，已使用本地回复」；④清单新增 INTERNET 权限（仅 AI 对话页使用，其余功能仍全部本地）。实机验证：用提供的模拟 KEY（sk-b312…cd3d）与默认 DeepSeek 地址请求成功，返回真实模型回复「嗨！我是你的校园消费助手～…」；弹窗正确回显 KEY / 接口地址 / 模型；配置 KEY 后点击「本月总支出」仍返回本机数据（2026年10月 ¥432.26），确认账单查询不联网。
+【修改/新增文件】
+- app/src/main/java/com/campusbill/app/chat/ai/AiRemoteClient.java
+- app/src/main/java/com/campusbill/app/chat/ai/AiConfig.java
+- app/src/main/java/com/campusbill/app/AiChatActivity.java
+- app/src/main/res/layout/dialog_api_key.xml
+- app/src/main/res/values/strings.xml
+- app/src/main/AndroidManifest.xml
+- prompt_evolution.md
+
+【序号】6
+【时间】2026-10-31
+【任务名称】AI 对话界面开发
+【完成情况】已修复：按修改意见为「设置 API KEY」弹窗的三行输入各加独立标题——「API KEY」「接口地址（OpenAI 兼容）」「模型名称」置于输入框上方，输入框内保留示例占位（粘贴你的 API KEY / https://api.deepseek.com/chat/completions / deepseek-chat），已保存内容回显时标题仍可见；「如何获取 API KEY？」教程入口位置不变。模拟器截图确认排版正常、字段对齐。
+【修改/新增文件】
+- app/src/main/res/layout/dialog_api_key.xml
+- app/src/main/res/values/strings.xml
+- prompt_evolution.md
+

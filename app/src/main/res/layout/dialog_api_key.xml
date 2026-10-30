@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingStart="20dp"
+    android:paddingTop="8dp"
+    android:paddingEnd="20dp"
+    android:paddingBottom="4dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/api_key_label"
+        android:textColor="@color/text_secondary"
+        android:textSize="@dimen/text_caption" />
+
+    <EditText
+        android:id="@+id/etApiKey"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:background="@drawable/bg_input"
+        android:hint="@string/api_key_hint"
+        android:inputType="textVisiblePassword"
+        android:maxLines="1"
+        android:minHeight="46dp"
+        android:paddingStart="14dp"
+        android:paddingTop="10dp"
+        android:paddingEnd="14dp"
+        android:paddingBottom="10dp"
+        android:textColor="@color/text_primary"
+        android:textColorHint="@color/text_hint"
+        android:textSize="@dimen/text_body" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="@string/api_base_url_label"
+        android:textColor="@color/text_secondary"
+        android:textSize="@dimen/text_caption" />
+
+    <EditText
+        android:id="@+id/etApiBase"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:background="@drawable/bg_input"
+        android:hint="@string/api_base_url_hint"
+        android:inputType="textUri"
+        android:maxLines="1"
+        android:minHeight="46dp"
+        android:paddingStart="14dp"
+        android:paddingTop="10dp"
+        android:paddingEnd="14dp"
+        android:paddingBottom="10dp"
+        android:textColor="@color/text_primary"
+        android:textColorHint="@color/text_hint"
+        android:textSize="@dimen/text_caption" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="@string/api_model_label"
+        android:textColor="@color/text_secondary"
+        android:textSize="@dimen/text_caption" />
+
+    <EditText
+        android:id="@+id/etApiModel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:background="@drawable/bg_input"
+        android:hint="@string/api_model_hint"
+        android:inputType="text"
+        android:maxLines="1"
+        android:minHeight="46dp"
+        android:paddingStart="14dp"
+        android:paddingTop="10dp"
+        android:paddingEnd="14dp"
+        android:paddingBottom="10dp"
+        android:textColor="@color/text_primary"
+        android:textColorHint="@color/text_hint"
+        android:textSize="@dimen/text_caption" />
+
+    <TextView
+        android:id="@+id/tvGuideToggle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        android:text="@string/api_key_guide_toggle"
+        android:textColor="@color/color_primary"
+        android:textSize="@dimen/text_caption" />
+
+    <TextView
+        android:id="@+id/tvGuide"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:lineSpacingExtra="4dp"
+        android:text="@string/api_key_guide_text"
+        android:textColor="@color/text_secondary"
+        android:textSize="@dimen/text_caption"
+        android:visibility="gone" />
+
+</LinearLayout>

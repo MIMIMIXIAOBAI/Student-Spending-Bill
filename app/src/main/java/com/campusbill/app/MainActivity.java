@@ -11,6 +11,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.campusbill.app.chart.CandyBarChartRenderer;
+import com.campusbill.app.chat.ai.BillAnalysisUtils;
 import com.campusbill.app.data.BillEntity;
 import com.campusbill.app.data.DBHelper;
 import com.campusbill.app.databinding.ActivityMainBinding;
@@ -78,6 +79,11 @@ public class MainActivity extends AppCompatActivity {
         dbHelper = DBHelper.getInstance(this);
         selectedMonth = YearMonth.now();
 
+        double savedBudget = BillAnalysisUtils.getBudget(this);
+        if (savedBudget > 0) {
+            binding.etBudget.setText(formatAmount(savedBudget));
+        }
+
         binding.etBudget.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -90,6 +96,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void afterTextChanged(Editable s) {
                 updateBudgetPanel();
+                BillAnalysisUtils.saveBudget(MainActivity.this,
+                        parseAmount(s == null ? "" : s.toString()));
             }
         });
 
