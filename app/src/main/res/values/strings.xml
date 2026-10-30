@@ -80,6 +80,22 @@
     <string name="bill_unknown_merchant">未标注商户</string>
     <string name="bill_delete_failed">删除失败，请重试</string>
     <string name="edit_bill_title">编辑账单</string>
+    <string name="edit_bill_type_label">类型</string>
+    <string name="edit_bill_amount_label">金额</string>
+    <string name="edit_bill_category_label">分类</string>
+    <string name="edit_bill_merchant_label">商户</string>
+    <string name="edit_bill_remark_label">备注</string>
+    <string name="edit_bill_datetime_label">日期时间</string>
+    <string name="edit_bill_amount_hint">0.00</string>
+    <string name="edit_bill_optional_hint">可选</string>
+    <string name="bill_type_expense">支出</string>
+    <string name="bill_type_income">收入</string>
+    <string name="edit_amount_invalid">请输入正确的金额</string>
+    <string name="edit_amount_zero">金额需大于 0</string>
+    <string name="edit_save_success">修改成功</string>
+    <string name="edit_save_failed">保存失败，请重试</string>
+    <string name="edit_load_failed">账单不存在或已被删除</string>
+    <string name="edit_privacy_tip">账单数据仅存本机，不会上传到任何服务器</string>
     <string name="add_bill_title">手动记一笔</string>
 
     <!-- 通用 -->
