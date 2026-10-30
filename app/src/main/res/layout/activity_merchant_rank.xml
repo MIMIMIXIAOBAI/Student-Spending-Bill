@@ -3,24 +3,87 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bg_page_gradient"
-    android:gravity="center"
-    android:orientation="vertical"
-    android:padding="@dimen/page_padding">
+    android:orientation="vertical">
+
+    <!-- 顶部标题栏：返回键 + 标题 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="8dp"
+        android:paddingTop="32dp"
+        android:paddingEnd="8dp"
+        android:paddingBottom="8dp">
+
+        <TextView
+            android:id="@+id/btnBack"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:contentDescription="@string/chat_back"
+            android:focusable="true"
+            android:gravity="center"
+            android:text="@string/chat_back"
+            android:textColor="@color/candy_ink"
+            android:textSize="26sp" />
+
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="@string/merchant_rank_title"
+            android:textColor="@color/candy_ink"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <View
+            android:layout_width="44dp"
+            android:layout_height="44dp" />
+
+    </LinearLayout>
 
     <TextView
-        android:layout_width="wrap_content"
+        android:id="@+id/tvRankSummary"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/merchant_rank_title"
-        android:textColor="@color/text_primary"
-        android:textSize="@dimen/text_title"
-        android:textStyle="bold" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/space_sm"
-        android:text="@string/placeholder_developing"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:paddingBottom="10dp"
         android:textColor="@color/text_secondary"
-        android:textSize="@dimen/text_body" />
+        android:textSize="@dimen/text_caption" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/bg_candy_glass"
+        android:elevation="2dp">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvMerchantRank"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:padding="12dp"
+            android:scrollbars="none" />
+
+        <TextView
+            android:id="@+id/tvRankEmpty"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="@string/merchant_rank_empty"
+            android:textColor="@color/text_hint"
+            android:textSize="@dimen/text_caption"
+            android:visibility="gone" />
+
+    </FrameLayout>
 
 </LinearLayout>

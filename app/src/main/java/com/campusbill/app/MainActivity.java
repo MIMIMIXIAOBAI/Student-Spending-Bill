@@ -115,8 +115,11 @@ public class MainActivity extends AppCompatActivity {
             intent.putExtra(IncomeDetailActivity.EXTRA_MONTH, selectedMonth.toString());
             startActivity(intent);
         });
-        binding.panelRank.setOnClickListener(v ->
-                startActivity(new Intent(MainActivity.this, MerchantRankActivity.class)));
+        binding.panelRank.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, MerchantRankActivity.class);
+            intent.putExtra(MerchantRankActivity.EXTRA_MONTH, selectedMonth.toString());
+            startActivity(intent);
+        });
         binding.panelCalendar.setOnClickListener(v ->
                 startActivity(new Intent(MainActivity.this, CalendarActivity.class)));
         binding.btnAddBill.setOnClickListener(v ->

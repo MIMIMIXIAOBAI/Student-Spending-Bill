@@ -305,3 +305,18 @@
 - app/src/main/java/com/campusbill/app/chart/IncomeTimelineView.java
 - app/src/main/java/com/campusbill/app/IncomeDetailActivity.java
 - prompt_evolution.md
+
+【序号】8
+【时间】2026-10-31
+【任务名称】商户消费排行页面开发
+【完成情况】已完成：①顶部标题栏「‹ 返回 + 商户消费排行」，下方显示所选月份与商户数（如「2026年10月 · 共 11 家商户」）；②数据取自本机 Room 数据库，通过 DBHelper.sumAmountByMerchant 按「月份 + 支出」汇总商户金额，商户名为空的记录统一归入「未标注商户」并合并金额，列表按金额从高到低排序；③前三名使用金色 / 银色 / 铜色圆角徽标、分类名与金额字号放大（17sp/18sp 加粗），其余名次为 40dp 半透明白徽标与 14sp/15sp 常规字号；④每行显示商户名、占本月消费比例的进度条、金额与占比，占比 ≥1% 取整、0.1%~1% 保留一位小数、低于 0.1% 显示「<0.1%」；⑤无数据时显示「本月暂无消费记录」。主界面「本月消费排行 Top1」入口改为传入当前所选月份。模拟器实机验证：2026-10 共 11 家商户，金额降序 拼多多平台商户 ¥130.78(30%) → 广州理工学院自营食堂 ¥87.00(20%) → 吴彦霖(竹笙) ¥69.68(16%) → … → 美滋滋食品饮料 ¥1.90(0.4%)，前三名徽标与字号明显区分；切换月份到 2026-09 后进入排行页显示 2026年9月 · 共 23 家商户，Top3 为顾雨悠 ¥1000.00 / 陈柯(奕辰星) ¥700.00 / 拼多多平台商户 ¥488.88，下滑可查看至第 23 名 星洋图文快印 ¥1.20。
+【修改/新增文件】
+- app/src/main/java/com/campusbill/app/MerchantRankActivity.java
+- app/src/main/java/com/campusbill/app/MerchantRankAdapter.java
+- app/src/main/java/com/campusbill/app/MainActivity.java
+- app/src/main/res/layout/activity_merchant_rank.xml
+- app/src/main/res/layout/item_merchant_rank.xml
+- app/src/main/res/drawable/bg_rank_badge.xml
+- app/src/main/res/drawable/bg_rank_badge_normal.xml
+- app/src/main/res/values/strings.xml
+- prompt_evolution.md

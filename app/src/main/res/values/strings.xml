@@ -60,6 +60,10 @@
     <string name="entry_more">›</string>
     <string name="btn_add_bill">手动记一笔</string>
     <string name="merchant_rank_title">商户消费排行</string>
+    <string name="merchant_rank_subtitle_format">%1$s · 共 %2$d 家商户</string>
+    <string name="merchant_rank_empty">本月暂无消费记录</string>
+    <string name="merchant_rank_unknown">未标注商户</string>
+    <string name="merchant_rank_percent_min">&lt;0.1%</string>
     <string name="calendar_title">消费日历</string>
     <string name="add_bill_title">手动记一笔</string>
 
