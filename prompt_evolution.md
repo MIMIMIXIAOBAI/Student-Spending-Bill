@@ -159,3 +159,20 @@
 - app/src/main/java/com/campusbill/app/MainActivity.java
 - prompt_evolution.md
 
+【序号】5
+【时间】2026-10-31
+【任务名称】主界面 - 剩余功能入口面板
+【完成情况】已完成：在图表卡片下方新增三张卡片式入口——①「收入分类详情」并预览本月收入合计；②「本月消费排行 Top1」展示当月消费最高的商户名称与金额；③「消费日历」右侧显示当月总消费，左侧文字入口。三张卡片分别跳转收入分类详情页（任务 7 占位）、商户消费排行页（新增 MerchantRankActivity，任务 8 占位）、消费日历页（新增 CalendarActivity，任务 9 占位）。页面底部新增固定「手动记一笔」按钮，跳转手动记账页（新增 AddBillActivity，任务 11 占位）；主界面根布局由 NestedScrollView 改为 LinearLayout（滚动区 + 底部固定按钮），按钮不随内容滚动。入口数据全部取自当前所选月份的 Room 账单（收入合计、支出商户合计取最大、支出合计），本机无账单时沿用示例数据。模拟器实机验证：2026-10 收入 ¥336.50、Top1 拼多多平台商户 ¥130.78、当月消费 ¥432.26（与数据库核对一致），四个入口点击后分别进入对应页面，返回正常。
+【修改/新增文件】
+- app/src/main/res/layout/activity_main.xml
+- app/src/main/java/com/campusbill/app/MainActivity.java
+- app/src/main/res/values/strings.xml
+- app/src/main/AndroidManifest.xml
+- app/src/main/java/com/campusbill/app/MerchantRankActivity.java
+- app/src/main/java/com/campusbill/app/CalendarActivity.java
+- app/src/main/java/com/campusbill/app/AddBillActivity.java
+- app/src/main/res/layout/activity_merchant_rank.xml
+- app/src/main/res/layout/activity_calendar.xml
+- app/src/main/res/layout/activity_add_bill.xml
+- prompt_evolution.md
+

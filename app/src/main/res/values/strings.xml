@@ -35,6 +35,19 @@
     <!-- 收入分类详情 -->
     <string name="income_detail_title">收入分类详情</string>
 
+    <!-- 主界面 - 功能入口面板 -->
+    <string name="entry_income_title">收入分类详情</string>
+    <string name="entry_income_preview">本月收入 ¥%1$s</string>
+    <string name="entry_rank_title">本月消费排行 Top1</string>
+    <string name="entry_rank_preview">%1$s　¥%2$s</string>
+    <string name="entry_rank_empty">本月暂无消费记录</string>
+    <string name="entry_calendar_title">消费日历</string>
+    <string name="entry_more">›</string>
+    <string name="btn_add_bill">手动记一笔</string>
+    <string name="merchant_rank_title">商户消费排行</string>
+    <string name="calendar_title">消费日历</string>
+    <string name="add_bill_title">手动记一笔</string>
+
     <!-- 通用 -->
     <string name="ai_chat_title">AI 消费助手</string>
     <string name="placeholder_developing">功能开发中</string>

@@ -53,6 +53,9 @@ public class MainActivity extends AppCompatActivity {
             780f, 420f, 210f, 180f, 150f, 90f, 60f, 120f, 40f
     };
     private static final double MOCK_LAST_MONTH_EXPENSE = 2145.00;
+    private static final double MOCK_INCOME = 1800.00;
+    private static final String MOCK_TOP_MERCHANT = "学校食堂";
+    private static final double MOCK_TOP_AMOUNT = 226.00;
 
     private ActivityMainBinding binding;
     private DBHelper dbHelper;
@@ -60,6 +63,11 @@ public class MainActivity extends AppCompatActivity {
     private YearMonth selectedMonth;
     /** 当前月份的支出合计（真实数据或示例数据） */
     private double monthExpense;
+    /** 当前月份的收入合计 */
+    private double monthIncome;
+    /** 当前月份消费排行第一的商户与金额 */
+    private String topMerchant;
+    private double topAmount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,6 +98,14 @@ public class MainActivity extends AppCompatActivity {
         binding.btnViewDetail.setOnClickListener(v ->
                 startActivity(new Intent(MainActivity.this, IncomeDetailActivity.class)));
         binding.btnMonthPicker.setOnClickListener(v -> showMonthPicker());
+        binding.panelIncome.setOnClickListener(v ->
+                startActivity(new Intent(MainActivity.this, IncomeDetailActivity.class)));
+        binding.panelRank.setOnClickListener(v ->
+                startActivity(new Intent(MainActivity.this, MerchantRankActivity.class)));
+        binding.panelCalendar.setOnClickListener(v ->
+                startActivity(new Intent(MainActivity.this, CalendarActivity.class)));
+        binding.btnAddBill.setOnClickListener(v ->
+                startActivity(new Intent(MainActivity.this, AddBillActivity.class)));
 
         binding.tvChartMonth.setText(selectedMonth.toString());
         updateBudgetPanel();
@@ -162,6 +178,9 @@ public class MainActivity extends AppCompatActivity {
             daily[i] = MOCK_DAILY_EXPENSE[i];
             expense += daily[i];
         }
+        monthIncome = MOCK_INCOME;
+        topMerchant = MOCK_TOP_MERCHANT;
+        topAmount = MOCK_TOP_AMOUNT;
         renderMonth(expense, daily, MOCK_CATEGORY_NAME, MOCK_CATEGORY_AMOUNT,
                 MOCK_LAST_MONTH_EXPENSE);
     }
@@ -174,10 +193,16 @@ public class MainActivity extends AppCompatActivity {
                 int days = selectedMonth.lengthOfMonth();
                 float[] daily = new float[days];
                 Map<String, Double> categoryMap = new HashMap<>();
+                Map<String, Double> merchantMap = new HashMap<>();
                 double expense = 0;
+                double income = 0;
 
                 if (bills != null) {
                     for (BillEntity bill : bills) {
+                        if (bill.type == BillEntity.TYPE_INCOME) {
+                            income += bill.amount;
+                            continue;
+                        }
                         if (bill.type != BillEntity.TYPE_EXPENSE) {
                             continue;
                         }
@@ -188,7 +213,20 @@ public class MainActivity extends AppCompatActivity {
                         String category = bill.category == null || bill.category.isEmpty()
                                 ? "其他" : bill.category;
                         categoryMap.merge(category, bill.amount, Double::sum);
+                        String merchant = bill.merchant == null || bill.merchant.isEmpty()
+                                ? "未知商户" : bill.merchant;
+                        merchantMap.merge(merchant, bill.amount, Double::sum);
                         expense += bill.amount;
+                    }
+                }
+
+                monthIncome = income;
+                topMerchant = "";
+                topAmount = 0;
+                for (Map.Entry<String, Double> entry : merchantMap.entrySet()) {
+                    if (entry.getValue() > topAmount) {
+                        topMerchant = entry.getKey();
+                        topAmount = entry.getValue();
                     }
                 }
 
@@ -256,6 +294,23 @@ public class MainActivity extends AppCompatActivity {
         setupDailyChart(daily);
         setupCategoryChart(categoryNames, categoryAmounts);
         updateBudgetPanel();
+        updateEntriesPanel();
+    }
+
+    /** 刷新三张功能入口卡片：本月收入、消费排行 Top1、当月总消费 */
+    private void updateEntriesPanel() {
+        binding.tvIncomePreview.setText(
+                getString(R.string.entry_income_preview, formatAmount(monthIncome)));
+
+        if (topMerchant == null || topMerchant.isEmpty() || topAmount <= 0) {
+            binding.tvRankPreview.setText(R.string.entry_rank_empty);
+        } else {
+            binding.tvRankPreview.setText(getString(R.string.entry_rank_preview,
+                    topMerchant, formatAmount(topAmount)));
+        }
+
+        binding.tvCalendarAmount.setText(
+                getString(R.string.currency_format, formatAmount(monthExpense)));
     }
 
     /** 每日消费折线图：X 轴展示当月每一天，Y 轴随当月最高单日消费自适应，可横向滑动 */
