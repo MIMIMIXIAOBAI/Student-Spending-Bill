@@ -46,6 +46,14 @@
             android:name=".EditBillActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
+        <activity
+            android:name=".ImportActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".HistoryActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
 
     </application>
 

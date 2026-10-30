@@ -59,4 +59,10 @@
     <color name="bill_expense_bg">#FDEBE9</color>
     <color name="bill_income_line">#66A6E6C8</color>
     <color name="bill_expense_line">#66F2B3AC</color>
+    <color name="y2k_glass">#F2FFFFFF</color>
+    <color name="y2k_mint_end">#E8FFF2</color>
+    <color name="y2k_pink_start">#FFE3F1</color>
+    <color name="y2k_sky_mid">#E3F4FF</color>
+    <color name="y2k_stroke">#66C6B2FF</color>
+    <color name="y2k_violet">#7A5CD6</color>
 </resources>

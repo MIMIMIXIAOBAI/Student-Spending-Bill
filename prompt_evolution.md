@@ -379,3 +379,30 @@
 【修改文件】
 - app/src/main/java/com/campusbill/app/MainActivity.java
 - prompt_evolution.md
+
+【序号】12
+【时间】2026-10-31
+【任务名称】导入账单页面与全量导入功能
+【完成情况】已完成：①新增导入账单页（顶部返回 + 标题「导入账单」），三个按钮竖向排列「粘贴导入」「导入 CSV」「导入 PDF / XLSX」，顶部说明卡与底部小字「账单数据仅存本机，不会上传到任何服务器」（含手势导航栏避让）；②主界面底部在「手动记一笔」下方新增次级入口「导入账单」，点击进入导入页；③粘贴导入：仅在用户点击「粘贴导入」按钮时读取一次 ClipboardManager，无监听、无启动读取；剪贴板为空或识别不到有效账单文本时提示并唤起系统 SAF 文件选择器（CSV）；④导入 CSV：通过 SAF OpenDocument 选择 .csv（不申请任何存储权限），OpenCSV 解析，支持带表头与无表头两种格式（日期,时间,类型,分类,金额,商户,备注），逐行校验日期/类型/金额，批量 insertAll 写入本机 Room，完成后弹窗显示成功/失败条数；⑤导入 PDF / XLSX：通过 SAF 选择 .pdf/.xlsx，后台读取文件字节并校验文件头（%PDF / PK），弹窗显示文件名与大小，同时预留解析入口（本次不写入账单）；⑥新增解析工具类 BillCsvParser、BillPasteParser 与结果类 ImportResult，解析全部在子线程完成。模拟器实机验证：空剪贴板点「粘贴导入」→ Toast 提示并打开 SAF；选择 Downloads 中测试 CSV（2 条有效 + 1 条金额非法）→ 弹窗「导入完成：成功 2 条，失败 1 条」，日历 2026-10-31 显示「支出 餐饮 -¥6.60 12:00 IMPORTSHOP」与「收入 红包 +¥8.80 13:30 IMPORTFRIEND」，当日汇总 支出 ¥6.60 / 收入 ¥8.80；随后删除两条测试账单，当日恢复为「当日暂无账单」；选择 wechat_bill_2026_09.pdf → 弹窗「已读取文件：wechat_bill_2026_09.pdf（72.2 KB）」+ 预留解析提示；选择 wx_real_181.xlsx → 弹窗「已读取文件：wx_real_181.xlsx（21.8 KB）」+ 预留提示；粘贴解析另做离线校验（空格分隔、逗号分隔各 1 条 + 表头跳过 + 非法行）结果为 success 2 / failed 1。测试数据已清理，用户既有账单（含 demo1-demo5）未改动。合规自查：剪贴板仅在点击时读取；全部文件选择走 SAF，未申请 MANAGE_EXTERNAL_STORAGE 与读写存储权限；无爬虫 / 无障碍抓取；数据仅存本机 Room，无上传逻辑；纯 Java + XML + ViewBinding，未引入新的第三方库。
+【修改/新增文件】
+- app/src/main/java/com/campusbill/app/ImportActivity.java（新增）
+- app/src/main/java/com/campusbill/app/imports/ImportResult.java（新增）
+- app/src/main/java/com/campusbill/app/imports/BillCsvParser.java（新增）
+- app/src/main/java/com/campusbill/app/imports/BillPasteParser.java（新增）
+- app/src/main/res/layout/activity_import.xml（新增）
+- app/src/main/res/layout/activity_main.xml（底部新增导入入口）
+- app/src/main/java/com/campusbill/app/MainActivity.java（导入入口跳转）
+- app/src/main/AndroidManifest.xml（注册 ImportActivity）
+- app/src/main/res/values/strings.xml（导入页文案）
+- prompt_evolution.md
+
+【序号】12-分类细化
+【时间】2026-10-31
+【任务名称】细化消费与收入分类
+【完成情况】已完成：①新增本地分类器 CategoryClassifier（纯关键词规则，全部在本机计算、不联网）：支出细化为 食堂 / 外卖 / 奶茶 / 餐饮 / 购物 / 学习 / 续费 / 话费 / 交通 / 医疗 / 娱乐 / 生活缴费 / 转账 / 日用 / 其他，收入细化为 生活费 / 兼职 / 奖学金 / 红包 / 转账 / 退款 / 报销 / 其他；按「原分类 + 商户 + 备注」依次匹配（食堂、奶茶、外卖、餐饮、购物、学习、续费、话费、交通、医疗、娱乐、生活缴费、转账、日用），无法识别时保留原分类，原分类为「消费 / 商户」等泛化名称时归为「其他」；②重写 arrays.xml：bill_categories 21 项（编辑页）、expense_categories 15 项（记一笔-支出）、income_categories 8 项（记一笔-收入），已包含用户举例的食堂、购物、奶茶、外卖、学习、续费、话费、转账、生活费等；③导入账单写入前逐条调用分类细化（PDF / XLSX / CSV / 粘贴共用 ImportActivity.saveBills），后续导入即自动细化；④DBHelper 启动时执行一次性存量账单重分类（SharedPreferences 标记 done_v2 + Room 事务内 getAllBills → 逐条 update，仅更新 category 字段；失败不写标记，下次启动重试）。模拟器实机验证：历史页仍为「共 181 条记录 · 1 次导入」，条数、金额、日期、批次均未变化（各月支出合计 324.00 / 297.06 / 3461.82 / 432.26 与重分类前一致）；分类分布由 购物49 / 食堂46 / 交通20 / 其他14 / 群收款11 / 转账7 / 续费5 / 餐饮3 / 学习3 / 话费1（收入 转账10 / 红包8 / 退款4）变为 购物52 / 食堂47 / 交通20 / 转账18 / 续费5 / 生活缴费5 / 其他5 / 餐饮3 / 学习3 / 话费1，收入 转账10 / 红包8 / 退款4；历史列表卡片显示「续费 / QQ音乐」「食堂 / 广州理工学院自营食堂」「购物 / 拼多多平台商户」「转账 / 吴彦霖（竹笙）」等，主界面分类柱状图同步显示 购物、食堂、转账、交通、其他、生活缴费；记一笔页支出下拉依次为 餐饮 / 食堂 / 外卖 / 奶茶 / 购物 / 交通 / 日用 / 生活缴费 / 学习 / 娱乐 / 续费 / 话费 / 医疗 等，切到收入后下拉为 生活费 / 兼职 / 奖学金 / 红包 / 转账 / 退款 / 报销 / 其他。合规自查：分类规则全部本机运行，不上传数据；未新增第三方库；未申请任何存储权限；未改变金额、时间、批次、备注等字段。
+【修改/新增文件】
+- app/src/main/java/com/campusbill/app/data/CategoryClassifier.java（新增）
+- app/src/main/java/com/campusbill/app/data/DBHelper.java（启动时一次性存量重分类）
+- app/src/main/java/com/campusbill/app/ImportActivity.java（导入时细化分类）
+- app/src/main/res/values/arrays.xml（分类选项细化）
+- prompt_evolution.md
