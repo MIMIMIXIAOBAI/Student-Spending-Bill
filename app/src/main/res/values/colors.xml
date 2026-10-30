@@ -53,4 +53,10 @@
     <color name="candy_panel_center">#DFF3FF</color>
     <color name="candy_panel_end">#E6FFE9</color>
     <color name="candy_grid">#33C6B2FF</color>
+
+    <!-- 消费日历 -->
+    <color name="bill_income_bg">#E7F8F1</color>
+    <color name="bill_expense_bg">#FDEBE9</color>
+    <color name="bill_income_line">#66A6E6C8</color>
+    <color name="bill_expense_line">#66F2B3AC</color>
 </resources>

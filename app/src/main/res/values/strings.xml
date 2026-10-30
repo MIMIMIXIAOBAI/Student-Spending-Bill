@@ -65,6 +65,21 @@
     <string name="merchant_rank_unknown">未标注商户</string>
     <string name="merchant_rank_percent_min">&lt;0.1%</string>
     <string name="calendar_title">消费日历</string>
+    <string name="calendar_day_label_format">%1$d年%2$d月%3$d日</string>
+    <string name="calendar_select_hint">点击日期查看当日账单</string>
+    <string name="calendar_empty_day">当日暂无账单</string>
+    <string name="calendar_arrow_prev">‹</string>
+    <string name="calendar_arrow_next">›</string>
+    <string name="calendar_income_label">收入</string>
+    <string name="calendar_expense_label">支出</string>
+    <string name="bill_edit">编辑</string>
+    <string name="bill_delete">删除</string>
+    <string name="bill_delete_confirm_title">删除账单</string>
+    <string name="bill_delete_confirm_message">确定删除这笔账单吗？删除后不可恢复。</string>
+    <string name="bill_deleted">已删除</string>
+    <string name="bill_unknown_merchant">未标注商户</string>
+    <string name="bill_delete_failed">删除失败，请重试</string>
+    <string name="edit_bill_title">编辑账单</string>
     <string name="add_bill_title">手动记一笔</string>
 
     <!-- 通用 -->

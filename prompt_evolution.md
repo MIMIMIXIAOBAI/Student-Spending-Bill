@@ -320,3 +320,31 @@
 - app/src/main/res/drawable/bg_rank_badge_normal.xml
 - app/src/main/res/values/strings.xml
 - prompt_evolution.md
+【序号】9
+【时间】2026-10-31
+【任务名称】消费日历页面开发
+【完成情况】已完成：①顶部标题栏「‹ 返回 + 消费日历」；②日历卡片含月份切换（‹ 2026年10月 ›），表头「日 一 二 三 四 五 六」，固定 6 行日期网格，有收支的日期在数字下方打点标记（仅收入为薄荷绿、仅支出为珊瑚红、两者都有为淡紫），今日为蓝色加粗，选中日期为糖果渐变胶囊高亮；③点击日期后下方汇总卡显示该日「收入 / 支出」合计与完整日期；④当日账单列表：收入行淡绿色底（bg_bill_income）、支出行淡红色底（bg_bill_expense），样式为分类 + 金额（+¥ 绿 / -¥ 红）+ 商户 + 时间，右侧「编辑」「删除」按钮；⑤删除弹出确认弹窗（标题「删除账单」+「确定删除这笔账单吗？删除后不可恢复。」+ 取消 / 删除），确认后调用 DBHelper.deleteById 删除并重新读取当月数据，日历标记、汇总与列表同步刷新，并提示「已删除」；⑥编辑按钮携带账单 id 跳转编辑账单页面（EditBillActivity 为任务 10 占位页，显示「功能开发中」）；⑦从编辑页返回时 onResume 重新加载当月账单；⑧主界面入口传入当前所选月份；⑨月份切换后清空选中日期并重载数据。模拟器实机验证：2026-10 日历正常（1 日为周四列、11~31 有标记），默认选中今日 10-30；点 10-14 显示支出 ¥13.00 与「餐饮 / 广州理工学院自营食堂 / 17:54:05」；点「编辑」进入编辑账单占位页；点「删除」弹出确认弹窗，选择取消无变化；确认删除后该日列表为空、汇总归零、显示「当日暂无账单」，日历 14 日标记点消失；切到 2026-09 后选中日期清空并显示「点击日期查看当日账单」，点 9-25 显示收入 ¥1000.00 / 支出 ¥1000.00 及两条转账记录（淡红与淡绿底同屏正确）。
+【修改/新增文件】
+- app/src/main/java/com/campusbill/app/CalendarActivity.java
+- app/src/main/java/com/campusbill/app/DayBillAdapter.java
+- app/src/main/java/com/campusbill/app/EditBillActivity.java
+- app/src/main/java/com/campusbill/app/MainActivity.java
+- app/src/main/res/layout/activity_calendar.xml
+- app/src/main/res/layout/item_bill_day.xml
+- app/src/main/res/layout/activity_edit_bill.xml
+- app/src/main/res/drawable/bg_calendar_day_selected.xml
+- app/src/main/res/drawable/bg_calendar_dot.xml
+- app/src/main/res/drawable/bg_bill_income.xml
+- app/src/main/res/drawable/bg_bill_expense.xml
+- app/src/main/res/values/colors.xml
+- app/src/main/res/values/strings.xml
+- app/src/main/AndroidManifest.xml
+- prompt_evolution.md
+
+【序号】9-补充
+【时间】2026-10-31
+【任务名称】恢复任务 9 验证时删除的测试账单
+【完成情况】已完成：按微信账单源文件第 32 行原始字段恢复被删除的账单（2026-10-14 17:54:05，餐饮，广州理工学院自营食堂，备注「五饭一楼（特色农家饭）」，支出 ¥13.00）。因模拟器无 sqlite3，采用「run-as base64 导出 → 本机 Python 写入并 wal_checkpoint → 推回数据库并清理 -wal/-shm」方式完成，回推后 SHA256 校验一致。验证：账单总数恢复为 181 条，2026-10 支出合计恢复为 ¥432.26，日历 10-14 标记点与当日账单（-¥13.00 / 广州理工学院自营食堂 / 17:54:05）均已恢复。
+【修改文件】
+- （仅运行时数据库数据恢复，无源码改动）
+- prompt_evolution.md
