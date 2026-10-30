@@ -38,3 +38,62 @@
 - app/src/main/java/com/campusbill/app/data/MerchantAmount.java
 - prompt_evolution.md
 
+【序号】3
+【时间】2026-10-30
+【任务名称】主界面 - 顶部区域与 AI 预算面板
+【完成情况】已完成：主界面根布局改为 NestedScrollView 竖向滚动；顶部标题「智能消费账单助手」+ 副标题；AI 建议卡片整卡可点击跳转 AI 对话页（本次为占位页 AiChatActivity）；预算面板含预算输入框、总预算与预算剩余数值，剩余≥0 使用蓝白渐变、超支使用红白渐变并将数值显示为「超出 ¥xxx」。本月支出暂用占位常量，任务 13 接入 Room 真实数据。assembleDebug 构建通过。
+【修改/新增文件】
+- app/src/main/res/layout/activity_main.xml
+- app/src/main/java/com/campusbill/app/MainActivity.java
+- app/src/main/java/com/campusbill/app/AiChatActivity.java（AI 对话占位页，任务 6 完整实现）
+- app/src/main/res/layout/activity_ai_chat.xml（占位布局）
+- app/src/main/res/drawable/bg_card.xml
+- app/src/main/res/drawable/bg_gradient_blue.xml
+- app/src/main/res/drawable/bg_gradient_red.xml
+- app/src/main/res/drawable/bg_input.xml
+- app/src/main/res/values/strings.xml
+- app/src/main/AndroidManifest.xml
+- prompt_evolution.md
+
+【序号】3
+【时间】2026-10-30
+【任务名称】主界面 - 顶部区域与 AI 预算面板
+【完成情况】已修复：按修改意见将「AI 消费建议」与「当月预算」合并为同一张卡片面板，两部分之间用 1dp 分隔标线；渐变背景作用于合并后的整卡，AI 建议区仍可单独点击跳转，预算计算逻辑不变。
+【修改/新增文件】
+- app/src/main/res/layout/activity_main.xml
+- prompt_evolution.md
+
+【序号】3
+【时间】2026-10-30
+【任务名称】主界面 - 顶部区域与 AI 预算面板
+【完成情况】已修复：按修改意见重做合并面板视觉——AI 建议区占 7 成、预算区占 3 成（垂直权重 7:3，面板高 440dp）；新增玻璃拟态面板背景（浅黄 #FFF3D1 → 白渐变 + 半透明气泡 + 白色高光描边）、AI 区独立磨砂玻璃层（#C2FFFFFF），突出 AI 建议模块；分隔线改为暖色半透明标线；预算区仍保留蓝白/红白动态渐变切换。已在模拟器实机截图确认效果，assembleDebug 通过。
+【修改/新增文件】
+- app/src/main/res/layout/activity_main.xml
+- app/src/main/res/values/colors.xml
+- app/src/main/res/drawable/bg_glass_panel.xml
+- app/src/main/res/drawable/bg_glass_ai.xml
+- app/src/main/res/drawable/bg_ai_badge.xml
+- prompt_evolution.md
+
+【序号】3
+【时间】2026-10-30
+【任务名称】主界面 - 顶部区域与 AI 预算面板
+【完成情况】已修复：按修改意见将 App 整体页面背景改为淡蓝 #EAF2FF → 白 渐变 + 两枚半透明白色气泡（新建 bg_page_gradient.xml），主题 windowBackground / 状态栏同步为淡蓝，主界面与 AI 对话占位页根布局统一使用该背景，保持简约浅色风格。模拟器截图确认，assembleDebug 通过。
+【修改/新增文件】
+- app/src/main/res/drawable/bg_page_gradient.xml
+- app/src/main/res/values/colors.xml
+- app/src/main/res/values/themes.xml
+- app/src/main/res/layout/activity_main.xml
+- app/src/main/res/layout/activity_ai_chat.xml
+- prompt_evolution.md
+
+【序号】3
+【时间】2026-10-30
+【任务名称】主界面 - 顶部区域与 AI 预算面板
+【完成情况】已修复：排查「页面背景纯白、样式未生效」——背景引用本身正确（根布局与 windowBackground 均指向 bg_page_gradient，无覆盖），根因是 ①起始色 #EAF2FF 与白色差值过小（实测像素 R250/252/255 近白）；②渐变 angle=135 使淡蓝落在左下角、顶部为纯白；③气泡 #33FFFFFF 在白底不可见；④targetSdk 36 强制 edge-to-edge 导致 statusBarColor 不生效。修复：起始色改为 #D3E4FF，角度改为 270（顶部淡蓝→底部白），气泡改为 #66FFFFFF 并调整位置，windowBackground 改用 bg_page_gradient。经 clean 重建 + 卸载重装后截图与像素采样验证（顶部 R212/G228/B255，渐变到底部 R251/G253/B255）。
+【修改/新增文件】
+- app/src/main/res/values/colors.xml
+- app/src/main/res/values/themes.xml
+- app/src/main/res/drawable/bg_page_gradient.xml
+- prompt_evolution.md
+

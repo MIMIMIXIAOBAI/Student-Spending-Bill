@@ -16,6 +16,8 @@
 
     <!-- 背景与卡片 -->
     <color name="bg_page">#F6F8FC</color>
+    <color name="page_blue">#D3E4FF</color>
+    <color name="page_bubble">#66FFFFFF</color>
     <color name="bg_card">#FFFFFF</color>
     <color name="divider">#E5E9F2</color>
 
@@ -24,4 +26,11 @@
     <color name="gradient_blue_end">#FFFFFF</color>
     <color name="gradient_red_start">#FFECEA</color>
     <color name="gradient_red_end">#FFFFFF</color>
+
+    <!-- 玻璃拟态面板 -->
+    <color name="glass_yellow">#FFF3D1</color>
+    <color name="glass_bubble">#40FFFFFF</color>
+    <color name="glass_white">#C2FFFFFF</color>
+    <color name="glass_stroke">#99FFFFFF</color>
+    <color name="glass_divider">#33A9822F</color>
 </resources>

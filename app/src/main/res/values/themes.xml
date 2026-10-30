@@ -5,9 +5,9 @@
         <item name="colorPrimaryDark">@color/color_primary_dark</item>
         <item name="colorAccent">@color/color_primary</item>
         <item name="android:windowLightStatusBar">true</item>
-        <item name="android:statusBarColor">@color/bg_page</item>
+        <item name="android:statusBarColor">@color/page_blue</item>
         <item name="android:navigationBarColor">@color/bg_card</item>
-        <item name="android:windowBackground">@color/bg_page</item>
+        <item name="android:windowBackground">@drawable/bg_page_gradient</item>
         <item name="android:textColorPrimary">@color/text_primary</item>
         <item name="android:textColorSecondary">@color/text_secondary</item>
     </style>

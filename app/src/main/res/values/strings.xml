@@ -3,4 +3,21 @@
     <string name="app_name">学生消费账单</string>
     <string name="main_title">智能消费账单助手</string>
     <string name="main_subtitle">AI 帮你看懂每月生活消费</string>
+
+    <!-- 主界面 - AI 建议面板 -->
+    <string name="ai_panel_title">AI 消费建议</string>
+    <string name="ai_panel_summary">本月餐饮支出占比较高，建议把每周外卖控制在 3 次以内，预算会轻松很多。</string>
+    <string name="ai_panel_more">点击查看完整建议 ›</string>
+
+    <!-- 主界面 - 预算面板 -->
+    <string name="budget_title">月度预算</string>
+    <string name="budget_hint">请输入本月预算</string>
+    <string name="label_total_budget">总预算</string>
+    <string name="label_remaining">预算剩余</string>
+    <string name="label_over">超出</string>
+    <string name="currency_format">¥%1$s</string>
+
+    <!-- 通用 -->
+    <string name="ai_chat_title">AI 消费助手</string>
+    <string name="placeholder_developing">功能开发中</string>
 </resources>
