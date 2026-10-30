@@ -92,6 +92,14 @@ public class DBHelper {
         execute(() -> billDao.sumAmountByMonthAndType(month, type), callback);
     }
 
+    public void countAll(DataCallback<Integer> callback) {
+        execute(() -> billDao.countAll(), callback);
+    }
+
+    public void getBillMonths(DataCallback<List<String>> callback) {
+        execute(() -> billDao.getBillMonths(), callback);
+    }
+
     // ---------------- 线程调度 ----------------
 
     private <T> void execute(Callable<T> task, DataCallback<T> callback) {

@@ -57,4 +57,12 @@ public interface BillDao {
     @Query("SELECT IFNULL(SUM(amount), 0) FROM bills "
             + "WHERE substr(date, 1, 7) = :month AND type = :type")
     double sumAmountByMonthAndType(String month, int type);
+
+    /** 账单总条数，用于判断本机是否已有账单数据 */
+    @Query("SELECT COUNT(*) FROM bills")
+    int countAll();
+
+    /** 本机账单中出现过的所有月份（yyyy-MM），按时间倒序 */
+    @Query("SELECT DISTINCT substr(date, 1, 7) AS month FROM bills ORDER BY month DESC")
+    List<String> getBillMonths();
 }

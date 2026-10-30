@@ -97,3 +97,65 @@
 - app/src/main/res/drawable/bg_page_gradient.xml
 - prompt_evolution.md
 
+【序号】4
+【时间】2026-10-31
+【任务名称】主界面 - 消费图表面板
+【完成情况】已完成：主界面追加消费图表面板——左上角显示当前年月 2026-09，下方「与上月消费对比 ↓ ¥284.50」（差值正负自动换色）；每日消费柱状图 X 轴展示 09-01~09-30，分类金额柱状图 X 轴展示 9 个消费分类，两图 Y 轴均为 0/100/200/300/400/500 固定刻度，金额超 500 的柱子封顶到图表顶部；两图均支持横向拖动（可见范围分别 7 根 / 5 根，禁用缩放）；底部「查看消费明细」按钮跳转收入分类详情占位页（IncomeDetailActivity，任务 7 完整开发）。数据均为模拟数据，任务 13 替换为 Room 真实数据。已通过模拟器实机验证：图表渲染、横向滑动到月末、620 元柱子顶格、分类滑动、按钮跳转均正常。
+【修改/新增文件】
+- app/src/main/res/layout/activity_main.xml
+- app/src/main/java/com/campusbill/app/MainActivity.java
+- app/src/main/java/com/campusbill/app/IncomeDetailActivity.java
+- app/src/main/res/layout/activity_income_detail.xml
+- app/src/main/res/drawable/bg_button_primary.xml
+- app/src/main/res/values/strings.xml
+- app/src/main/AndroidManifest.xml
+- prompt_evolution.md
+
+【序号】4
+【时间】2026-10-31
+【任务名称】主界面 - 消费图表面板
+【完成情况】已修复：按修改意见改为 Y2K 千禧糖果风——每日消费由柱状图改为折线图（糖果粉贝塞尔平滑曲线 + 圆形节点 + 粉色渐变面积填充，Y 轴仍固定 0/100/200/300/400/500、超 500 封顶、可横向滑动）；分类消费柱状图 9 个分类分别使用浅糖果色（粉/薄荷/天蓝/柠檬/丁香紫/蜜桃/水绿/珊瑚/泡泡糖粉）；面板背景改为浅糖果色高饱和渐变（#FFD8F0 → #DFF3FF → #E6FFE9）+ 26dp 圆角 + 白色高光描边；两张图表各置于半透明塑料质感圆角玻璃块（#B8FFFFFF，18dp 圆角）；「查看消费明细」按钮改为粉→柠檬渐变的圆润胶囊按钮。模拟器实机验证：折线渲染、滑动至 09-30、09-28 峰值顶格在 500、多色柱状图均正常。
+【修改/新增文件】
+- app/src/main/java/com/campusbill/app/MainActivity.java
+- app/src/main/res/layout/activity_main.xml
+- app/src/main/res/values/colors.xml
+- app/src/main/res/drawable/bg_candy_panel.xml
+- app/src/main/res/drawable/bg_candy_glass.xml
+- app/src/main/res/drawable/bg_button_candy.xml
+- prompt_evolution.md
+
+【序号】4
+【时间】2026-10-31
+【任务名称】主界面 - 消费图表面板
+【完成情况】已修复：按修改意见新增月份切换——面板右上角胶囊「‹ 上月 / 下月 ›」，每次切换 1 个月，禁止切到未来月份；面板数据改为读取本机 Room 真实账单并与所选月份匹配（每日汇总、分类汇总、与上月消费对比、预算剩余同步刷新），本机无任何账单时仍以示例数据兜底。分类柱状图改用自定义渲染器 CandyBarChartRenderer：柱体圆角（10dp，随柱宽柱高自适应），填充自底部白色向上渐变到该分类糖果色。模拟器实机验证：插入 2026-10-05 餐饮 88.50 与 2026-09-18 购物 120.00 两条测试账单后重启，2026-10 面板显示「超出 ¥88.50」、对比「↓ ¥31.50」；点「上月」切到 2026-09 显示「超出 ¥120.00」、对比「↑ ¥120.00」；点「下月」回到 2026-10，再次点「下月」无变化（未来月份拦截）；分类柱体圆角与底部白→粉渐变经截图确认。验证结束后已 pm clear 清理测试账单，恢复示例数据状态。
+【修改/新增文件】
+- app/src/main/java/com/campusbill/app/MainActivity.java
+- app/src/main/java/com/campusbill/app/chart/CandyBarChartRenderer.java（新增）
+- app/src/main/java/com/campusbill/app/data/BillDao.java
+- app/src/main/java/com/campusbill/app/data/DBHelper.java
+- app/src/main/res/layout/activity_main.xml
+- app/src/main/res/values/colors.xml
+- app/src/main/res/values/strings.xml
+- app/src/main/res/drawable/bg_candy_pill.xml（新增）
+- prompt_evolution.md
+
+【序号】4
+【时间】2026-10-31
+【任务名称】主界面 - 消费图表面板
+【完成情况】已修复：按修改意见把右上角「‹ 上月 / 下月 ›」改为「切换月份」按钮，点击弹出「选择月份」弹窗；弹窗内年月严格取自本机账单（新增 BillDao.getBillMonths，按 date 去重并倒序），不会出现没有账单的月份；当前展示月份在弹窗中预选中，点选后立即刷新面板与预算；本机无任何账单时点击仅 Toast 提示「暂无账单数据，暂无可切换的月份」，面板继续展示示例数据。模拟器验证：无账单状态点击无弹窗；写入 2026-10-05 餐饮 88.50 与 2026-09-18 购物 120.00 后重启，弹窗仅列出「2026年10月」「2026年9月」，选中 2026年9月后面板切换为 2026-09、超出 ¥120.00、对比 ↑ ¥120.00；验证结束后已 pm clear 清理测试账单并恢复示例数据状态。
+【修改/新增文件】
+- app/src/main/java/com/campusbill/app/MainActivity.java
+- app/src/main/java/com/campusbill/app/data/BillDao.java
+- app/src/main/java/com/campusbill/app/data/DBHelper.java
+- app/src/main/res/layout/activity_main.xml
+- app/src/main/res/values/strings.xml
+- prompt_evolution.md
+
+【序号】4
+【时间】2026-10-31
+【任务名称】主界面 - 消费图表面板
+【完成情况】已修复：按修改意见把两张图表的 Y 轴由固定 0–500 改为随当月数据自适应——新增 niceAxisMax()，以当月最大值留 10% 余量后向上取整（6 个标签、整数刻度），不再把超过 500 的数据封顶。导入微信支付账单（181 笔：支出 159 笔 4515.14 元、收入 22 笔 4110.65 元，月份覆盖 2026-07~2026-10）实测：2026-10 每日消费峰值约 70 元、Y 轴 0–100，分类最高 137 元、Y 轴 0–250；2026-09 每日峰值约 1130 元、Y 轴 0–1250，分类最高「转账」1763 元、Y 轴 0–2500，柱体与折线均不再顶格。
+【修改/新增文件】
+- app/src/main/java/com/campusbill/app/MainActivity.java
+- prompt_evolution.md
+

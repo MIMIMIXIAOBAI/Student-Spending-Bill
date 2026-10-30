@@ -17,6 +17,24 @@
     <string name="label_over">超出</string>
     <string name="currency_format">¥%1$s</string>
 
+    <!-- 主界面 - 图表面板 -->
+    <string name="chart_daily_title">每日消费</string>
+    <string name="chart_category_title">分类消费</string>
+    <string name="chart_compare_prefix">与上月消费对比</string>
+    <string name="chart_compare_up">↑ ¥%1$s</string>
+    <string name="chart_compare_down">↓ ¥%1$s</string>
+    <string name="chart_compare_flat">持平 ¥%1$s</string>
+    <string name="btn_view_detail">查看消费明细</string>
+    <string name="month_picker_label">切换月份</string>
+    <string name="month_picker_title">选择月份</string>
+    <string name="month_picker_label_format">%1$d年%2$d月</string>
+    <string name="month_picker_empty">暂无账单数据，暂无可切换的月份</string>
+    <string name="btn_cancel">取消</string>
+    <string name="chart_no_data">本月暂无消费记录</string>
+
+    <!-- 收入分类详情 -->
+    <string name="income_detail_title">收入分类详情</string>
+
     <!-- 通用 -->
     <string name="ai_chat_title">AI 消费助手</string>
     <string name="placeholder_developing">功能开发中</string>

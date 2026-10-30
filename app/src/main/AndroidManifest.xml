@@ -22,6 +22,10 @@
             android:name=".AiChatActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
+        <activity
+            android:name=".IncomeDetailActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
 
     </application>
 

@@ -33,4 +33,24 @@
     <color name="glass_white">#C2FFFFFF</color>
     <color name="glass_stroke">#99FFFFFF</color>
     <color name="glass_divider">#33A9822F</color>
+
+    <!-- Y2K 糖果色 -->
+    <color name="candy_ink">#3A2A55</color>
+    <color name="candy_white">#FFFFFF</color>
+    <color name="candy_glass">#B8FFFFFF</color>
+    <color name="candy_line">#59FFFFFF</color>
+    <color name="candy_pink">#FF7EC7</color>
+    <color name="candy_pink_soft">#59FF9DE2</color>
+    <color name="candy_mint">#8BE8D1</color>
+    <color name="candy_sky">#9FD4FF</color>
+    <color name="candy_lemon">#FFEE9C</color>
+    <color name="candy_lilac">#C6B2FF</color>
+    <color name="candy_peach">#FFC3A6</color>
+    <color name="candy_aqua">#8FF0E8</color>
+    <color name="candy_coral">#FFAFA8</color>
+    <color name="candy_gum">#FF9DC0</color>
+    <color name="candy_panel_start">#FFD8F0</color>
+    <color name="candy_panel_center">#DFF3FF</color>
+    <color name="candy_panel_end">#E6FFE9</color>
+    <color name="candy_grid">#33C6B2FF</color>
 </resources>
