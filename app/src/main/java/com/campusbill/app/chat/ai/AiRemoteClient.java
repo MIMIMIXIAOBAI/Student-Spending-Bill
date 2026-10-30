@@ -45,14 +45,16 @@ public final class AiRemoteClient {
     /**
      * 发起对话请求。
      *
-     * @param history 历史消息，元素为 [role, content]，role 为 user / assistant
+     * @param history     历史消息，元素为 [role, content]，role 为 user / assistant
+     * @param billContext 账单快照文本（由 BillContextBuilder 生成），拼入 system prompt，
+     *                    让远程 AI 基于用户真实账单作答；无数据或读取失败时传 null
      */
     public static void requestReply(String apiKey, String baseUrl, String model,
                                     List<String[]> history, String question,
-                                    Callback callback) {
+                                    String billContext, Callback callback) {
         EXECUTOR.execute(() -> {
             try {
-                String reply = doRequest(apiKey, baseUrl, model, history, question);
+                String reply = doRequest(apiKey, baseUrl, model, history, question, billContext);
                 MAIN_HANDLER.post(() -> callback.onReply(reply));
             } catch (Exception e) {
                 MAIN_HANDLER.post(() -> callback.onFailure(e));
@@ -61,15 +63,21 @@ public final class AiRemoteClient {
     }
 
     private static String doRequest(String apiKey, String baseUrl, String model,
-                                    List<String[]> history, String question) throws Exception {
+                                    List<String[]> history, String question,
+                                    String billContext) throws Exception {
         JSONObject body = new JSONObject();
         body.put("model", model);
         body.put("temperature", 0.7);
 
+        String systemPrompt = AiPresets.SYSTEM_PROMPT;
+        if (billContext != null && !billContext.trim().isEmpty()) {
+            systemPrompt = systemPrompt + "\n\n" + billContext.trim();
+        }
+
         JSONArray messages = new JSONArray();
         messages.put(new JSONObject()
                 .put("role", "system")
-                .put("content", AiPresets.SYSTEM_PROMPT));
+                .put("content", systemPrompt));
         if (history != null) {
             int start = Math.max(0, history.size() - MAX_HISTORY);
             for (int i = start; i < history.size(); i++) {

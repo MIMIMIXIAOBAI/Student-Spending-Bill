@@ -33,6 +33,9 @@ public class IncomeTimelineView extends View {
     private final List<BillEntity> bills = new ArrayList<>();
     private final List<Integer> colors = new ArrayList<>();
     private final List<Float> centers = new ArrayList<>();
+    // 预计算的每行标签与最大金额，避免 onDraw 中反复 String.format 与遍历
+    private final List<String> labels = new ArrayList<>();
+    private float maxAmount = 1f;
 
     private Paint spinePaint;
     private Paint barPaint;
@@ -48,6 +51,7 @@ public class IncomeTimelineView extends View {
     private final RectF barRect = new RectF();
     private final RectF rowRect = new RectF();
     private final RectF shadowRect = new RectF();
+    private final RectF innerRect = new RectF();
 
     private float density;
     private float rowHeight;
@@ -138,13 +142,22 @@ public class IncomeTimelineView extends View {
         bills.clear();
         colors.clear();
         centers.clear();
+        labels.clear();
+        maxAmount = 1f;
         pressedIndex = -1;
         selectedIndex = -1;
         if (data != null) {
             bills.addAll(data);
+            float max = 0f;
             for (BillEntity bill : bills) {
                 Integer color = colorMap == null ? null : colorMap.get(bill.category);
                 colors.add(color == null ? 0xFF9FD4FF : color);
+                labels.add(String.format(Locale.CHINA, "%s · %s  ¥%.2f",
+                        shortDate(bill.date), bill.category, bill.amount));
+                max = Math.max(max, (float) bill.amount);
+            }
+            if (max > 0f) {
+                maxAmount = max;
             }
         }
         requestLayout();
@@ -178,13 +191,6 @@ public class IncomeTimelineView extends View {
             return;
         }
 
-        float maxAmount = 0f;
-        for (BillEntity bill : bills) {
-            maxAmount = Math.max(maxAmount, (float) bill.amount);
-        }
-        if (maxAmount <= 0) {
-            maxAmount = 1;
-        }
         float axisX = paddingHorizontal + nodeRadius * 2.2f;
         float startX = axisX + nodeRadius + 10f * density;
         float maxBarWidth = Math.max(40f, width - paddingHorizontal - startX);
@@ -215,9 +221,7 @@ public class IncomeTimelineView extends View {
                 canvas.drawCircle(axisX, centerY, radius + 1.2f * density, ringPaint);
             }
 
-            String label = String.format(Locale.CHINA, "%s · %s  ¥%.2f",
-                    shortDate(bill.date), bill.category, bill.amount);
-            canvas.drawText(label, startX,
+            canvas.drawText(labels.get(i), startX,
                     centerY - barHeight / 2f - 5f * density, textPaint);
         }
     }
@@ -243,9 +247,9 @@ public class IncomeTimelineView extends View {
         } else {
             // 凹下：浅底 + 上暗下亮的内阴影描边
             canvas.drawRoundRect(rowRect, radius, radius, insetPaint);
-            RectF inner = new RectF(rowRect);
-            inner.inset(1.2f * density, 1.2f * density);
-            canvas.drawRoundRect(inner, radius - 1.2f * density, radius - 1.2f * density,
+            innerRect.set(rowRect);
+            innerRect.inset(1.2f * density, 1.2f * density);
+            canvas.drawRoundRect(innerRect, radius - 1.2f * density, radius - 1.2f * density,
                     insetLinePaint);
         }
     }

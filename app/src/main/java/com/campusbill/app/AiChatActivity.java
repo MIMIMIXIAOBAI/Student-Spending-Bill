@@ -16,6 +16,7 @@ import com.campusbill.app.chat.ChatMessage;
 import com.campusbill.app.chat.ai.AiConfig;
 import com.campusbill.app.chat.ai.AiRemoteClient;
 import com.campusbill.app.chat.ai.BillAnalysisUtils;
+import com.campusbill.app.chat.ai.BillContextBuilder;
 import com.campusbill.app.chat.ai.IntentMatcher;
 import com.campusbill.app.chat.ai.ReplyGenerator;
 import com.campusbill.app.data.CategoryAmount;
@@ -200,24 +201,28 @@ public class AiChatActivity extends AppCompatActivity {
             replaceMessage(index, ReplyGenerator.fallback());
             return;
         }
-        AiRemoteClient.requestReply(
-                AiConfig.getApiKey(this),
-                AiConfig.getBaseUrl(this),
-                AiConfig.getModel(this),
-                buildHistory(index),
-                text,
-                new AiRemoteClient.Callback() {
-                    @Override
-                    public void onReply(String reply) {
-                        replaceMessage(index, reply);
-                    }
+        // 联网前先从本机数据库构建账单快照，注入 system prompt，
+        // 让远程 AI 基于用户真实账单作答，而不是凭空编造。
+        BillContextBuilder.build(this, billContext ->
+                AiRemoteClient.requestReply(
+                        AiConfig.getApiKey(this),
+                        AiConfig.getBaseUrl(this),
+                        AiConfig.getModel(this),
+                        buildHistory(index),
+                        text,
+                        billContext,
+                        new AiRemoteClient.Callback() {
+                            @Override
+                            public void onReply(String reply) {
+                                replaceMessage(index, reply);
+                            }
 
-                    @Override
-                    public void onFailure(Exception e) {
-                        replaceMessage(index, ReplyGenerator.fallback() + "\n"
-                                + getString(R.string.ai_online_failed));
-                    }
-                });
+                            @Override
+                            public void onFailure(Exception e) {
+                                replaceMessage(index, ReplyGenerator.fallback() + "\n"
+                                        + getString(R.string.ai_online_failed));
+                            }
+                        }));
     }
 
     /** 组装最近几轮对话作为联网上下文（跳过欢迎语与占位消息） */

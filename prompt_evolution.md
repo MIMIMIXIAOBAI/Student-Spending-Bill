@@ -406,3 +406,32 @@
 - app/src/main/java/com/campusbill/app/ImportActivity.java（导入时细化分类）
 - app/src/main/res/values/arrays.xml（分类选项细化）
 - prompt_evolution.md
+
+
+【序号】13
+【时间】2026-10-31
+【任务名称】全页面数据联调与整体合规复测
+【完成情况】已完成：本任务为整体联调与合规复测，经逐项审计与模拟器实机端到端验证，全部通过，无需修改源码。①数据源审计：全部 9 个 Activity（主界面 / AI 对话 / 消费明细 / 收入分类详情 / 商户排行 / 消费日历 / 记一笔 / 编辑账单 / 导入账单 / 历史记录）均通过 DBHelper 读写本机 Room 数据库，无任何模拟数据残留；主界面预算、每日折线图、分类柱状图、上月对比、收入预览、Top1 排行、日历金额全部取自 Room。②刷新机制审计：MainActivity / CalendarActivity / HistoryActivity 均在 onResume 重载数据，消费明细与排行页为只读页在 onCreate 按传入月份加载，返回上一页自动刷新链路完整。③跳转审计：9 个 Activity 全部在 AndroidManifest 注册且锁定竖屏；主界面 8 个入口（AI 面板、查看消费明细、收入分类详情、消费排行、消费日历、手动记一笔、导入账单、历史）与日历 / 历史页到编辑账单的跳转全部实测可达，无崩溃。④模拟器端到端验证：基线数据库 181 条、2026-10 支出 ¥432.26 / 收入 ¥336.50 / Top1 拼多多平台商户 ¥130.78；主界面各面板数值与数据库逐一核对一致（预算剩余 ¥567.74 = 预算 1000 − 432.26，与上月对比 ↓¥3029.56 = 3461.82 − 432.26）；记一笔新增支出 ¥50（E2ETEST）保存返回后，主界面日历金额 ¥482.26、预算剩余 ¥517.74、对比文案同步刷新；消费日历当日显示该笔账单，编辑自动填充全部字段，改为 ¥60 保存返回后日历汇总与列表同步变为 ¥60；删除经确认弹窗后当日列表清空、汇总归零、日历标记消失，返回主界面全部恢复基线，数据库恢复 181 条；AI 对话、消费明细（¥432.26 分类图例合计一致）、收入分类详情（¥336.50 转账 100%）、商户排行（11 家商户合计 ¥432.26 降序正确）、导入账单、历史记录（181 条 · 1 次导入）页面均正常打开且数据与数据库一致；月份切换弹窗仅显示数据库已有的 2026-07~10 四个月份，切到 2026-09 预算面板变超支态「超出 ¥2461.82」、对比 ↑¥3164.76，切回 2026-10 恢复；logcat AndroidRuntime 无任何异常。⑤合规红线复核：剪贴板仅在点击「粘贴导入」时读取一次，无监听、无启动读取；全部文件选择走 SAF，AndroidManifest 无 MANAGE_EXTERNAL_STORAGE、无读写存储权限；无爬虫、无障碍抓取、自动拉取账单逻辑；账单数据仅存本机 Room，无自动上传，唯一 INTERNET 权限仅服务于 AI 对话模块用户自主配置的 API KEY（已获批）；纯 Java 实现，无任何 Kotlin 文件；minSdk 29、ViewBinding 开启；未新增任何需求外功能与第三方库。
+【修改/新增文件】
+- prompt_evolution.md
+
+
+【序号】13-修复
+【时间】2026-10-31
+【任务名称】修复 App 卡顿问题
+【完成情况】已修复：①定位：通过 dumpsys gfxinfo 帧统计与 GPU 直方图定位，卡顿主因为当前模拟器使用软件渲染（ro.hardware.egl=emulation，GPU 帧耗时直方图顶到 4950ms 上限，尝试 -gpu host 启动失败、AVD auto 模式回退软件渲染，属环境限制，真机无此问题）；应用侧热点为收入 / 消费明细页时间轴自定义 View 的 onDraw 每帧开销——每行调用一次 String.format 生成标签（2026-09 共 94 行即每帧 94 次格式化）并每帧遍历求最大金额，另在绘制按下态时每帧 new RectF。②修复（IncomeTimelineView.java）：行标签改为 setData 时一次性预计算存入 labels 列表、最大金额同步预计算为 maxAmount 字段，onDraw 直接取用；按下态描边改为复用 innerRect 字段，onDraw 内零对象分配；触摸、选中、弹窗逻辑未改动。③验证：assembleDebug 通过，模拟器实机回归——2026-09 消费明细（94 条）时间轴标签渲染与原格式一致（09-28 · 购物 ¥5.25），窗口内滑动正常，点击节点账单详情弹窗正常（¥5.25 / 购物 / 拼多多平台商户 / 先用后付 / 2026-09-28 08:10:32）；主界面数据（预算剩余 ¥567.74 等）与数据库一致未受影响；帧统计对比：修复前主界面 215 帧 / 98.6% 卡顿 / 中位 250ms / Slow UI 90 帧，修复后主界面滚动 103 帧 / 中位 26ms / 90 分位 42ms / Slow UI 12 帧，明细页（94 行时间轴）滚动 Slow UI 仅 4/125 帧，UI 线程耗时已降至软件渲染环境下的正常水位；数据未做任何改动（仍为 181 条）。合规自查：纯 Java，无新增依赖与权限，无网络与存储逻辑改动。
+【修改/新增文件】
+- app/src/main/java/com/campusbill/app/chart/IncomeTimelineView.java
+- prompt_evolution.md
+
+
+【序号】13-增强
+【时间】2026-10-31
+【任务名称】内置 AI 联网时注入账单快照（让远程 AI 基于真实账单作答）
+【完成情况】已完成：①需求：远程 AI 此前只带通用 system prompt + 对话历史，对用户账单"一无所知"；现要求联网请求前先解析本机账单，把关键数据带给远程模型，使其基于真实账单回答。②新增 BillContextBuilder：联网前从本机 Room 异步读取并汇总"账单快照"文本——本月总支出/总收入/预算剩余（含超支标注）、支出分类 Top5（金额降序）、高频消费商户 Top5、近期流水最多 15 条（日期/收支/分类/金额/商户）；数据为空或读取失败时降级为"暂无账单"说明，不阻塞远程请求；全部读库走 DBHelper 子线程、结果回主线程。③AiRemoteClient.requestReply 新增 billContext 参数，将快照拼入 system prompt 末尾随请求发出。④AiChatActivity.replyOnlineOrFallback 联网前先 BillContextBuilder.build() 再发请求。⑤AiPresets.SYSTEM_PROMPT 明确要求远程 AI 优先基于快照分析、引用具体金额、不编造快照外数据。实机验证（host GPU 模拟器）：本地意图回归正常（本月总支出 ¥432.26、省钱建议"购物占 31.9%"均读 Room）；配置测试 API KEY 后发 FALLBACK 问题，logcat 确认快照完整构建（总支出 432.26 / 总收入 336.50 / 预算剩余 567.74 + 分类购物137.78/食堂110.00/转账69.68/交通67.00/其他26.00 + 商户拼多多130.78 等 + 15 条近期流水）并成功发往 deepseek，KEY 无效时正确兜底"联网获取失败，已使用本地回复"；验证后已移除诊断日志、清空测试 KEY，重新构建安装通过。合规自查：快照仅在用户自主配置 API KEY 且提问走联网分支时随该次请求发出，本地意图仍全程离线；账单原始数据不上传任何服务器；无新增权限与第三方库；纯 Java 实现。
+【修改/新增文件】
+- app/src/main/java/com/campusbill/app/chat/ai/BillContextBuilder.java（新增）
+- app/src/main/java/com/campusbill/app/chat/ai/AiRemoteClient.java（system prompt 注入账单快照）
+- app/src/main/java/com/campusbill/app/AiChatActivity.java（联网前构建快照）
+- app/src/main/java/com/campusbill/app/chat/ai/presets/AiPresets.java（提示词要求基于账单作答）
+- prompt_evolution.md

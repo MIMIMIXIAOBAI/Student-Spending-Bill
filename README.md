@@ -1,0 +1,128 @@
+# 学生消费账单 APP（智能消费账单）
+
+一款面向学生群体的 Android 本地记账应用：手动记账、多方式导入、图表化消费分析、预算管理与 AI 消费建议。所有账单数据仅存储在本机 Room 数据库，不上传任何服务器。
+
+- 包名：`com.campusbill.app`
+- 开发语言：**纯 Java**（无任何 Kotlin 代码）
+- UI 实现：XML 布局 + ViewBinding，竖屏手机适配，Y2K 浅色塑料质感风格
+- 最低系统：Android 10（API 29），targetSdk 36
+
+## 功能一览
+
+| 模块 | 功能 |
+|---|---|
+| 手动记账 | 支出/收入切换、分类下拉（随类型切换）、金额/商户/备注、系统日期时间选择器 |
+| 账单管理 | 消费日历按日查看、编辑（自动填充原账单）、删除（二次确认）、历史记录页（支持删除导入批次） |
+| 预算管理 | 当月预算设置持久化；预算剩余 ≥0 蓝白渐变，超支切换红白渐变并显示「超出」 |
+| 图表分析 | 每日消费折线图、分类消费柱状图（均可横向滑动）、分类占比饼图、消费时间轴（横线长度映射金额，点击节点看详情） |
+| 月份切换 | 顶部弹窗仅列出数据库已有账单月份，切换后全页面数据联动刷新 |
+| 商户排行 | 当月商户消费金额降序，前三名放大突出 |
+| AI 消费助手 | 本地规则引擎离线回答账单类问题（总支出/预算剩余/分类构成/省钱建议）；可选在应用内配置 API KEY，普通对话联网请求 OpenAI 兼容接口 |
+| 账单导入 | 粘贴导入（仅点击时读取一次剪贴板）、CSV 导入（OpenCSV）、PDF/XLSX 导入（SAF + PDFBox），自动识别支付宝/微信账单格式，导入结果按批次管理 |
+
+## 合规与隐私设计
+
+1. 剪贴板仅在用户点击「粘贴导入」按钮时读取一次，无后台监听、无启动读取
+2. 文件导入全部通过 SAF 系统文件选择器，**不申请** `MANAGE_EXTERNAL_STORAGE` 及任何存储权限
+3. 无爬虫、无障碍抓取、自动拉取微信/支付宝账单的任何逻辑
+4. 账单原始数据仅存本机 Room 数据库；唯一的 `INTERNET` 权限仅服务于 AI 对话模块（用户自主配置 KEY 后才会联网）
+5. 全部 9 个 Activity 锁定竖屏
+
+## 环境配置
+
+| 项 | 要求 |
+|---|---|
+| Android Studio | Narwhal 或更新版本（内含 JDK 17） |
+| JDK | 17（Gradle 与源码编译均使用 Java 17） |
+| Android SDK | Platform **API 37**（compileSdk 37）+ Build-Tools；建议同时安装 API 29+ 模拟器系统镜像 |
+| Gradle | 使用项目自带 Wrapper（**Gradle 9.6.0**，无需单独安装） |
+| 模拟器 | Medium Phone，API 29 及以上，1080×2400；建议 AVD Graphics 设为 **Hardware**（Software 软件渲染会明显卡顿） |
+| 真机 | Android 10（API 29）及以上，开启 USB 调试 |
+
+### 环境变量 / 本地配置模板
+
+项目本身不需要任何系统环境变量（JDK、SDK 由 Android Studio 管理）。首次构建前在项目根目录创建 `local.properties`：
+
+```properties
+## local.properties 模板（该文件不入库，仅本机有效）
+## Android SDK 路径，按实际安装位置修改
+sdk.dir=C:\\Users\\<你的用户名>\\AppData\\Local\\Android\\Sdk
+```
+
+AI 远程对话（可选）为**应用内运行时配置**，非编译期环境变量：进入「AI 消费助手」→ 右上角「API KEY」，填写：
+
+```text
+API KEY    : sk-xxxxxxxxxxxxxxxx        # 你的模型服务密钥，仅存本机 SharedPreferences
+Base URL   : https://api.example.com/v1/chat/completions   # OpenAI 兼容接口地址
+Model      : gpt-4o-mini                # 模型名
+```
+
+## 依赖清单
+
+| 依赖 | 版本 | 用途 |
+|---|---|---|
+| androidx.appcompat | 1.7.0 | 基础兼容组件 |
+| androidx.constraintlayout | 2.2.1 | 布局 |
+| androidx.recyclerview | 1.3.2 | 列表（对话、排行、历史、日历账单） |
+| androidx.room:room-runtime / room-compiler | 2.6.1 | Room 本地数据库（annotationProcessor） |
+| com.opencsv:opencsv | 5.9 | CSV 账单解析 |
+| com.tom-roush:pdfbox-android | 2.0.27.0 | PDF 账单文本提取 |
+| com.github.PhilJay:MPAndroidChart | v3.1.0 | 折线/柱状/饼图绘制（需 jitpack 仓库） |
+| junit | 4.13.2 | 单元测试（testImplementation） |
+
+仓库：`google()`、`mavenCentral()`、`https://jitpack.io`（已在 settings.gradle 配置，含对本机全局镜像脚本的兼容处理）。
+
+## 构建与运行
+
+```powershell
+# Windows（项目根目录）
+.\gradlew.bat assembleDebug          # 构建 debug 包 → app\build\outputs\apk\debug\app-debug.apk
+.\gradlew.bat installDebug           # 构建并安装到已连接设备/模拟器
+.\gradlew.bat testDebugUnitTest      # 运行单元测试
+```
+
+```bash
+# macOS / Linux
+./gradlew assembleDebug installDebug testDebugUnitTest
+```
+
+也可直接用 Android Studio 打开项目根目录，等待 Gradle Sync 完成后点击 Run。
+
+## 使用说明
+
+1. **记一笔**：主界面底部「手动记一笔」→ 选择支出/收入 → 填金额、分类、商户、日期时间 → 保存，主界面全部统计自动刷新
+2. **看图表**：主界面下滑查看每日消费折线与分类柱状图（图表内可左右拖动）；点击「查看消费明细」进入饼图 + 时间轴页
+3. **查日历**：主界面「消费日历」→ 点日期看当日收支与账单列表 → 每条账单可编辑/删除
+4. **设预算**：主界面预算输入框填写当月预算，超支后面板自动变为红白渐变警示
+5. **切月份**：图表区右上角「切换月份」，仅显示已有账单的月份
+6. **AI 助手**：主界面顶部「AI 消费建议」面板进入；账单类问题本地离线作答，配置 API KEY 后普通对话联网
+7. **导入账单**：主界面底部「导入账单」→ 粘贴 / CSV / PDF·XLSX 三种方式；导入记录在「历史」页可按批次删除
+
+## 项目结构
+
+```
+app/src/main/java/com/campusbill/app/
+├── MainActivity.java            # 主界面（预算/图表/入口聚合，onResume 自动刷新）
+├── AddBillActivity.java         # 记一笔        ├── EditBillActivity.java   # 编辑账单
+├── CalendarActivity.java        # 消费日历      ├── HistoryActivity.java    # 历史记录/导入批次
+├── ImportActivity.java          # 三种导入      ├── AiChatActivity.java     # AI 对话
+├── IncomeDetailActivity.java    # 收支明细（饼图+时间轴）
+├── MerchantRankActivity.java    # 商户排行
+├── data/                        # Room：BillEntity / BillDao / AppDatabase / DBHelper（单线程池+主线程回调）
+├── chart/                       # MPAndroidChart 封装、IncomeTimelineView 自定义时间轴
+├── chat/ai/                     # 本地规则引擎、AiRemoteClient（HttpURLConnection，仅 AI 页联网）
+└── parser/                      # 粘贴文本 / CSV / PDF / XLSX 解析与批次入库
+```
+
+## 界面预览
+
+| 主界面 | 消费明细 | 消费日历 | AI 助手 |
+|---|---|---|---|
+| ![main](screenshots/01_main_top.png) | ![detail](screenshots/03_expense_detail.png) | ![calendar](screenshots/04_calendar.png) | ![ai](screenshots/09_ai_chat.png) |
+
+更多截图见 [screenshots/](screenshots/) 目录。
+
+## 测试
+
+- 单元测试：`AiReplyTest`（本地 AI 规则引擎回复）
+- 已在 Android 17（API 37）模拟器完成全流程实机验证：181 条账单数据下增删改查、导入、月份切换、全部页面跳转与数据联动刷新均正常
