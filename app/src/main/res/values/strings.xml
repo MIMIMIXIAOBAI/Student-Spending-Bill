@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">学生消费账单</string>
+    <string name="main_title">智能消费账单助手</string>
+    <string name="main_subtitle">AI 帮你看懂每月生活消费</string>
+</resources>

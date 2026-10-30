@@ -1,0 +1,26 @@
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
+    }
+}
+
+// 兼容本机全局 Gradle 镜像脚本（会清空仓库列表），在此补充 MPAndroidChart 所需的 jitpack 仓库
+gradle.settingsEvaluated {
+    settings.dependencyResolutionManagement.repositories {
+        maven { url 'https://jitpack.io' }
+    }
+}
+
+rootProject.name = 'StudentSpendingBill'
+include ':app'

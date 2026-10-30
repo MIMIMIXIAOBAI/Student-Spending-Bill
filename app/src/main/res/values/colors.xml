@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 主色：校园蓝 -->
+    <color name="color_primary">#2F6FED</color>
+    <color name="color_primary_dark">#1E4FBD</color>
+    <color name="color_primary_light">#E8F0FF</color>
+
+    <!-- 语义色 -->
+    <color name="color_warning">#F0564A</color>
+    <color name="color_income">#34B37E</color>
+
+    <!-- 文本 -->
+    <color name="text_primary">#1F2430</color>
+    <color name="text_secondary">#6B7280</color>
+    <color name="text_hint">#9AA3AF</color>
+
+    <!-- 背景与卡片 -->
+    <color name="bg_page">#F6F8FC</color>
+    <color name="bg_card">#FFFFFF</color>
+    <color name="divider">#E5E9F2</color>
+
+    <!-- 渐变起始/结束（浅色） -->
+    <color name="gradient_blue_start">#E8F0FF</color>
+    <color name="gradient_blue_end">#FFFFFF</color>
+    <color name="gradient_red_start">#FFECEA</color>
+    <color name="gradient_red_end">#FFFFFF</color>
+</resources>
