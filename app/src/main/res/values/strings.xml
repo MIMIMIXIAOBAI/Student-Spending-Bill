@@ -96,7 +96,8 @@
     <string name="edit_save_failed">保存失败，请重试</string>
     <string name="edit_load_failed">账单不存在或已被删除</string>
     <string name="edit_privacy_tip">账单数据仅存本机，不会上传到任何服务器</string>
-    <string name="add_bill_title">手动记一笔</string>
+    <string name="add_bill_title">记一笔</string>
+    <string name="add_bill_save_success">保存成功</string>
 
     <!-- 通用 -->
     <string name="ai_chat_title">AI 消费助手</string>

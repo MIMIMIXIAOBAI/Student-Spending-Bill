@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- 账单分类（收入与支出共用） -->
+    <!-- 账单分类（收入与支出共用，编辑账单页使用） -->
     <string-array name="bill_categories">
         <item>餐饮</item>
         <item>购物</item>
@@ -15,6 +15,30 @@
         <item>兼职</item>
         <item>奖学金</item>
         <item>红包</item>
+        <item>其他</item>
+    </string-array>
+
+    <!-- 支出分类（手动记一笔） -->
+    <string-array name="expense_categories">
+        <item>餐饮</item>
+        <item>购物</item>
+        <item>交通</item>
+        <item>日用</item>
+        <item>娱乐</item>
+        <item>学习</item>
+        <item>通讯</item>
+        <item>医疗</item>
+        <item>转账</item>
+        <item>其他</item>
+    </string-array>
+
+    <!-- 收入分类（手动记一笔） -->
+    <string-array name="income_categories">
+        <item>生活费</item>
+        <item>兼职</item>
+        <item>奖学金</item>
+        <item>红包</item>
+        <item>转账</item>
         <item>其他</item>
     </string-array>
 </resources>

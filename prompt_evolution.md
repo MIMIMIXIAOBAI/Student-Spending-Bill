@@ -360,3 +360,22 @@
 - app/src/main/res/drawable/bg_toggle_selected.xml
 - app/src/main/res/values/strings.xml
 - prompt_evolution.md
+
+【序号】11
+【时间】2026-10-31
+【任务名称】手动记一笔页面开发
+【完成情况】已完成：①顶部标题栏「‹ 返回 + 记一笔」；②顶部支出 / 收入分段切换，切换类型时分类下拉对应换成支出分类（餐饮、购物、交通、日用、娱乐、学习、通讯、医疗、转账、其他）或收入分类（生活费、兼职、奖学金、红包、转账、其他），选中项糖果渐变高亮；③金额、商户、备注输入框，金额沿用空值 / 非法 / ≤0 校验；④日期时间默认今日与当前时间，点击唤起系统 DatePickerDialog 与 24 小时制 TimePickerDialog；⑤底部「保存」按钮，校验通过后构建 BillEntity（含 createTime）插入本机 Room，提示「保存成功」并返回主界面；⑥按钮下方小字「账单数据仅存本机，不会上传到任何服务器」，并做手势导航栏底部内边距避让。模拟器实机验证：进入页面默认 支出 / 餐饮 / 2026-10-30 / 19:41:56；切到收入后下拉变为生活费、兼职、奖学金、红包、转账、其他，再切回支出恢复餐饮等 10 项；空金额点保存提示「请输入正确的金额」；填写金额 12.34、商户 TESTSHOP、备注 TESTNOTE 保存后返回主界面并提示「保存成功」，日历 2026-10-30 显示支出 ¥12.34 与「餐饮 / -¥12.34 / TESTSHOP / 19:41:56」；随后删除该测试账单并重启应用，本月支出 ¥432.26、收入 ¥336.50、排行 Top1 ¥130.78 均恢复原值，数据库回到 181 条。
+【修改/新增文件】
+- app/src/main/java/com/campusbill/app/AddBillActivity.java
+- app/src/main/res/layout/activity_add_bill.xml
+- app/src/main/res/values/arrays.xml
+- app/src/main/res/values/strings.xml
+- prompt_evolution.md
+
+【序号】11-修复
+【时间】2026-10-31
+【任务名称】修复手动记一笔保存后主界面数据不刷新
+【完成情况】已修复：MainActivity 只在 onCreate 与切换月份时读取数据，从记一笔页返回时不会重新加载，导致「收入分类详情」小字、每日消费折线图、分类消费柱状图（以及日历金额、排行、预算）保持旧值。现为主界面增加 onResume 重载：使用 resumedOnce 标记跳过首次 onCreate 后的重复读取，之后每次从子页面（记一笔 / 日历 / 明细等）返回都会调用 loadMonthData 重新读取当月账单并重绘图表与汇总。模拟器实机验证：新增一笔收入 ¥100 后返回主界面（不重启）「本月收入」由 ¥856.50 变为 ¥956.50；新增一笔支出 ¥50 后「消费日历」金额由 ¥943.26 变为 ¥993.26、分类柱状图餐饮金额同步增加、每日折线图数据同步；删除这两笔测试账单后返回主界面恢复为收入 ¥856.50、支出 ¥943.26、Top1 DEMO2 ¥511.00，图表与对比文案同步回退。
+【修改文件】
+- app/src/main/java/com/campusbill/app/MainActivity.java
+- prompt_evolution.md

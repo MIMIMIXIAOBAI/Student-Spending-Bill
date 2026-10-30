@@ -62,6 +62,8 @@ public class MainActivity extends AppCompatActivity {
     private DBHelper dbHelper;
     /** 当前面板展示的月份 */
     private YearMonth selectedMonth;
+    /** 是否已经完成首次 onCreate 加载，避免 onResume 重复读取 */
+    private boolean resumedOnce;
     /** 当前月份的支出合计（真实数据或示例数据） */
     private double monthExpense;
     /** 当前月份的收入合计 */
@@ -131,6 +133,17 @@ public class MainActivity extends AppCompatActivity {
         binding.tvChartMonth.setText(selectedMonth.toString());
         updateBudgetPanel();
         loadMonthData();
+    }
+
+    /** 从子页面（记账 / 日历 / 明细等）返回时重新读取当月数据，保证面板与图表同步 */
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (resumedOnce) {
+            loadMonthData();
+        } else {
+            resumedOnce = true;
+        }
     }
 
     /** 点击右上角：弹窗列出本机账单中出现过的月份，由用户选择要查看的月份 */
