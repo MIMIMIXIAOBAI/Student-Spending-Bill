@@ -3,8 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="8dp"
-    android:background="@drawable/bg_y2k_glass"
-    android:elevation="2dp"
+    android:background="@drawable/bg_card"
     android:gravity="center_vertical"
     android:orientation="horizontal"
     android:padding="12dp">
@@ -19,8 +18,6 @@
             android:id="@+id/tvDate"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:fontFamily="monospace"
-            android:letterSpacing="0.04"
             android:textColor="@color/text_hint"
             android:textSize="10sp" />
 
@@ -31,7 +28,7 @@
             android:layout_marginTop="2dp"
             android:ellipsize="end"
             android:maxLines="1"
-            android:textColor="@color/candy_ink"
+            android:textColor="@color/text_primary"
             android:textSize="14sp"
             android:textStyle="bold" />
 
@@ -72,14 +69,14 @@
                 android:id="@+id/btnEdit"
                 android:layout_width="wrap_content"
                 android:layout_height="32dp"
-                android:background="@drawable/bg_y2k_chip"
+                android:background="@drawable/bg_quick_chip"
                 android:clickable="true"
                 android:focusable="true"
                 android:gravity="center"
                 android:paddingStart="10dp"
                 android:paddingEnd="10dp"
                 android:text="@string/bill_edit"
-                android:textColor="@color/y2k_violet"
+                android:textColor="@color/color_primary"
                 android:textSize="11sp"
                 android:textStyle="bold" />
 

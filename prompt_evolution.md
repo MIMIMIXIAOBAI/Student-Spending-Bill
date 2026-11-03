@@ -446,3 +446,34 @@
 - app/src/main/java/com/campusbill/app/AiChatActivity.java（queryMonth 按主页选中月查询）
 - app/src/main/res/values/strings.xml（新增 ai_panel_advice 模板）
 - prompt_evolution.md
+
+## 2026-11-04 UI Refresh P0（设计 Token + 统一页底）
+
+### [Trae] 回复
+按 P0 提示词在本地分支 `feat/ui-tokens-p0` 落地：统一近纸页底、废除 History `bg_y2k_page` 例外、锁定圆角档（card 20 / input 16 / pill 999 / small 12）、主 CTA 保持校园蓝 `#2F6FED`，粉彩仅点缀；内容面板 drawable 改为近白奶油，玻璃保留给 AI 输入条等浮层。未改业务逻辑与 Gradle 依赖。
+
+### [DSH] 回复
+本批为 Trae/本地代理执行的 P0 Token 提交；P2/P3 图表与 AI 对话重排待后续批次。
+
+## 2026-11-04 UI Refresh P1（首页 + 图表重排）
+
+### [Trae] 回复
+在 `feat/ui-tokens-p0` 继续 P1：拆开主页 AI/预算叠层为两张近白奶油独立卡；图表区近白面、降饱和 chart_* 序列色；月份选择与历史入口改为轻胶囊；快捷入口均匀间距+描边卡；底部「手动记一笔」改校园蓝 `bg_button_primary`。未改 Room/业务逻辑与 Gradle。请在 Android Studio 同步后看主页留白与层级。
+
+### [DSH] 回复
+本批仍为 Trae/本地代理；P2（记一笔）与 P3（AI 对话 / History）待后续批次接入。
+
+## 2026-11-04 UI Refresh P2（表单 / 日历 / 导入）
+### [Trae] 回复
+本批由 DSH/本地代理执行；P0 Token 与 P1 首页已在分支上。
+
+### [DSH] 回复
+在 eat/ui-tokens-p0 落地 P2：记一笔 / 编辑账单表单改为近白奶油卡 + 白底输入框（radius_input 16）+ 校园蓝实心主 CTA；支出/收入分段选中为粉/薄荷软底点缀；日历选中日改为淡蓝 color_primary_light（去掉大声糖果块）；导入页说明卡 + ghost 次级按钮；日历当日列表 item 同步 token 间距。未改 Room / 导入解析 / 业务逻辑 / Gradle；未动 AI 对话与 History 深改（留给 P3）。请在 Android Studio 同步后查看记一笔、编辑、日历、导入页。
+
+## 2026-11-04 UI Refresh P3（AI 对话 / History）
+### [Trae] 回复
+本批由 DSH/本地代理执行；P0–P2 已在分支上。
+
+### [DSH] 回复
+在 feat/ui-tokens-p0 落地 P3：AI 对话用户气泡极淡粉彩、AI 气泡白底描边、底部玻璃输入条 + 校园蓝发送 CTA、快捷提问 soft pill；History 维持统一页底、筛选 chip 改选中蓝底、搜索/卡片/清空按钮对齐 token；MerchantRankAdapter 奖牌色改 @color；收入详情/商户排行浅通 bg_card。未改 Room/AI 业务逻辑/Gradle。视觉刷新批次 P0–P3 完成。请在 Android Studio 同步后查看 AI 对话与历史页。
+

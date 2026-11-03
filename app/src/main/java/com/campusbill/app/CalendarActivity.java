@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.campusbill.app.data.BillEntity;
 import com.campusbill.app.data.DBHelper;
 import com.campusbill.app.databinding.ActivityCalendarBinding;
+import com.campusbill.app.ui.BottomTabHelper;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -61,6 +62,7 @@ public class CalendarActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityCalendarBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        BottomTabHelper.bind(this, BottomTabHelper.Tab.CALENDAR);
         binding.btnBack.setOnClickListener(v -> finish());
 
         String monthExtra = getIntent().getStringExtra(EXTRA_MONTH);
@@ -221,7 +223,7 @@ public class CalendarActivity extends AppCompatActivity {
         cell.setLayoutParams(lp);
         cell.setGravity(Gravity.CENTER);
         cell.setTextSize(13f);
-        cell.setTextColor(ContextCompat.getColor(this, R.color.candy_ink));
+        cell.setTextColor(ContextCompat.getColor(this, R.color.text_primary));
         return cell;
     }
 

@@ -22,6 +22,7 @@ import com.campusbill.app.data.BillEntity;
 import com.campusbill.app.data.DBHelper;
 import com.campusbill.app.data.ImportBatchEntity;
 import com.campusbill.app.databinding.ActivityHistoryBinding;
+import com.campusbill.app.ui.BottomTabHelper;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -51,6 +52,7 @@ public class HistoryActivity extends AppCompatActivity {
       super.onCreate(savedInstanceState);
       this.binding = ActivityHistoryBinding.inflate(this.getLayoutInflater());
       this.setContentView(this.binding.getRoot());
+      BottomTabHelper.bind(this, BottomTabHelper.Tab.HISTORY);
       this.binding.btnBack.setOnClickListener((v) -> this.finish());
       this.adapter = new HistoryAdapter(new HistoryAdapter.Listener() {
          public void onClearBatch(HistoryAdapter.Batch batch) {
@@ -142,12 +144,12 @@ public class HistoryActivity extends AppCompatActivity {
 
    private void applyChipStyle(TextView chip, boolean selected) {
       if (selected) {
-         chip.setBackgroundResource(drawable.bg_y2k_pill);
-         chip.setTextColor(ContextCompat.getColor(this, color.candy_ink));
+         chip.setBackgroundResource(drawable.bg_chip_selected);
+         chip.setTextColor(ContextCompat.getColor(this, color.color_primary));
          chip.setTypeface(Typeface.DEFAULT_BOLD);
       } else {
-         chip.setBackgroundResource(drawable.bg_y2k_chip);
-         chip.setTextColor(ContextCompat.getColor(this, color.y2k_violet));
+         chip.setBackgroundResource(drawable.bg_quick_chip);
+         chip.setTextColor(ContextCompat.getColor(this, color.text_secondary));
          chip.setTypeface(Typeface.DEFAULT);
       }
 

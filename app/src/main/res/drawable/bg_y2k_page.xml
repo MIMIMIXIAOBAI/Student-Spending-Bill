@@ -1,10 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
-    <gradient
-        android:angle="315"
-        android:centerColor="@color/y2k_sky_mid"
-        android:endColor="@color/y2k_mint_end"
-        android:startColor="@color/y2k_pink_start"
-        android:type="linear" />
+    <solid android:color="@color/bg_page" />
 </shape>

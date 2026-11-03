@@ -19,6 +19,8 @@ import com.campusbill.app.chat.ai.ReplyGenerator;
 import com.campusbill.app.data.BillEntity;
 import com.campusbill.app.data.DBHelper;
 import com.campusbill.app.databinding.ActivityMainBinding;
+import com.campusbill.app.ui.BottomTabHelper;
+import com.campusbill.app.ui.PressScaleHelper;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.BarLineChartBase;
 import com.github.mikephil.charting.charts.LineChart;
@@ -59,6 +61,12 @@ public class MainActivity extends AppCompatActivity {
       super.onCreate(savedInstanceState);
       this.binding = ActivityMainBinding.inflate(this.getLayoutInflater());
       this.setContentView(this.binding.getRoot());
+      PressScaleHelper.attach(this.binding.btnAddBill);
+      PressScaleHelper.attach(this.binding.panelAi);
+      PressScaleHelper.attach(this.binding.panelIncome);
+      PressScaleHelper.attach(this.binding.panelRank);
+      PressScaleHelper.attach(this.binding.panelCalendar);
+      BottomTabHelper.bind(this, BottomTabHelper.Tab.HOME);
       this.dbHelper = DBHelper.getInstance(this);
       this.selectedMonth = YearMonth.now();
       double savedBudget = BillAnalysisUtils.getBudget(this);
@@ -323,7 +331,7 @@ public class MainActivity extends AppCompatActivity {
    private void setupDailyChart(float[] daily) {
       LineChart chart = this.binding.chartDaily;
       chart.setNoDataText(this.getString(this.emptyState ? string.main_empty_hint : string.chart_no_data));
-      chart.setNoDataTextColor(this.getColor(color.candy_ink));
+      chart.setNoDataTextColor(this.getColor(color.text_secondary));
       if (daily != null && daily.length != 0) {
          float maxValue = 0.0F;
 
@@ -343,15 +351,15 @@ public class MainActivity extends AppCompatActivity {
 
          LineDataSet dataSet = new LineDataSet(entries, "");
          dataSet.setMode(Mode.HORIZONTAL_BEZIER);
-         dataSet.setColor(this.getColor(color.candy_pink));
+         dataSet.setColor(this.getColor(color.chart_pink));
          dataSet.setLineWidth(2.6F);
-         dataSet.setCircleColor(this.getColor(color.candy_pink));
+         dataSet.setCircleColor(this.getColor(color.chart_pink));
          dataSet.setCircleRadius(3.5F);
          dataSet.setCircleHoleRadius(1.6F);
          dataSet.setCircleHoleColor(this.getColor(color.candy_white));
          dataSet.setDrawValues(false);
          dataSet.setDrawFilled(true);
-         dataSet.setFillDrawable(new GradientDrawable(Orientation.TOP_BOTTOM, new int[]{this.getColor(color.candy_pink_soft), 16777215}));
+         dataSet.setFillDrawable(new GradientDrawable(Orientation.TOP_BOTTOM, new int[]{this.getColor(color.chart_pink_soft), 16777215}));
          chart.getXAxis().setValueFormatter(new IndexAxisValueFormatter(labels));
          chart.setData(new LineData(new ILineDataSet[]{dataSet}));
          chart.setVisibleXRangeMaximum(7.0F);
@@ -368,7 +376,7 @@ public class MainActivity extends AppCompatActivity {
       BarChart chart = this.binding.chartCategory;
       chart.setRenderer(new CandyBarChartRenderer(chart, chart.getAnimator(), chart.getViewPortHandler()));
       chart.setNoDataText(this.getString(this.emptyState ? string.main_empty_hint : string.chart_no_data));
-      chart.setNoDataTextColor(this.getColor(color.candy_ink));
+      chart.setNoDataTextColor(this.getColor(color.text_secondary));
       if (names != null && names.length != 0) {
          float maxValue = 0.0F;
 
@@ -384,7 +392,7 @@ public class MainActivity extends AppCompatActivity {
          }
 
          BarDataSet dataSet = new BarDataSet(entries, "");
-         dataSet.setColors(new int[]{this.getColor(color.candy_pink), this.getColor(color.candy_mint), this.getColor(color.candy_sky), this.getColor(color.candy_lemon), this.getColor(color.candy_lilac), this.getColor(color.candy_peach), this.getColor(color.candy_aqua), this.getColor(color.candy_coral), this.getColor(color.candy_gum)});
+         dataSet.setColors(new int[]{this.getColor(color.chart_pink), this.getColor(color.chart_mint), this.getColor(color.chart_sky), this.getColor(color.chart_lemon), this.getColor(color.chart_lilac), this.getColor(color.chart_peach), this.getColor(color.chart_aqua), this.getColor(color.chart_coral), this.getColor(color.chart_gum)});
          dataSet.setDrawValues(false);
          dataSet.setHighLightAlpha(0);
          BarData data = new BarData(new IBarDataSet[]{dataSet});
@@ -461,7 +469,7 @@ public class MainActivity extends AppCompatActivity {
       double budget = this.parseAmount(this.binding.etBudget.getText().toString());
       this.binding.tvTotalBudget.setText(this.getString(string.currency_format, new Object[]{this.formatAmount(budget)}));
       if (this.emptyState) {
-         this.binding.panelBudget.setBackgroundResource(drawable.bg_gradient_blue);
+         this.binding.panelBudget.setBackgroundResource(drawable.bg_budget_ok);
          this.binding.tvRemainLabel.setText(string.label_remaining);
          this.binding.tvRemainLabel.setTextColor(this.getColor(color.text_secondary));
          this.binding.tvRemainValue.setTextColor(this.getColor(color.color_primary));
@@ -469,13 +477,13 @@ public class MainActivity extends AppCompatActivity {
       } else {
          double remaining = budget - this.monthExpense;
          if (remaining >= (double)0.0F) {
-            this.binding.panelBudget.setBackgroundResource(drawable.bg_gradient_blue);
+            this.binding.panelBudget.setBackgroundResource(drawable.bg_budget_ok);
             this.binding.tvRemainLabel.setText(string.label_remaining);
             this.binding.tvRemainLabel.setTextColor(this.getColor(color.text_secondary));
             this.binding.tvRemainValue.setTextColor(this.getColor(color.color_primary));
             this.binding.tvRemainValue.setText(this.getString(string.currency_format, new Object[]{this.formatAmount(remaining)}));
          } else {
-            this.binding.panelBudget.setBackgroundResource(drawable.bg_gradient_red);
+            this.binding.panelBudget.setBackgroundResource(drawable.bg_budget_over);
             this.binding.tvRemainLabel.setText(string.label_remaining);
             this.binding.tvRemainLabel.setTextColor(this.getColor(color.color_warning));
             this.binding.tvRemainValue.setTextColor(this.getColor(color.color_warning));

@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.campusbill.app.data.MerchantAmount;
@@ -19,10 +20,6 @@ import java.util.Locale;
  * 商户消费排行列表：按金额降序，前三名放大字号并使用金色 / 银色 / 铜色名次徽标。
  */
 public class MerchantRankAdapter extends RecyclerView.Adapter<MerchantRankAdapter.Holder> {
-
-    private static final int COLOR_GOLD = 0xFFFFF0C2;
-    private static final int COLOR_SILVER = 0xFFE7EEF8;
-    private static final int COLOR_BRONZE = 0xFFFFE0C9;
 
     private final List<MerchantAmount> items = new ArrayList<>();
     private double total;
@@ -58,7 +55,8 @@ public class MerchantRankAdapter extends RecyclerView.Adapter<MerchantRankAdapte
         holder.binding.tvRank.setText(String.format(Locale.CHINA, "%d", rank));
         if (top) {
             holder.binding.tvRank.setBackgroundResource(R.drawable.bg_rank_badge);
-            int badge = rank == 1 ? COLOR_GOLD : rank == 2 ? COLOR_SILVER : COLOR_BRONZE;
+            int badgeRes = rank == 1 ? R.color.rank_gold : rank == 2 ? R.color.rank_silver : R.color.rank_bronze;
+            int badge = ContextCompat.getColor(holder.binding.getRoot().getContext(), badgeRes);
             holder.binding.tvRank.getBackground().mutate().setTint(badge);
             holder.binding.tvRank.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f);
             holder.binding.tvMerchantName.setTextSize(TypedValue.COMPLEX_UNIT_SP, 17f);

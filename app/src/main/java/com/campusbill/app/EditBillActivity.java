@@ -16,6 +16,7 @@ import androidx.core.view.WindowInsetsCompat;
 import com.campusbill.app.data.BillEntity;
 import com.campusbill.app.data.DBHelper;
 import com.campusbill.app.databinding.ActivityEditBillBinding;
+import com.campusbill.app.ui.PressScaleHelper;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -46,6 +47,7 @@ public class EditBillActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityEditBillBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        PressScaleHelper.attach(binding.btnSave);
         binding.btnBack.setOnClickListener(v -> finish());
 
         setupCategorySpinner();
@@ -188,8 +190,11 @@ public class EditBillActivity extends AppCompatActivity {
 
     private void applyToggleStyle(TextView target, boolean selected) {
         if (selected) {
-            target.setBackgroundResource(R.drawable.bg_toggle_selected);
-            target.setTextColor(ContextCompat.getColor(this, R.color.candy_ink));
+            boolean income = target.getId() == R.id.tvTypeIncome;
+            target.setBackgroundResource(income
+                    ? R.drawable.bg_toggle_income
+                    : R.drawable.bg_toggle_expense);
+            target.setTextColor(ContextCompat.getColor(this, R.color.color_primary));
             target.setTypeface(Typeface.DEFAULT_BOLD);
         } else {
             target.setBackground(null);

@@ -11,10 +11,10 @@
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingStart="8dp"
-        android:paddingTop="32dp"
-        android:paddingEnd="8dp"
-        android:paddingBottom="8dp">
+        android:paddingStart="@dimen/space_sm"
+        android:paddingTop="@dimen/space_xl"
+        android:paddingEnd="@dimen/space_sm"
+        android:paddingBottom="@dimen/space_sm">
 
         <TextView
             android:id="@+id/btnBack"
@@ -26,7 +26,7 @@
             android:focusable="true"
             android:gravity="center"
             android:text="@string/chat_back"
-            android:textColor="@color/candy_ink"
+            android:textColor="@color/text_primary"
             android:textSize="26sp" />
 
         <TextView
@@ -36,8 +36,8 @@
             android:layout_weight="1"
             android:gravity="center"
             android:text="@string/add_bill_title"
-            android:textColor="@color/candy_ink"
-            android:textSize="18sp"
+            android:textColor="@color/text_primary"
+            android:textSize="@dimen/text_card_title"
             android:textStyle="bold" />
 
         <View
@@ -51,34 +51,36 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:fillViewport="true"
+        android:overScrollMode="never"
         android:scrollbars="none">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingStart="16dp"
-            android:paddingTop="4dp"
-            android:paddingEnd="16dp"
-            android:paddingBottom="16dp">
+            android:paddingStart="@dimen/page_padding"
+            android:paddingTop="@dimen/space_xs"
+            android:paddingEnd="@dimen/page_padding"
+            android:paddingBottom="@dimen/card_padding">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/bg_candy_glass"
+                android:background="@drawable/bg_card"
+                android:elevation="0dp"
                 android:orientation="vertical"
-                android:padding="16dp">
+                android:padding="@dimen/card_padding">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/edit_bill_type_label"
                     android:textColor="@color/text_secondary"
-                    android:textSize="12sp" />
+                    android:textSize="@dimen/text_caption" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
+                    android:layout_marginTop="@dimen/space_sm"
                     android:background="@drawable/bg_input"
                     android:orientation="horizontal"
                     android:padding="4dp">
@@ -93,7 +95,7 @@
                         android:gravity="center"
                         android:text="@string/bill_type_expense"
                         android:textColor="@color/text_secondary"
-                        android:textSize="14sp" />
+                        android:textSize="@dimen/text_body" />
 
                     <TextView
                         android:id="@+id/tvTypeIncome"
@@ -105,46 +107,46 @@
                         android:gravity="center"
                         android:text="@string/bill_type_income"
                         android:textColor="@color/text_secondary"
-                        android:textSize="14sp" />
+                        android:textSize="@dimen/text_body" />
 
                 </LinearLayout>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="14dp"
+                    android:layout_marginTop="@dimen/card_padding"
                     android:text="@string/edit_bill_amount_label"
                     android:textColor="@color/text_secondary"
-                    android:textSize="12sp" />
+                    android:textSize="@dimen/text_caption" />
 
                 <EditText
                     android:id="@+id/etAmount"
                     android:layout_width="match_parent"
                     android:layout_height="48dp"
-                    android:layout_marginTop="6dp"
+                    android:layout_marginTop="@dimen/space_sm"
                     android:background="@drawable/bg_input"
                     android:hint="@string/edit_bill_amount_hint"
                     android:inputType="numberDecimal"
                     android:maxLength="10"
-                    android:paddingStart="12dp"
-                    android:paddingEnd="12dp"
+                    android:paddingStart="@dimen/space_md"
+                    android:paddingEnd="@dimen/space_md"
                     android:singleLine="true"
-                    android:textColor="@color/candy_ink"
+                    android:textColor="@color/text_primary"
                     android:textSize="17sp"
                     android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="14dp"
+                    android:layout_marginTop="@dimen/card_padding"
                     android:text="@string/edit_bill_category_label"
                     android:textColor="@color/text_secondary"
-                    android:textSize="12sp" />
+                    android:textSize="@dimen/text_caption" />
 
                 <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="48dp"
-                    android:layout_marginTop="6dp"
+                    android:layout_marginTop="@dimen/space_sm"
                     android:background="@drawable/bg_input">
 
                     <Spinner
@@ -152,8 +154,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:background="@null"
-                        android:paddingStart="12dp"
-                        android:paddingEnd="8dp"
+                        android:paddingStart="@dimen/space_md"
+                        android:paddingEnd="@dimen/space_sm"
                         android:spinnerMode="dropdown" />
 
                 </FrameLayout>
@@ -161,61 +163,61 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="14dp"
+                    android:layout_marginTop="@dimen/card_padding"
                     android:text="@string/edit_bill_merchant_label"
                     android:textColor="@color/text_secondary"
-                    android:textSize="12sp" />
+                    android:textSize="@dimen/text_caption" />
 
                 <EditText
                     android:id="@+id/etMerchant"
                     android:layout_width="match_parent"
                     android:layout_height="48dp"
-                    android:layout_marginTop="6dp"
+                    android:layout_marginTop="@dimen/space_sm"
                     android:background="@drawable/bg_input"
                     android:hint="@string/edit_bill_optional_hint"
                     android:inputType="text"
                     android:maxLength="40"
-                    android:paddingStart="12dp"
-                    android:paddingEnd="12dp"
+                    android:paddingStart="@dimen/space_md"
+                    android:paddingEnd="@dimen/space_md"
                     android:singleLine="true"
-                    android:textColor="@color/candy_ink"
-                    android:textSize="14sp" />
+                    android:textColor="@color/text_primary"
+                    android:textSize="@dimen/text_body" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="14dp"
+                    android:layout_marginTop="@dimen/card_padding"
                     android:text="@string/edit_bill_remark_label"
                     android:textColor="@color/text_secondary"
-                    android:textSize="12sp" />
+                    android:textSize="@dimen/text_caption" />
 
                 <EditText
                     android:id="@+id/etRemark"
                     android:layout_width="match_parent"
                     android:layout_height="48dp"
-                    android:layout_marginTop="6dp"
+                    android:layout_marginTop="@dimen/space_sm"
                     android:background="@drawable/bg_input"
                     android:hint="@string/edit_bill_optional_hint"
                     android:inputType="text"
                     android:maxLength="60"
-                    android:paddingStart="12dp"
-                    android:paddingEnd="12dp"
+                    android:paddingStart="@dimen/space_md"
+                    android:paddingEnd="@dimen/space_md"
                     android:singleLine="true"
-                    android:textColor="@color/candy_ink"
-                    android:textSize="14sp" />
+                    android:textColor="@color/text_primary"
+                    android:textSize="@dimen/text_body" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="14dp"
+                    android:layout_marginTop="@dimen/card_padding"
                     android:text="@string/edit_bill_datetime_label"
                     android:textColor="@color/text_secondary"
-                    android:textSize="12sp" />
+                    android:textSize="@dimen/text_caption" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
+                    android:layout_marginTop="@dimen/space_sm"
                     android:orientation="horizontal">
 
                     <TextView
@@ -227,25 +229,25 @@
                         android:clickable="true"
                         android:focusable="true"
                         android:gravity="center_vertical"
-                        android:paddingStart="12dp"
-                        android:paddingEnd="12dp"
-                        android:textColor="@color/candy_ink"
-                        android:textSize="14sp" />
+                        android:paddingStart="@dimen/space_md"
+                        android:paddingEnd="@dimen/space_md"
+                        android:textColor="@color/text_primary"
+                        android:textSize="@dimen/text_body" />
 
                     <TextView
                         android:id="@+id/tvTime"
                         android:layout_width="0dp"
                         android:layout_height="48dp"
-                        android:layout_marginStart="10dp"
+                        android:layout_marginStart="@dimen/space_md"
                         android:layout_weight="1"
                         android:background="@drawable/bg_input"
                         android:clickable="true"
                         android:focusable="true"
                         android:gravity="center_vertical"
-                        android:paddingStart="12dp"
-                        android:paddingEnd="12dp"
-                        android:textColor="@color/candy_ink"
-                        android:textSize="14sp" />
+                        android:paddingStart="@dimen/space_md"
+                        android:paddingEnd="@dimen/space_md"
+                        android:textColor="@color/text_primary"
+                        android:textSize="@dimen/text_body" />
 
                 </LinearLayout>
 
@@ -259,27 +261,28 @@
         android:id="@+id/btnSave"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:background="@drawable/bg_button_candy"
+        android:layout_marginStart="@dimen/page_padding"
+        android:layout_marginTop="@dimen/space_sm"
+        android:layout_marginEnd="@dimen/page_padding"
+        android:background="@drawable/bg_button_primary"
         android:clickable="true"
-        android:elevation="4dp"
+        android:elevation="0dp"
         android:focusable="true"
         android:gravity="center"
         android:text="@string/btn_save"
-        android:textColor="@color/candy_ink"
-        android:textSize="16sp"
+        android:textColor="@android:color/white"
+        android:textSize="@dimen/text_card_title"
         android:textStyle="bold" />
 
     <TextView
         android:id="@+id/tvPrivacyTip"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingStart="16dp"
-        android:paddingTop="10dp"
-        android:paddingEnd="16dp"
-        android:paddingBottom="16dp"
         android:gravity="center"
+        android:paddingStart="@dimen/page_padding"
+        android:paddingTop="@dimen/space_md"
+        android:paddingEnd="@dimen/page_padding"
+        android:paddingBottom="@dimen/card_padding"
         android:text="@string/edit_privacy_tip"
         android:textColor="@color/text_hint"
         android:textSize="11sp" />

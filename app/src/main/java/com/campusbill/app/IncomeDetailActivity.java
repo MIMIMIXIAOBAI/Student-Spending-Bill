@@ -142,7 +142,7 @@ public class IncomeDetailActivity extends AppCompatActivity {
         chart.setHoleRadius(52f);
         chart.setTransparentCircleRadius(56f);
         chart.setCenterTextSize(14f);
-        chart.setCenterTextColor(ContextCompat.getColor(this, R.color.candy_ink));
+        chart.setCenterTextColor(ContextCompat.getColor(this, R.color.text_primary));
 
         pieCategories.clear();
         pieAmounts.clear();
@@ -191,7 +191,7 @@ public class IncomeDetailActivity extends AppCompatActivity {
         // 点击后选中切片向外弹出（凸起），再次点击空白处复原
         dataSet.setSelectionShift(Utils.convertDpToPixel(12f));
         dataSet.setValueTextSize(10f);
-        dataSet.setValueTextColor(ContextCompat.getColor(this, R.color.candy_ink));
+        dataSet.setValueTextColor(ContextCompat.getColor(this, R.color.text_primary));
         // 占比过小的切片不显示数字，避免文字互相重叠（图例中仍有完整占比）
         dataSet.setValueFormatter(new ValueFormatter() {
             @Override

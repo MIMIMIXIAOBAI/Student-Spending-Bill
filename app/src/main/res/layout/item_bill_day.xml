@@ -3,14 +3,15 @@
     android:id="@+id/billRow"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="8dp"
+    android:layout_marginBottom="@dimen/space_sm"
     android:background="@drawable/bg_bill_expense"
     android:gravity="center_vertical"
+    android:minHeight="48dp"
     android:orientation="horizontal"
-    android:paddingStart="12dp"
-    android:paddingTop="10dp"
-    android:paddingEnd="8dp"
-    android:paddingBottom="10dp">
+    android:paddingStart="@dimen/space_md"
+    android:paddingTop="@dimen/space_md"
+    android:paddingEnd="@dimen/space_sm"
+    android:paddingBottom="@dimen/space_md">
 
     <LinearLayout
         android:layout_width="0dp"
@@ -30,8 +31,8 @@
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
                 android:singleLine="true"
-                android:textColor="@color/candy_ink"
-                android:textSize="14sp"
+                android:textColor="@color/text_primary"
+                android:textSize="@dimen/text_body"
                 android:textStyle="bold" />
 
             <View
@@ -44,7 +45,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="@color/color_warning"
-                android:textSize="16sp"
+                android:textSize="@dimen/text_card_title"
                 android:textStyle="bold" />
 
         </LinearLayout>
@@ -57,7 +58,7 @@
             android:ellipsize="end"
             android:singleLine="true"
             android:textColor="@color/text_secondary"
-            android:textSize="12sp" />
+            android:textSize="@dimen/text_caption" />
 
         <TextView
             android:id="@+id/tvBillTime"
@@ -72,7 +73,7 @@
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
+        android:layout_marginStart="@dimen/space_sm"
         android:orientation="vertical">
 
         <TextView
@@ -85,7 +86,7 @@
             android:gravity="center"
             android:text="@string/bill_edit"
             android:textColor="@color/color_primary"
-            android:textSize="12sp" />
+            android:textSize="@dimen/text_caption" />
 
         <TextView
             android:id="@+id/tvBillDelete"
@@ -97,7 +98,7 @@
             android:gravity="center"
             android:text="@string/bill_delete"
             android:textColor="@color/color_warning"
-            android:textSize="12sp" />
+            android:textSize="@dimen/text_caption" />
 
     </LinearLayout>
 
