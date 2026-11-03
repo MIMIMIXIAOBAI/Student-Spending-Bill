@@ -18,9 +18,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:ellipsize="end"
-            android:letterSpacing="0.02"
             android:maxLines="1"
-            android:textColor="@color/candy_ink"
+            android:textColor="@color/text_primary"
             android:textSize="14sp"
             android:textStyle="bold" />
 
@@ -29,13 +28,12 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:background="@drawable/bg_y2k_chip"
-            android:fontFamily="monospace"
+            android:background="@drawable/bg_quick_chip"
             android:paddingStart="9dp"
             android:paddingTop="2dp"
             android:paddingEnd="9dp"
             android:paddingBottom="2dp"
-            android:textColor="@color/y2k_violet"
+            android:textColor="@color/color_primary"
             android:textSize="10sp"
             android:textStyle="bold" />
 
@@ -54,8 +52,6 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:ellipsize="end"
-            android:fontFamily="monospace"
-            android:letterSpacing="0.03"
             android:maxLines="1"
             android:textColor="@color/text_hint"
             android:textSize="10sp" />
@@ -65,7 +61,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:background="@drawable/bg_y2k_pill_ghost"
+            android:background="@drawable/bg_button_ghost"
             android:clickable="true"
             android:focusable="true"
             android:paddingStart="10dp"
@@ -73,7 +69,7 @@
             android:paddingEnd="10dp"
             android:paddingBottom="4dp"
             android:text="@string/history_clear_batch"
-            android:textColor="@color/y2k_violet"
+            android:textColor="@color/color_warning"
             android:textSize="10sp"
             android:textStyle="bold" />
 

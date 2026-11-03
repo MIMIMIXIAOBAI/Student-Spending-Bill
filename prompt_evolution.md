@@ -470,3 +470,10 @@
 ### [DSH] 回复
 在 eat/ui-tokens-p0 落地 P2：记一笔 / 编辑账单表单改为近白奶油卡 + 白底输入框（radius_input 16）+ 校园蓝实心主 CTA；支出/收入分段选中为粉/薄荷软底点缀；日历选中日改为淡蓝 color_primary_light（去掉大声糖果块）；导入页说明卡 + ghost 次级按钮；日历当日列表 item 同步 token 间距。未改 Room / 导入解析 / 业务逻辑 / Gradle；未动 AI 对话与 History 深改（留给 P3）。请在 Android Studio 同步后查看记一笔、编辑、日历、导入页。
 
+## 2026-11-04 UI Refresh P3（AI 对话 / History）
+### [Trae] 回复
+本批由 DSH/本地代理执行；P0–P2 已在分支上。
+
+### [DSH] 回复
+在 feat/ui-tokens-p0 落地 P3：AI 对话用户气泡极淡粉彩、AI 气泡白底描边、底部玻璃输入条 + 校园蓝发送 CTA、快捷提问 soft pill；History 维持统一页底、筛选 chip 改选中蓝底、搜索/卡片/清空按钮对齐 token；MerchantRankAdapter 奖牌色改 @color；收入详情/商户排行浅通 bg_card。未改 Room/AI 业务逻辑/Gradle。视觉刷新批次 P0–P3 完成。请在 Android Studio 同步后查看 AI 对话与历史页。
+

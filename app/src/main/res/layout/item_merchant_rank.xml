@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="10dp"
-    android:background="@drawable/bg_candy_glass"
+    android:background="@drawable/bg_card"
     android:gravity="center_vertical"
     android:orientation="horizontal"
     android:paddingStart="14dp"
@@ -17,7 +17,7 @@
         android:layout_height="40dp"
         android:background="@drawable/bg_rank_badge_normal"
         android:gravity="center"
-        android:textColor="@color/candy_ink"
+        android:textColor="@color/text_primary"
         android:textSize="15sp"
         android:textStyle="bold" />
 
@@ -34,7 +34,7 @@
             android:layout_height="wrap_content"
             android:ellipsize="end"
             android:singleLine="true"
-            android:textColor="@color/candy_ink"
+            android:textColor="@color/text_primary"
             android:textSize="14sp" />
 
         <ProgressBar
@@ -44,7 +44,7 @@
             android:layout_height="5dp"
             android:layout_marginTop="7dp"
             android:max="1000"
-            android:progressBackgroundTint="#33C6B2FF"
+            android:progressBackgroundTint="@color/candy_line"
             android:progressTint="@color/candy_sky" />
 
     </LinearLayout>
@@ -60,7 +60,7 @@
             android:id="@+id/tvMerchantAmount"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/candy_ink"
+            android:textColor="@color/text_primary"
             android:textSize="15sp" />
 
         <TextView

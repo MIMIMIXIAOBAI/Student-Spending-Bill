@@ -87,4 +87,12 @@
     <color name="chart_coral">#E5A09A</color>
     <color name="chart_gum">#E08EAE</color>
     <color name="chart_pink_soft">#33E891B8</color>
+
+    <!-- AI 用户气泡：极淡粉彩点缀 -->
+    <color name="chat_user_bubble">#FFF2F8</color>
+
+    <!-- 商户排行奖牌底色 -->
+    <color name="rank_gold">#FFF0C2</color>
+    <color name="rank_silver">#E7EEF8</color>
+    <color name="rank_bronze">#FFE0C9</color>
 </resources>
