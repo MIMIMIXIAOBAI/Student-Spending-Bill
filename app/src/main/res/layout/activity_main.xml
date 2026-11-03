@@ -51,7 +51,7 @@
                     android:paddingEnd="14dp"
                     android:paddingBottom="7dp"
                     android:text="@string/main_history_entry"
-                    android:textColor="@color/candy_ink"
+                    android:textColor="@color/text_secondary"
                     android:textSize="@dimen/text_caption" />
 
             </LinearLayout>

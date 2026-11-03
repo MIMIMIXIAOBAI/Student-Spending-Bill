@@ -16,6 +16,7 @@ import androidx.core.view.WindowInsetsCompat;
 import com.campusbill.app.data.BillEntity;
 import com.campusbill.app.data.DBHelper;
 import com.campusbill.app.databinding.ActivityEditBillBinding;
+import com.campusbill.app.ui.PressScaleHelper;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -46,6 +47,7 @@ public class EditBillActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityEditBillBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        PressScaleHelper.attach(binding.btnSave);
         binding.btnBack.setOnClickListener(v -> finish());
 
         setupCategorySpinner();

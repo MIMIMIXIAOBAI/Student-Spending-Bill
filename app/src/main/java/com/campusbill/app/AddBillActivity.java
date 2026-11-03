@@ -16,6 +16,7 @@ import androidx.core.view.WindowInsetsCompat;
 import com.campusbill.app.data.BillEntity;
 import com.campusbill.app.data.DBHelper;
 import com.campusbill.app.databinding.ActivityAddBillBinding;
+import com.campusbill.app.ui.PressScaleHelper;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -45,6 +46,7 @@ public class AddBillActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityAddBillBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        PressScaleHelper.attach(binding.btnSave);
         binding.btnBack.setOnClickListener(v -> finish());
 
         expenseCategories = getResources().getStringArray(R.array.expense_categories);
