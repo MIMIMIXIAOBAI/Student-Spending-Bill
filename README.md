@@ -4,7 +4,7 @@
 
 - 包名：`com.campusbill.app`
 - 开发语言：**纯 Java**（无任何 Kotlin 代码）
-- UI 实现：XML 布局 + ViewBinding，竖屏手机适配，Y2K 浅色塑料质感风格
+- UI 实现：XML 布局 + ViewBinding，竖屏手机适配；视觉为「苹果式骨架 × Y2K 材质点缀」（校园蓝主 CTA #2F6FED，粉/薄荷/柠檬仅作点缀；全 App 统一近纸页底，内容卡近白奶油，玻璃仅用于顶栏/浮层）
 - 最低系统：Android 10（API 29），targetSdk 36
 
 ## 功能一览

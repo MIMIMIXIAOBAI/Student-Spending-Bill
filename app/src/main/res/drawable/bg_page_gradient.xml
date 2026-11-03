@@ -1,37 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-
-    <!-- 淡蓝 → 白 渐变基底（angle 270：顶部淡蓝，向下渐白） -->
-    <item>
-        <shape android:shape="rectangle">
-            <gradient
-                android:angle="270"
-                android:endColor="@color/bg_card"
-                android:startColor="@color/page_blue" />
-        </shape>
-    </item>
-
-    <!-- 气泡 -->
-    <item
-        android:width="200dp"
-        android:height="200dp"
-        android:gravity="top|end"
-        android:right="12dp"
-        android:top="90dp">
-        <shape android:shape="oval">
-            <solid android:color="@color/page_bubble" />
-        </shape>
-    </item>
-
-    <item
-        android:width="120dp"
-        android:height="120dp"
-        android:gravity="bottom|start"
-        android:bottom="36dp"
-        android:left="8dp">
-        <shape android:shape="oval">
-            <solid android:color="@color/page_bubble" />
-        </shape>
-    </item>
-
-</layer-list>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <!-- 全 App 统一近纸页底：极淡奶油粉 → 薄荷白 -->
+    <gradient
+        android:angle="270"
+        android:endColor="@color/page_bg_end"
+        android:startColor="@color/page_bg_start"
+        android:type="linear" />
+</shape>

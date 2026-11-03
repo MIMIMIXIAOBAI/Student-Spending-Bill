@@ -446,3 +446,12 @@
 - app/src/main/java/com/campusbill/app/AiChatActivity.java（queryMonth 按主页选中月查询）
 - app/src/main/res/values/strings.xml（新增 ai_panel_advice 模板）
 - prompt_evolution.md
+
+## 2026-11-04 UI Refresh P0（设计 Token + 统一页底）
+
+### [Trae] 回复
+按 P0 提示词在本地分支 `feat/ui-tokens-p0` 落地：统一近纸页底、废除 History `bg_y2k_page` 例外、锁定圆角档（card 20 / input 16 / pill 999 / small 12）、主 CTA 保持校园蓝 `#2F6FED`，粉彩仅点缀；内容面板 drawable 改为近白奶油，玻璃保留给 AI 输入条等浮层。未改业务逻辑与 Gradle 依赖。
+
+### [DSH] 回复
+本批为 Trae/本地代理执行的 P0 Token 提交；P2/P3 图表与 AI 对话重排待后续批次。
+

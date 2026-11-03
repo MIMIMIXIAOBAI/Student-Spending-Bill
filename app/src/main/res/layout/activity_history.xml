@@ -3,7 +3,7 @@
     android:id="@+id/historyRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_y2k_page"
+    android:background="@drawable/bg_page_gradient"
     android:orientation="vertical">
 
     <!-- 顶部标题栏：Y2K 全息渐变背景 -->
