@@ -19,6 +19,7 @@ import com.campusbill.app.chat.ai.ReplyGenerator;
 import com.campusbill.app.data.BillEntity;
 import com.campusbill.app.data.DBHelper;
 import com.campusbill.app.databinding.ActivityMainBinding;
+import com.campusbill.app.ui.BottomTabHelper;
 import com.campusbill.app.ui.PressScaleHelper;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.BarLineChartBase;
@@ -65,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
       PressScaleHelper.attach(this.binding.panelIncome);
       PressScaleHelper.attach(this.binding.panelRank);
       PressScaleHelper.attach(this.binding.panelCalendar);
+      BottomTabHelper.bind(this, BottomTabHelper.Tab.HOME);
       this.dbHelper = DBHelper.getInstance(this);
       this.selectedMonth = YearMonth.now();
       double savedBudget = BillAnalysisUtils.getBudget(this);

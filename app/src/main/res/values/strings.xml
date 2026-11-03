@@ -185,4 +185,9 @@
     <string name="main_empty_hint">暂无账单数据，请先导入账单</string>
     <string name="main_entry_empty">请先导入账单</string>
     <string name="main_history_entry">历史</string>
+
+    <string name="tab_home">首页</string>
+    <string name="tab_calendar">日历</string>
+    <string name="tab_ai">AI</string>
+    <string name="tab_history">历史</string>
 </resources>

@@ -231,4 +231,6 @@
 
     </FrameLayout>
 
+    <include layout="@layout/include_bottom_tabs" />
+
 </LinearLayout>

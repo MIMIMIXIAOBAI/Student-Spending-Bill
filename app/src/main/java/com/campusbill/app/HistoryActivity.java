@@ -22,6 +22,7 @@ import com.campusbill.app.data.BillEntity;
 import com.campusbill.app.data.DBHelper;
 import com.campusbill.app.data.ImportBatchEntity;
 import com.campusbill.app.databinding.ActivityHistoryBinding;
+import com.campusbill.app.ui.BottomTabHelper;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -51,6 +52,7 @@ public class HistoryActivity extends AppCompatActivity {
       super.onCreate(savedInstanceState);
       this.binding = ActivityHistoryBinding.inflate(this.getLayoutInflater());
       this.setContentView(this.binding.getRoot());
+      BottomTabHelper.bind(this, BottomTabHelper.Tab.HISTORY);
       this.binding.btnBack.setOnClickListener((v) -> this.finish());
       this.adapter = new HistoryAdapter(new HistoryAdapter.Listener() {
          public void onClearBatch(HistoryAdapter.Batch batch) {

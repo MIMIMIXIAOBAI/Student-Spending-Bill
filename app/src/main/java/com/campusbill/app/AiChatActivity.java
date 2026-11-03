@@ -23,6 +23,7 @@ import com.campusbill.app.data.CategoryAmount;
 import com.campusbill.app.data.DBHelper;
 import com.campusbill.app.data.MerchantAmount;
 import com.campusbill.app.databinding.ActivityAiChatBinding;
+import com.campusbill.app.ui.BottomTabHelper;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -45,6 +46,7 @@ public class AiChatActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityAiChatBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        BottomTabHelper.bind(this, BottomTabHelper.Tab.AI);
 
         String fromMain = getIntent().getStringExtra("extra_month");
         if (fromMain != null && !fromMain.trim().isEmpty()) {
