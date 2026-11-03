@@ -16,78 +16,68 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="@dimen/page_padding">
+            android:paddingStart="@dimen/page_padding"
+            android:paddingTop="@dimen/space_md"
+            android:paddingEnd="@dimen/page_padding"
+            android:paddingBottom="@dimen/space_lg">
 
-        <!-- 顶部标题区：右上角历史记录入口（Y2K 渐变胶囊） -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/space_md"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
+            <!-- 顶部标题：一屏一个大标题 + 轻胶囊入口 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_sm"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tvTitle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/main_title"
+                    android:textColor="@color/text_primary"
+                    android:textSize="@dimen/text_title"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/btnHistory"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_soft_capsule"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:paddingStart="14dp"
+                    android:paddingTop="7dp"
+                    android:paddingEnd="14dp"
+                    android:paddingBottom="7dp"
+                    android:text="@string/main_history_entry"
+                    android:textColor="@color/candy_ink"
+                    android:textSize="@dimen/text_caption" />
+
+            </LinearLayout>
 
             <TextView
-                android:id="@+id/tvTitle"
-                android:layout_width="0dp"
+                android:id="@+id/tvSubtitle"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/main_title"
-                android:textColor="@color/text_primary"
-                android:textSize="26sp"
-                android:textStyle="bold" />
+                android:layout_marginTop="@dimen/space_xs"
+                android:text="@string/main_subtitle"
+                android:textColor="@color/text_secondary"
+                android:textSize="@dimen/text_subtitle" />
 
-            <TextView
-                android:id="@+id/btnHistory"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/bg_y2k_pill"
-                android:clickable="true"
-                android:elevation="2dp"
-                android:focusable="true"
-                android:paddingStart="14dp"
-                android:paddingTop="6dp"
-                android:paddingEnd="14dp"
-                android:paddingBottom="6dp"
-                android:text="@string/main_history_entry"
-                android:textColor="@color/candy_ink"
-                android:textSize="12sp"
-                android:textStyle="bold" />
-
-        </LinearLayout>
-
-        <TextView
-            android:id="@+id/tvSubtitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/space_xs"
-            android:text="@string/main_subtitle"
-            android:textColor="@color/text_secondary"
-            android:textSize="@dimen/text_subtitle" />
-
-        <!-- 玻璃拟态面板：AI 建议占 7 成，预算占 3 成 -->
-        <LinearLayout
-            android:id="@+id/panelCard"
-            android:layout_width="match_parent"
-            android:layout_height="440dp"
-            android:layout_marginTop="@dimen/space_lg"
-            android:background="@drawable/bg_glass_panel"
-            android:elevation="8dp"
-            android:orientation="vertical"
-            android:padding="16dp">
-
-            <!-- AI 建议区（玻璃层，占 7 成） -->
+            <!-- AI 建议：独立近白奶油卡 -->
             <LinearLayout
                 android:id="@+id/panelAi"
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="7"
-                android:background="@drawable/bg_glass_ai"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_xl"
+                android:background="@drawable/bg_card"
                 android:clickable="true"
+                android:elevation="2dp"
                 android:focusable="true"
                 android:foreground="?attr/selectableItemBackground"
-                android:gravity="center_vertical"
                 android:orientation="vertical"
-                android:padding="20dp">
+                android:padding="@dimen/card_padding">
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -106,11 +96,11 @@
                     android:id="@+id/tvAiSummary"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="14dp"
-                    android:lineSpacingExtra="6dp"
+                    android:layout_marginTop="@dimen/space_md"
+                    android:lineSpacingExtra="4dp"
                     android:text="@string/ai_panel_summary"
                     android:textColor="@color/text_primary"
-                    android:textSize="15sp" />
+                    android:textSize="@dimen/text_body" />
 
                 <TextView
                     android:layout_width="match_parent"
@@ -123,35 +113,28 @@
 
             </LinearLayout>
 
-            <!-- 分隔标线 -->
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginTop="10dp"
-                android:layout_marginBottom="10dp"
-                android:background="@color/glass_divider" />
-
-            <!-- 预算区（占 3 成，背景随预算剩余动态切换） -->
+            <!-- 预算：独立奶油卡，数字更大；状态色靠文案与描边 -->
             <LinearLayout
                 android:id="@+id/panelBudget"
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="3"
-                android:background="@drawable/bg_gradient_blue"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/card_margin_vertical"
+                android:background="@drawable/bg_budget_ok"
+                android:elevation="2dp"
                 android:orientation="vertical"
-                android:padding="10dp">
+                android:padding="@dimen/card_padding">
 
                 <EditText
                     android:id="@+id/etBudget"
                     android:layout_width="match_parent"
-                    android:layout_height="40dp"
+                    android:layout_height="44dp"
                     android:background="@drawable/bg_input"
                     android:hint="@string/budget_hint"
                     android:imeOptions="actionDone"
                     android:inputType="numberDecimal"
                     android:maxLines="1"
-                    android:paddingStart="10dp"
-                    android:paddingEnd="10dp"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
                     android:textColor="@color/text_primary"
                     android:textColorHint="@color/text_hint"
                     android:textSize="@dimen/text_body" />
@@ -159,7 +142,7 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
+                    android:layout_marginTop="@dimen/space_md"
                     android:orientation="horizontal">
 
                     <LinearLayout
@@ -179,8 +162,9 @@
                             android:id="@+id/tvTotalBudget"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_xs"
                             android:textColor="@color/text_primary"
-                            android:textSize="18sp"
+                            android:textSize="22sp"
                             android:textStyle="bold" />
 
                     </LinearLayout>
@@ -203,8 +187,9 @@
                             android:id="@+id/tvRemainValue"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_xs"
                             android:textColor="@color/color_primary"
-                            android:textSize="18sp"
+                            android:textSize="22sp"
                             android:textStyle="bold" />
 
                     </LinearLayout>
@@ -213,131 +198,128 @@
 
             </LinearLayout>
 
-        </LinearLayout>
-
-        <!-- 消费图表面板 -->
-        <LinearLayout
-            android:id="@+id/panelChart"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/space_md"
-            android:background="@drawable/bg_candy_panel"
-            android:elevation="6dp"
-            android:orientation="vertical"
-            android:padding="@dimen/space_lg">
-
+            <!-- 消费图表：近白奶油面，序列色留给折线/柱 -->
             <LinearLayout
+                android:id="@+id/panelChart"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
+                android:layout_marginTop="@dimen/space_xl"
+                android:background="@drawable/bg_card"
+                android:elevation="2dp"
+                android:orientation="vertical"
+                android:padding="@dimen/space_lg">
 
-                <TextView
-                    android:id="@+id/tvChartMonth"
-                    android:layout_width="0dp"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:textColor="@color/candy_ink"
-                    android:textSize="17sp"
-                    android:textStyle="bold" />
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
 
-                <!-- 右上角：点击弹出月份选择 -->
+                    <TextView
+                        android:id="@+id/tvChartMonth"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:textColor="@color/text_primary"
+                        android:textSize="@dimen/text_card_title"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/btnMonthPicker"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_soft_capsule"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:paddingStart="12dp"
+                        android:paddingTop="6dp"
+                        android:paddingEnd="12dp"
+                        android:paddingBottom="6dp"
+                        android:text="@string/month_picker_label"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="@dimen/text_caption" />
+
+                </LinearLayout>
+
                 <TextView
-                    android:id="@+id/btnMonthPicker"
+                    android:id="@+id/tvMonthCompare"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_xs"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="@dimen/text_caption" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="@dimen/space_md"
+                    android:background="@color/divider" />
+
+                <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/bg_candy_pill"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:paddingStart="12dp"
-                    android:paddingTop="6dp"
-                    android:paddingEnd="12dp"
-                    android:paddingBottom="6dp"
-                    android:text="@string/month_picker_label"
-                    android:textColor="@color/candy_ink"
+                    android:layout_marginTop="@dimen/space_md"
+                    android:text="@string/chart_daily_title"
+                    android:textColor="@color/text_secondary"
                     android:textSize="@dimen/text_caption"
                     android:textStyle="bold" />
 
+                <com.github.mikephil.charting.charts.LineChart
+                    android:id="@+id/chartDaily"
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:layout_marginTop="@dimen/space_sm"
+                    android:background="@drawable/bg_chart_surface"
+                    android:padding="8dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_lg"
+                    android:text="@string/chart_category_title"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="@dimen/text_caption"
+                    android:textStyle="bold" />
+
+                <com.github.mikephil.charting.charts.BarChart
+                    android:id="@+id/chartCategory"
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:layout_marginTop="@dimen/space_sm"
+                    android:background="@drawable/bg_chart_surface"
+                    android:padding="8dp" />
+
+                <TextView
+                    android:id="@+id/btnViewDetail"
+                    android:layout_width="match_parent"
+                    android:layout_height="46dp"
+                    android:layout_marginTop="@dimen/space_lg"
+                    android:background="@drawable/bg_button_ghost"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"
+                    android:gravity="center"
+                    android:text="@string/btn_view_detail"
+                    android:textColor="@color/color_primary"
+                    android:textSize="@dimen/text_body" />
+
             </LinearLayout>
 
-            <TextView
-                android:id="@+id/tvMonthCompare"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:textColor="@color/text_secondary"
-                android:textSize="@dimen/text_caption" />
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginTop="12dp"
-                android:background="@color/candy_line" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:text="@string/chart_daily_title"
-                android:textColor="@color/candy_ink"
-                android:textSize="13sp"
-                android:textStyle="bold" />
-
-            <com.github.mikephil.charting.charts.LineChart
-                android:id="@+id/chartDaily"
-                android:layout_width="match_parent"
-                android:layout_height="200dp"
-                android:layout_marginTop="6dp"
-                android:background="@drawable/bg_candy_glass"
-                android:padding="8dp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="@string/chart_category_title"
-                android:textColor="@color/candy_ink"
-                android:textSize="13sp"
-                android:textStyle="bold" />
-
-            <com.github.mikephil.charting.charts.BarChart
-                android:id="@+id/chartCategory"
-                android:layout_width="match_parent"
-                android:layout_height="200dp"
-                android:layout_marginTop="6dp"
-                android:background="@drawable/bg_candy_glass"
-                android:padding="8dp" />
-
-            <TextView
-                android:id="@+id/btnViewDetail"
-                android:layout_width="match_parent"
-                android:layout_height="46dp"
-                android:layout_marginTop="14dp"
-                android:background="@drawable/bg_button_candy"
-                android:clickable="true"
-                android:focusable="true"
-                android:foreground="?attr/selectableItemBackground"
-                android:gravity="center"
-                android:text="@string/btn_view_detail"
-                android:textColor="@color/candy_ink"
-                android:textSize="@dimen/text_body"
-                android:textStyle="bold" />
-
-        </LinearLayout>
-
-            <!-- 收入分类详情入口 -->
+            <!-- 快捷入口：均匀间距 + 描边奶油卡 -->
             <LinearLayout
                 android:id="@+id/panelIncome"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/space_md"
-                android:background="@drawable/bg_candy_glass"
+                android:layout_marginTop="@dimen/space_xl"
+                android:background="@drawable/bg_card"
                 android:clickable="true"
-                android:elevation="2dp"
+                android:elevation="1dp"
                 android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
                 android:gravity="center_vertical"
+                android:minHeight="56dp"
                 android:orientation="horizontal"
-                android:padding="16dp">
+                android:padding="@dimen/card_padding">
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -349,15 +331,15 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/entry_income_title"
-                        android:textColor="@color/candy_ink"
-                        android:textSize="15sp"
+                        android:textColor="@color/text_primary"
+                        android:textSize="@dimen/text_card_title"
                         android:textStyle="bold" />
 
                     <TextView
                         android:id="@+id/tvIncomePreview"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
+                        android:layout_marginTop="@dimen/space_xs"
                         android:textColor="@color/text_secondary"
                         android:textSize="@dimen/text_caption" />
                 </LinearLayout>
@@ -366,23 +348,24 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/entry_more"
-                    android:textColor="@color/candy_ink"
+                    android:textColor="@color/text_hint"
                     android:textSize="18sp" />
             </LinearLayout>
 
-            <!-- 本月消费排行 Top1 入口 -->
             <LinearLayout
                 android:id="@+id/panelRank"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/space_sm"
-                android:background="@drawable/bg_candy_glass"
+                android:layout_marginTop="@dimen/card_margin_vertical"
+                android:background="@drawable/bg_card"
                 android:clickable="true"
-                android:elevation="2dp"
+                android:elevation="1dp"
                 android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
                 android:gravity="center_vertical"
+                android:minHeight="56dp"
                 android:orientation="horizontal"
-                android:padding="16dp">
+                android:padding="@dimen/card_padding">
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -394,15 +377,15 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/entry_rank_title"
-                        android:textColor="@color/candy_ink"
-                        android:textSize="15sp"
+                        android:textColor="@color/text_primary"
+                        android:textSize="@dimen/text_card_title"
                         android:textStyle="bold" />
 
                     <TextView
                         android:id="@+id/tvRankPreview"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
+                        android:layout_marginTop="@dimen/space_xs"
                         android:textColor="@color/text_secondary"
                         android:textSize="@dimen/text_caption" />
                 </LinearLayout>
@@ -411,47 +394,48 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/entry_more"
-                    android:textColor="@color/candy_ink"
+                    android:textColor="@color/text_hint"
                     android:textSize="18sp" />
             </LinearLayout>
 
-            <!-- 消费日历入口 -->
             <LinearLayout
                 android:id="@+id/panelCalendar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/space_sm"
-                android:background="@drawable/bg_candy_glass"
+                android:layout_marginTop="@dimen/card_margin_vertical"
+                android:background="@drawable/bg_card"
                 android:clickable="true"
-                android:elevation="2dp"
+                android:elevation="1dp"
                 android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
                 android:gravity="center_vertical"
+                android:minHeight="56dp"
                 android:orientation="horizontal"
-                android:padding="16dp">
+                android:padding="@dimen/card_padding">
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="@string/entry_calendar_title"
-                    android:textColor="@color/candy_ink"
-                    android:textSize="15sp"
+                    android:textColor="@color/text_primary"
+                    android:textSize="@dimen/text_card_title"
                     android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/tvCalendarAmount"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginEnd="8dp"
-                    android:textColor="@color/candy_ink"
-                    android:textSize="15sp"
+                    android:layout_marginEnd="@dimen/space_sm"
+                    android:textColor="@color/text_primary"
+                    android:textSize="@dimen/text_card_title"
                     android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/entry_more"
-                    android:textColor="@color/candy_ink"
+                    android:textColor="@color/text_hint"
                     android:textSize="18sp" />
             </LinearLayout>
 
@@ -459,44 +443,44 @@
 
     </androidx.core.widget.NestedScrollView>
 
-    <!-- 页面底部固定：手动记一笔 -->
+    <!-- 底部主 CTA：校园蓝 -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@android:color/transparent"
         android:orientation="vertical"
         android:paddingStart="@dimen/page_padding"
-        android:paddingTop="8dp"
+        android:paddingTop="@dimen/space_sm"
         android:paddingEnd="@dimen/page_padding"
-        android:paddingBottom="16dp">
+        android:paddingBottom="@dimen/space_lg">
 
         <TextView
             android:id="@+id/btnAddBill"
             android:layout_width="match_parent"
             android:layout_height="52dp"
-            android:background="@drawable/bg_button_candy"
+            android:background="@drawable/bg_button_primary"
             android:clickable="true"
-            android:elevation="8dp"
+            android:elevation="4dp"
             android:focusable="true"
             android:foreground="?attr/selectableItemBackground"
             android:gravity="center"
             android:text="@string/btn_add_bill"
-            android:textColor="@color/candy_ink"
+            android:textColor="@android:color/white"
             android:textSize="16sp"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/btnImport"
             android:layout_width="match_parent"
-            android:layout_height="36dp"
-            android:layout_marginTop="4dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="@dimen/space_xs"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:clickable="true"
             android:focusable="true"
             android:gravity="center"
             android:text="@string/btn_import_bill"
             android:textColor="@color/text_secondary"
-            android:textSize="13sp" />
+            android:textSize="@dimen/text_subtitle" />
     </LinearLayout>
 
 </LinearLayout>

@@ -455,3 +455,10 @@
 ### [DSH] 回复
 本批为 Trae/本地代理执行的 P0 Token 提交；P2/P3 图表与 AI 对话重排待后续批次。
 
+## 2026-11-04 UI Refresh P1（首页 + 图表重排）
+
+### [Trae] 回复
+在 `feat/ui-tokens-p0` 继续 P1：拆开主页 AI/预算叠层为两张近白奶油独立卡；图表区近白面、降饱和 chart_* 序列色；月份选择与历史入口改为轻胶囊；快捷入口均匀间距+描边卡；底部「手动记一笔」改校园蓝 `bg_button_primary`。未改 Room/业务逻辑与 Gradle。请在 Android Studio 同步后看主页留白与层级。
+
+### [DSH] 回复
+本批仍为 Trae/本地代理；P2（记一笔）与 P3（AI 对话 / History）待后续批次接入。

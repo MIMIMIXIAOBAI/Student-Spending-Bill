@@ -74,4 +74,16 @@
 
     <!-- 主按钮顶部高光 -->
     <color name="button_primary_highlight">#33FFFFFF</color>
+
+    <!-- 图表序列：降饱和糖果色（只给折线/柱，不铺面板） -->
+    <color name="chart_pink">#E891B8</color>
+    <color name="chart_mint">#78C9B6</color>
+    <color name="chart_sky">#86B8DE</color>
+    <color name="chart_lemon">#E6D48A</color>
+    <color name="chart_lilac">#B09FDE</color>
+    <color name="chart_peach">#E5B396</color>
+    <color name="chart_aqua">#7AD4CD</color>
+    <color name="chart_coral">#E5A09A</color>
+    <color name="chart_gum">#E08EAE</color>
+    <color name="chart_pink_soft">#33E891B8</color>
 </resources>
