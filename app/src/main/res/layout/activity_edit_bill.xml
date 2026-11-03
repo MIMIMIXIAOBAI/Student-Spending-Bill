@@ -66,7 +66,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_card"
-                android:elevation="1dp"
+                android:elevation="0dp"
                 android:orientation="vertical"
                 android:padding="@dimen/card_padding">
 
@@ -266,7 +266,7 @@
         android:layout_marginEnd="@dimen/page_padding"
         android:background="@drawable/bg_button_primary"
         android:clickable="true"
-        android:elevation="2dp"
+        android:elevation="0dp"
         android:focusable="true"
         android:gravity="center"
         android:text="@string/btn_save"

@@ -44,8 +44,8 @@
             android:layout_height="5dp"
             android:layout_marginTop="7dp"
             android:max="1000"
-            android:progressBackgroundTint="@color/candy_line"
-            android:progressTint="@color/candy_sky" />
+            android:progressBackgroundTint="@color/separator"
+            android:progressTint="@color/color_sky" />
 
     </LinearLayout>
 

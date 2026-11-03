@@ -18,6 +18,7 @@ import com.campusbill.app.data.BillEntity;
 import com.campusbill.app.data.CategoryClassifier;
 import com.campusbill.app.data.DBHelper;
 import com.campusbill.app.databinding.ActivityImportBinding;
+import com.campusbill.app.ui.PressScaleHelper;
 import com.campusbill.app.imports.BillCsvParser;
 import com.campusbill.app.imports.BillPasteParser;
 import com.campusbill.app.imports.BillPdfParser;
@@ -42,6 +43,9 @@ public class ImportActivity extends AppCompatActivity {
       super.onCreate(savedInstanceState);
       this.binding = ActivityImportBinding.inflate(this.getLayoutInflater());
       this.setContentView(this.binding.getRoot());
+      PressScaleHelper.attach(this.binding.btnPasteImport);
+      PressScaleHelper.attach(this.binding.btnImportCsv);
+      PressScaleHelper.attach(this.binding.btnImportPdfXlsx);
       this.binding.btnBack.setOnClickListener((v) -> this.finish());
       PDFBoxResourceLoader.init(this.getApplicationContext());
       this.csvPicker = this.registerForActivityResult(new ActivityResultContracts.OpenDocument(), (uri) -> {

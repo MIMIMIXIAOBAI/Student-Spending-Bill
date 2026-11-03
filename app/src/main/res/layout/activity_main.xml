@@ -460,7 +460,7 @@
             android:layout_height="52dp"
             android:background="@drawable/bg_button_primary"
             android:clickable="true"
-            android:elevation="4dp"
+            android:elevation="0dp"
             android:focusable="true"
             android:foreground="?attr/selectableItemBackground"
             android:gravity="center"

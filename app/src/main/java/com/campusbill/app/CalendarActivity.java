@@ -223,7 +223,7 @@ public class CalendarActivity extends AppCompatActivity {
         cell.setLayoutParams(lp);
         cell.setGravity(Gravity.CENTER);
         cell.setTextSize(13f);
-        cell.setTextColor(ContextCompat.getColor(this, R.color.candy_ink));
+        cell.setTextColor(ContextCompat.getColor(this, R.color.text_primary));
         return cell;
     }
 

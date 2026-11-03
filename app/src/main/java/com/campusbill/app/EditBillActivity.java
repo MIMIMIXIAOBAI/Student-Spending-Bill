@@ -194,7 +194,7 @@ public class EditBillActivity extends AppCompatActivity {
             target.setBackgroundResource(income
                     ? R.drawable.bg_toggle_income
                     : R.drawable.bg_toggle_expense);
-            target.setTextColor(ContextCompat.getColor(this, R.color.text_primary));
+            target.setTextColor(ContextCompat.getColor(this, R.color.color_primary));
             target.setTypeface(Typeface.DEFAULT_BOLD);
         } else {
             target.setBackground(null);
