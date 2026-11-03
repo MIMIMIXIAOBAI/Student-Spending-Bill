@@ -462,3 +462,11 @@
 
 ### [DSH] 回复
 本批仍为 Trae/本地代理；P2（记一笔）与 P3（AI 对话 / History）待后续批次接入。
+
+## 2026-11-04 UI Refresh P2（表单 / 日历 / 导入）
+### [Trae] 回复
+本批由 DSH/本地代理执行；P0 Token 与 P1 首页已在分支上。
+
+### [DSH] 回复
+在 eat/ui-tokens-p0 落地 P2：记一笔 / 编辑账单表单改为近白奶油卡 + 白底输入框（radius_input 16）+ 校园蓝实心主 CTA；支出/收入分段选中为粉/薄荷软底点缀；日历选中日改为淡蓝 color_primary_light（去掉大声糖果块）；导入页说明卡 + ghost 次级按钮；日历当日列表 item 同步 token 间距。未改 Room / 导入解析 / 业务逻辑 / Gradle；未动 AI 对话与 History 深改（留给 P3）。请在 Android Studio 同步后查看记一笔、编辑、日历、导入页。
+

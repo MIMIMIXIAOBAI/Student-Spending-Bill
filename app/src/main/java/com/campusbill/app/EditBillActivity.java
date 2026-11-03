@@ -188,8 +188,11 @@ public class EditBillActivity extends AppCompatActivity {
 
     private void applyToggleStyle(TextView target, boolean selected) {
         if (selected) {
-            target.setBackgroundResource(R.drawable.bg_toggle_selected);
-            target.setTextColor(ContextCompat.getColor(this, R.color.candy_ink));
+            boolean income = target.getId() == R.id.tvTypeIncome;
+            target.setBackgroundResource(income
+                    ? R.drawable.bg_toggle_income
+                    : R.drawable.bg_toggle_expense);
+            target.setTextColor(ContextCompat.getColor(this, R.color.text_primary));
             target.setTypeface(Typeface.DEFAULT_BOLD);
         } else {
             target.setBackground(null);
