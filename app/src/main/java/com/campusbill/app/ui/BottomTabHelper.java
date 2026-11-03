@@ -60,7 +60,9 @@ public final class BottomTabHelper {
             return;
         }
         Intent intent = new Intent(activity, target.destination);
-        intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
+                | Intent.FLAG_ACTIVITY_SINGLE_TOP
+                | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         if (target == Tab.CALENDAR || target == Tab.AI) {
             String month = activity.getIntent().getStringExtra(EXTRA_MONTH);
             if (month != null && !month.trim().isEmpty()) {
