@@ -600,3 +600,14 @@
 【修改/新增文件】
 - docs/assistant/README.md
 - prompt_evolution.md
+
+【序号】33
+【时间】2026-11-11
+【任务名称】涉及账单必须先查本机（含导入与手动记录）再回答；未指定时间用 period=all
+【完成情况】主管已冻进本轮（文档已按冻结稿补完，工程待 Trae 按此改 PR #3）：涉及账单或消费的问题，必须先查本机 Room 里的真实账单再回答，金额、笔数、商户和分类只能来自本轮 query_spend 的结果，不能口算或编。查账范围包括用户历史导入和手动记下的全部记录，和记账页是同一本账。用户指定了时间就按现有区间查；没指定、或问历史/整体习惯/消费建议时，用 period=all 查全部记录，合计和分类汇总要完整，明细过多可以截断。应用侧也要卡住：这类问题若本轮还没成功查到账，就不要把带数字的回复直接给用户。不新增工具，不改四档状态。过程只走「调用工具」和表情 32（查账也可用 40），不弹确认卡，查不到就在回复里说明没有匹配数据。已修订 SYSTEM_PROMPT.v0.1.md、intent-control.v0.1.md、tools.schema.v0.1.json。新包另存到桌面，不覆盖测试v0.9.apk，不合入 master。
+【修改/新增文件】
+- docs/assistant/SYSTEM_PROMPT.v0.1.md
+- docs/assistant/intent-control.v0.1.md
+- docs/assistant/tools.schema.v0.1.json
+- docs/assistant/README.md
+- prompt_evolution.md
