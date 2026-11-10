@@ -132,10 +132,12 @@ app/src/main/java/com/campusbill/app/
 
 本仓库在原有本地记账 App 上增加「中央学生助手」层，供比赛演示：同一工程、同一 Room 账本，不另开 App。密钥仅存本机 Keystore，不进仓库。
 
-评委请直接按下面这篇复现（含演示话术与过程页核对）：
+评委请按「10分钟极速复现指南」操作（含环境、依赖、变量模板、演示话术与过程页核对）：
 
-- [docs/assistant/REPRODUCE.md](docs/assistant/REPRODUCE.md) · 一键复现
+- [docs/assistant/REPRODUCE.md](docs/assistant/REPRODUCE.md) · 10分钟极速复现指南
+- [docs/assistant/env.example](docs/assistant/env.example) · 环境变量模板（无真实 Key）
 - [docs/assistant/THIRD_PARTY.md](docs/assistant/THIRD_PARTY.md) · 第三方许可（**Emotion Ball 球形造型不可商用**，须保留署名）
+- [docs/assistant/SUBMISSION-CHECKLIST.md](docs/assistant/SUBMISSION-CHECKLIST.md) · 交赛材料清单
 - [docs/assistant/process/](docs/assistant/process/) · 决策 / Prompt / 工具参数 / 确认记录模板与归档
 
-第一版只演示：查本周花销 → 确认后记一笔并回读 → 过程页留痕；之后可再问一句运势以证明会调度工具。文字状态只有四档：思考 / 调用工具 / 等待确认 / 出错。确认卡只在「等待确认」时出现。「出错」只用于密钥、余额或配额、网络失败。
+第一版只演示：查本周花销 → 确认后记一笔并回读 → 过程页留痕；之后可再问一句运势以证明会调度工具。文字状态为「思考 / 调用工具 / 等待确认 / 出错」。
