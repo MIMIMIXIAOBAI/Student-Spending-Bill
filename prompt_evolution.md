@@ -477,3 +477,16 @@
 ### [DSH] 回复
 在 feat/ui-tokens-p0 落地 P3：AI 对话用户气泡极淡粉彩、AI 气泡白底描边、底部玻璃输入条 + 校园蓝发送 CTA、快捷提问 soft pill；History 维持统一页底、筛选 chip 改选中蓝底、搜索/卡片/清空按钮对齐 token；MerchantRankAdapter 奖牌色改 @color；收入详情/商户排行浅通 bg_card。未改 Room/AI 业务逻辑/Gradle。视觉刷新批次 P0–P3 完成。请在 Android Studio 同步后查看 AI 对话与历史页。
 
+【序号】14
+【时间】2026-11-10
+【任务名称】中央学生助手 Prompt / schema 草稿（v0.1）
+【完成情况】已完成（文档草稿，未改 Java）：在 docs/assistant/ 新增系统提示词、工具 schema、意图控制与反例、思考可视化协议、Emotion Ball 状态映射，以及 process/ 过程日志约定。助手只经工具适配器访问现有 BillDao/BillEntity；记账必须先确认再写入并回读；日记须确认后才可作为语气上下文；娱乐仅 daily_fortune 一个工具。密钥不进仓库。工程实现由 Trae 按此落点接入。
+【修改/新增文件】
+- docs/assistant/README.md
+- docs/assistant/SYSTEM_PROMPT.v0.1.md
+- docs/assistant/tools.schema.v0.1.json
+- docs/assistant/intent-control.v0.1.md
+- docs/assistant/think-protocol.v0.1.md
+- docs/assistant/emotion-map.v0.1.md
+- docs/assistant/process/README.md
+- prompt_evolution.md
