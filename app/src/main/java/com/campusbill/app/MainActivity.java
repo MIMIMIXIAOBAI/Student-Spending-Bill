@@ -13,8 +13,6 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewConfiguration;
-import android.view.ViewGroup;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -319,17 +317,12 @@ public class MainActivity extends AppCompatActivity {
          }
       });
       this.binding.homeEmotionBall.loadUrl("file:///android_asset/emotion-ball/host.html");
-      this.binding.getRoot().addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
-         if (bottom - top != oldBottom - oldTop) {
-            MainActivity.this.applyHomeBallHeight();
-         }
-      });
-      this.applyHomeBallHeight();
-      int slop = ViewConfiguration.get(this).getScaledTouchSlop();
-      this.binding.homeEmotionBallTouch.setOnTouchListener((v, event) -> this.onHomeBallTouch(v, event, slop));
+      float tapPx = 12.0F * this.getResources().getDisplayMetrics().density;
+      this.binding.homeEmotionBallTouch.setOnTouchListener((v, event) -> this.onHomeBallTouch(v, event, tapPx));
    }
 
-   private boolean onHomeBallTouch(View view, MotionEvent event, int slop) {
+   /** 位移不超过 12dp 才算轻点进对话。超过则只跟视线，并把纵向滑动还给首页滚动。 */
+   private boolean onHomeBallTouch(View view, MotionEvent event, float tapPx) {
       switch (event.getActionMasked()) {
          case MotionEvent.ACTION_DOWN:
             this.homeGazeHandler.removeCallbacks(this.homeGazeFront);
@@ -341,9 +334,12 @@ public class MainActivity extends AppCompatActivity {
          case MotionEvent.ACTION_MOVE:
             float dx = event.getRawX() - this.homeBallDownX;
             float dy = event.getRawY() - this.homeBallDownY;
-            if (dx * dx + dy * dy > (float) slop * (float) slop) {
+            if (dx * dx + dy * dy > tapPx * tapPx) {
                this.homeBallGazing = true;
                this.trackHomeGaze(event);
+               if (Math.abs(dy) > Math.abs(dx)) {
+                  view.getParent().requestDisallowInterceptTouchEvent(false);
+               }
             }
             return true;
          case MotionEvent.ACTION_UP:
@@ -377,20 +373,6 @@ public class MainActivity extends AppCompatActivity {
       float nx = this.clampUnit((event.getRawX() - centerX) / (ball.getWidth() / 2.0F));
       float ny = this.clampUnit((event.getRawY() - centerY) / (ball.getHeight() / 2.0F));
       this.pushHomeGaze(nx, ny);
-   }
-
-   private void applyHomeBallHeight() {
-      int windowPx = this.binding.getRoot().getHeight();
-      if (windowPx <= 0) {
-         windowPx = this.getResources().getDisplayMetrics().heightPixels;
-      }
-      int cap = Math.round(320.0F * this.getResources().getDisplayMetrics().density);
-      int target = Math.min(Math.round(windowPx * 0.4F), cap);
-      ViewGroup.LayoutParams params = this.binding.panelAi.getLayoutParams();
-      if (params.height != target) {
-         params.height = target;
-         this.binding.panelAi.setLayoutParams(params);
-      }
    }
 
    private void openAssistant() {

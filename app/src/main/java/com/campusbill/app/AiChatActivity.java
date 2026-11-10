@@ -7,7 +7,6 @@ import android.os.Looper;
 import android.text.TextUtils;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -17,8 +16,6 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.campusbill.app.chat.ChatAdapter;
@@ -63,8 +60,6 @@ public class AiChatActivity extends AppCompatActivity {
     private String lastEmotionId = "02";
     private boolean emotionReady;
     private boolean ballShouldRun;
-    private boolean keyboardVisible;
-    private boolean confirmCardVisible;
     private final Handler gazeHandler = new Handler(Looper.getMainLooper());
     private final Runnable gazeHome = () -> pushGaze(0f, 0f);
     /** 向导测通失败时，状态行「重试」再测这一次粘贴的密钥。 */
@@ -111,7 +106,8 @@ public class AiChatActivity extends AppCompatActivity {
                 if (!confirmVisible) {
                     confirmBody = null;
                 }
-                applyConfirmCard(confirmVisible && confirmBody != null);
+                binding.confirmCard.setVisibility(
+                        confirmVisible && confirmBody != null ? View.VISIBLE : View.GONE);
             }
 
             @Override
@@ -131,7 +127,7 @@ public class AiChatActivity extends AppCompatActivity {
                 binding.btnConfirmOk.setText(title != null && title.contains("日记")
                         ? R.string.assistant_confirm_diary : R.string.assistant_confirm_ok);
                 if ("等待确认".equals(binding.tvAssistantStatus.getText().toString())) {
-                    applyConfirmCard(true);
+                    binding.confirmCard.setVisibility(View.VISIBLE);
                 }
             }
         });
@@ -367,7 +363,7 @@ public class AiChatActivity extends AppCompatActivity {
         scrollToLatest();
     }
 
-    /** AI 页常驻情绪球。键盘或确认卡出现时压到 160dp，不盖住状态行和确认卡。 */
+    /** 对话页顶栏约 64dp 小球，只跟视线和思考表情，不挡消息、状态行和确认卡。 */
     private void setupEmotionBall() {
         WebSettings settings = binding.emotionBall.getSettings();
         settings.setJavaScriptEnabled(true);
@@ -383,43 +379,6 @@ public class AiChatActivity extends AppCompatActivity {
             }
         });
         binding.emotionBall.loadUrl("file:///android_asset/emotion-ball/host.html");
-        binding.getRoot().addOnLayoutChangeListener(
-                (v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
-                    if (bottom - top != oldBottom - oldTop) {
-                        applyBallPanelHeight();
-                    }
-                });
-        ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, insets) -> {
-            keyboardVisible = insets.isVisible(WindowInsetsCompat.Type.ime());
-            applyBallPanelHeight();
-            return insets;
-        });
-        ViewCompat.requestApplyInsets(binding.getRoot());
-        applyBallPanelHeight();
-    }
-
-    private void applyConfirmCard(boolean show) {
-        confirmCardVisible = show;
-        binding.confirmCard.setVisibility(show ? View.VISIBLE : View.GONE);
-        applyBallPanelHeight();
-    }
-
-    private void applyBallPanelHeight() {
-        int windowPx = binding.getRoot().getHeight();
-        if (windowPx <= 0) {
-            windowPx = getResources().getDisplayMetrics().heightPixels;
-        }
-        int expanded = Math.min(Math.round(windowPx * 0.4f), dp(320));
-        int target = (keyboardVisible || confirmCardVisible) ? dp(160) : expanded;
-        ViewGroup.LayoutParams params = binding.emotionBallPanel.getLayoutParams();
-        if (params.height != target) {
-            params.height = target;
-            binding.emotionBallPanel.setLayoutParams(params);
-        }
-    }
-
-    private int dp(int value) {
-        return Math.round(value * getResources().getDisplayMetrics().density);
     }
 
     @Override
@@ -549,7 +508,7 @@ public class AiChatActivity extends AppCompatActivity {
         binding.tvAssistantStatus.setText(line);
         binding.btnStatusRetry.setVisibility(View.VISIBLE);
         confirmBody = null;
-        applyConfirmCard(false);
+        binding.confirmCard.setVisibility(View.GONE);
     }
 
     private static boolean isErrorLine(String text) {
