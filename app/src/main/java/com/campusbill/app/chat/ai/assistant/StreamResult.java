@@ -17,6 +17,10 @@ public final class StreamResult {
         this.failure = failure;
     }
 
+    public static StreamResult of(String think, String content, List<ToolCall> calls) {
+        return new StreamResult(think, content, calls, null);
+    }
+
     public static StreamResult text(String content) {
         return new StreamResult("", content, Collections.emptyList(), null);
     }

@@ -31,6 +31,17 @@ android {
     }
 }
 
+tasks.register("syncAssistantDocs", Copy) {
+    from("${rootDir}/docs/assistant")
+    include "SYSTEM_PROMPT.v0.1.md", "tools.schema.v0.1.json", "intent-control.v0.1.md",
+            "think-protocol.v0.1.md", "emotion-map.v0.1.md"
+    into("${projectDir}/src/main/assets/assistant")
+}
+
+tasks.named("preBuild").configure {
+    dependsOn("syncAssistantDocs")
+}
+
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.7.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.2.1'

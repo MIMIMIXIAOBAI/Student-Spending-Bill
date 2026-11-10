@@ -17,6 +17,8 @@ import com.campusbill.app.chat.ai.AiConfig;
 import com.campusbill.app.chat.ai.AiRemoteClient;
 import com.campusbill.app.chat.ai.DeepSeekKeyStore;
 import com.campusbill.app.chat.ai.assistant.AssistantCallException;
+import com.campusbill.app.chat.ai.assistant.AssistantHost;
+import com.campusbill.app.chat.ai.assistant.AssistantIntentPlanner;
 import com.campusbill.app.chat.ai.BillAnalysisUtils;
 import com.campusbill.app.chat.ai.BillContextBuilder;
 import com.campusbill.app.chat.ai.IntentMatcher;
@@ -43,6 +45,9 @@ public class AiChatActivity extends AppCompatActivity {
     private ChatAdapter adapter;
     /** 主页选中的月份（yyyy-MM），预设问题按该月查询账单；缺省为当前月 */
     private String queryMonth = YearMonth.now().toString();
+    private AssistantHost assistantHost;
+    private int streamIndex = -1;
+    private String confirmBody;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +70,40 @@ public class AiChatActivity extends AppCompatActivity {
 
         binding.btnBack.setOnClickListener(v -> finish());
         binding.btnApiKey.setOnClickListener(v -> showDeepSeekWizard());
+        binding.btnConfirmOk.setOnClickListener(v -> assistantHost.confirm());
+        binding.btnConfirmCancel.setOnClickListener(v -> assistantHost.cancel());
+        assistantHost = new AssistantHost(this, new AssistantHost.Surface() {
+            @Override
+            public void onStatus(String statusText, boolean confirmVisible, String emotionId) {
+                binding.tvAssistantStatus.setText(statusText);
+                boolean showCard = confirmVisible && confirmBody != null;
+                binding.confirmCard.setVisibility(showCard ? View.VISIBLE : View.GONE);
+                if (!confirmVisible) {
+                    confirmBody = null;
+                }
+            }
+
+            @Override
+            public void onTranscript(String text) {
+                if (streamIndex < 0 || streamIndex >= messages.size()) {
+                    streamIndex = addMessage(ChatMessage.TYPE_AI, text);
+                } else {
+                    replaceMessage(streamIndex, text);
+                }
+            }
+
+            @Override
+            public void onConfirmCard(String title, String body) {
+                confirmBody = body;
+                binding.tvConfirmTitle.setText(title);
+                binding.tvConfirmBody.setText(body);
+                binding.btnConfirmOk.setText(title != null && title.contains("日记")
+                        ? R.string.assistant_confirm_diary : R.string.assistant_confirm_ok);
+                if ("等待确认".equals(binding.tvAssistantStatus.getText().toString())) {
+                    binding.confirmCard.setVisibility(View.VISIBLE);
+                }
+            }
+        });
         if (!AiConfig.hasApiKey(this)) {
             binding.getRoot().post(this::showDeepSeekWizard);
         }
@@ -83,11 +122,24 @@ public class AiChatActivity extends AppCompatActivity {
             return;
         }
         String query = rawText.trim();
+
+        boolean assistantUtterance = !AssistantIntentPlanner.plan(query, LocalDate.now()).isEmpty();
+        boolean streamedChat = IntentMatcher.match(query) == IntentMatcher.Intent.FALLBACK
+                && AiConfig.hasApiKey(this);
+        if (assistantUtterance || streamedChat) {
+            if (!assistantHost.startOrIgnore(query, () ->
+                    Toast.makeText(this, R.string.assistant_busy, Toast.LENGTH_SHORT).show())) {
+                return;
+            }
+            binding.etMessage.setText("");
+            addMessage(ChatMessage.TYPE_USER, query);
+            streamIndex = -1;
+            return;
+        }
         binding.etMessage.setText("");
 
         addMessage(ChatMessage.TYPE_USER, query);
-        boolean online = IntentMatcher.match(query) == IntentMatcher.Intent.FALLBACK
-                && AiConfig.hasApiKey(this);
+        boolean online = false;
         int placeholderIndex = addMessage(ChatMessage.TYPE_AI, getString(online
                 ? R.string.chat_thinking_online : R.string.chat_thinking));
         dispatch(query, placeholderIndex);

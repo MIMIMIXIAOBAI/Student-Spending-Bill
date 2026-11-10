@@ -101,14 +101,18 @@
     <string name="add_bill_save_success">保存成功</string>
 
     <!-- 通用 -->
-    <string name="ai_chat_title">AI 消费助手</string>
+    <string name="ai_chat_title">中央学生助手</string>
     <string name="placeholder_developing">功能开发中</string>
 
     <!-- AI 对话页 -->
     <string name="chat_back">‹</string>
     <string name="chat_input_hint">说说你的消费困惑…</string>
     <string name="chat_send">发送</string>
-    <string name="chat_welcome">你好，我是你的本地消费账单小助手～\n账单查询与预算计算全部在本机完成；配置 API KEY 后，普通对话会联网获取 AI 回复。\n可以直接问我，或点下面的快捷提问。</string>
+    <string name="chat_welcome">你好，我是中央学生助手。\n查本周花销、确认后记账，都在这个对话里完成。DeepSeek 密钥只进本机 Keystore。\n下面的快捷问题仍在本机计算。</string>
+    <string name="assistant_confirm_ok">确认记下</string>
+    <string name="assistant_confirm_diary">允许引用</string>
+    <string name="assistant_confirm_cancel">取消</string>
+    <string name="assistant_busy">请先确认或取消当前这一步</string>
     <string name="chat_thinking">正在整理本机账单…</string>
     <string name="chat_thinking_online">正在联网获取 AI 回复…</string>
     <string name="chat_db_error">读取本机账单失败，请稍后再试。</string>
