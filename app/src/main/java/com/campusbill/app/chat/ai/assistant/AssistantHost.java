@@ -29,19 +29,18 @@ public final class AssistantHost {
     private final AssistantController controller;
 
     public AssistantHost(Context context, Surface surface) {
-        AssistantDocuments documents;
+        AssistantController.Docs documents;
         try {
             documents = AssistantDocuments.load(context);
         } catch (Exception e) {
             documents = new FallbackDocs();
         }
-        AssistantDocuments docs = documents;
         controller = new AssistantController(
                 LocalDate.now(),
                 () -> AiConfig.hasApiKey(context),
                 new RoomBillLedger(context),
                 DiaryNoteStore.read(context),
-                docs,
+                documents,
                 new DeepSeekStreamClient(context),
                 new FileProcessLog(context),
                 new AssistantController.Ui() {
