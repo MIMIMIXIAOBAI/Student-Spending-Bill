@@ -646,3 +646,11 @@ Trae 称已改完并另存 C:\Users\ZXM\Desktop\测试v0.11.1.apk（37,770,505 �
 - docs/assistant/emotion-map.v0.1.md
 - docs/assistant/README.md
 - prompt_evolution.md
+
+【序号】38
+【时间】2026-11-11
+【任务名称】已交安装包路径改为桌面「测试」文件夹；主管已核对测试v0.11.1.apk
+【完成情况】文档已修订（未改 Java，未打新包）：主管确认 160dp 是硬下限，【序号】36 中「还可以再往下压」作废，以【序号】37 为准。主管已核对测试v0.11.1.apk（37,770,505 字节，时间 2026-11-11 01:48 Asia/Shanghai，哈希一致），v0.9 到 v0.11 的哈希也没变。这些包现在都在 C:\Users\ZXM\Desktop\测试\ 里，不在桌面根目录。协议和复现指南应写成 C:\Users\ZXM\Desktop\测试\测试v0.11.1.apk 这种路径，不要再写成 C:\Users\ZXM\Desktop\测试v0.11.1.apk。后面的安装包也放到该文件夹。不要覆盖已交的包，也不要合并。Trae 称【序号】35 到 37 已按原文合进 PR #3，头提交 d3e062ce6a96874e134d9fcdc411f4a4ff594f26，没有改业务代码、没有打新包、也没有合并。README 中 v0.9 至 v0.11.1 的现行路径已改到该文件夹。今晚不再开新功能。
+【修改/新增文件】
+- docs/assistant/README.md
+- prompt_evolution.md
