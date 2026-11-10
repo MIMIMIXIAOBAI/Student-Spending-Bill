@@ -42,6 +42,7 @@ import com.campusbill.app.chat.session.ContextUsage;
 import com.campusbill.app.chat.session.MemoryHandoff;
 import com.campusbill.app.chat.session.ModelWindows;
 import com.campusbill.app.chat.session.TokenEstimate;
+import com.campusbill.app.ui.ChatBallMetrics;
 import com.campusbill.app.chat.ai.assistant.AssistantIntentPlanner;
 import com.campusbill.app.chat.ai.assistant.AssistantStatus;
 import com.campusbill.app.chat.ai.assistant.FailureClassifier;
@@ -576,11 +577,15 @@ public class AiChatActivity extends AppCompatActivity {
                 tabHeight = dp(56);
             }
         }
-        int room = windowPx - root.getPaddingBottom() - above - inputHeight
-                - confirmHeight - tabHeight - dp(12);
-        boolean compress = keyboardVisible || confirmCardVisible;
-        int preferred = compress ? dp(160) : Math.round(windowPx / 3f);
-        int target = Math.min(preferred, Math.max(0, room));
+        int target = ChatBallMetrics.heightPx(
+                windowPx,
+                root.getPaddingBottom(),
+                above,
+                inputHeight,
+                confirmHeight,
+                tabHeight,
+                keyboardVisible || confirmCardVisible,
+                getResources().getDisplayMetrics().density);
         ViewGroup.LayoutParams params = binding.emotionBallPanel.getLayoutParams();
         if (params.height != target) {
             params.height = target;
