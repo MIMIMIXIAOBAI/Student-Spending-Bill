@@ -7,9 +7,9 @@
 | 项 | 说明 |
 |---|---|
 | 来源 | [sam70361/aora-bot](https://github.com/sam70361/aora-bot)，**经典球形**在 `emotion-ball` 分支 |
-| 接入方式 | 应用内 WebView，克制、默认可关闭，不占中屏 |
+| 接入方式 | 应用内 WebView。AI 页主屏常驻并替换「AI消费建议」面板；不另在对话页放小球。须保留署名 |
 | 许可要点 | `emotion-ball` 分支沿用 Emotion Ball 社区许可（非商业免费）。**球形角色视觉形象（造型、配色、特效等）仅供学习研究，禁止任何商业用途，且不提供、永不提供商业授权。** 表情引擎与表情数据的商业授权不包含该造型。条款以仓库内 `LICENSE`、`NOTICE.md`、[LICENSE-COMMERCIAL.md](https://github.com/sam70361/aora-bot/blob/main/LICENSE-COMMERCIAL.md) 及 [授权说明](https://aora-bot.vercel.app/guide/license) 为准。 |
-| 本项目用法 | 仅用于比赛演示的可选情绪球；关闭后主流程（对话、文字状态、确认卡）仍完整可用。 |
+| 本项目用法 | 用于比赛演示。AI 页常驻大球，不另在对话页放小球；键盘或确认卡出现时球面板压缩，不能挡住状态行和确认卡，也不能替代文字状态。须在关于页保留署名。 |
 
 应用「关于 / 许可」页与 README 均须保留上述来源与「造型不可商用」声明。不得删除署名。若未来商用，必须去掉该球形视觉，或改用自有/已获授权的形象（本比赛范围不做商用）。
 
@@ -17,8 +17,8 @@
 
 | 字段 | 值（落地后填写） |
 |---|---|
-| 使用的 git ref / commit | `emotion-ball` @ `f793bb445ebad66a1a19bae75b4c27b306d2f95e`（Archive Emotion Ball as the classic edition） |
-| 资源在本仓库中的路径 | `app/src/main/assets/emotion-ball/`（`rings.js`、`emotions.js`、`ball.js`、`engine.js` 未改；`host.html` 为本应用接入页；许可原文为同目录 `UPSTREAM_LICENSE`、`UPSTREAM_NOTICE.md`） |
+| 使用的 git ref / commit | _待 Trae 接入后填写_ |
+| 资源在本仓库中的路径 | _待填写_ |
 
 ## 2. 账本工程已有依赖（沿用根 README）
 

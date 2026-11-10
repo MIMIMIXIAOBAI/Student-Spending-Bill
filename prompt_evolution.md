@@ -501,3 +501,12 @@
 - docs/assistant/SYSTEM_PROMPT.v0.1.md
 - docs/assistant/README.md
 - prompt_evolution.md
+
+【序号】16
+【时间】2026-11-10
+【任务名称】Emotion Ball 改 AI 页常驻，并补视线跟随协议
+【完成情况】已完成（文档修订，未改 Java）：按 2026-11-10 冻定版式更新 `docs/assistant/emotion-map.v0.1.md`。原「默认关闭 + 顶栏开关 + 不占主区域」对 AI 页作废。球在 AI 页主屏常驻，替换「AI消费建议」面板；左右 16dp，高度约窗口 40%、上限 320dp；键盘或确认卡出现时压到最低 160dp，不得挡住四档状态行和确认卡。记账首页不放球，对话页不另放小球。滑动或点击时触点相对球心归一化到 [-1, 1]，调用 `ball.setGaze(nx, ny)`，松手后约 400ms 回正视；页面不可见或后台时 `setActive(false)` 停帧。文字状态四档与工具确认主链路不变。不另开文档分支，由工程侧合入同一条工程分支。
+【修改/新增文件】
+- docs/assistant/emotion-map.v0.1.md
+- docs/assistant/README.md
+- prompt_evolution.md
