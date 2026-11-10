@@ -635,7 +635,6 @@ public class AiChatActivity extends AppCompatActivity {
     }
 
     @Override
-    @Override
     protected void onDestroy() {
         attitudeGaze.stop();
         gazeHandler.removeCallbacks(pleasedDone);
