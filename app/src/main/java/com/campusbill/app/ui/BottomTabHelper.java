@@ -70,6 +70,7 @@ public final class BottomTabHelper {
             }
         }
         activity.startActivity(intent);
+        activity.overridePendingTransition(R.anim.tab_fade_in, R.anim.tab_fade_out);
     }
 
     private static void applyState(View item, boolean selected, int selectedColor, int normalColor) {
