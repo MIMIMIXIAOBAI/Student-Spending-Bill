@@ -555,7 +555,8 @@ public class AiChatActivity extends AppCompatActivity {
         }
         int tabHeight = 0;
         if (!keyboardVisible) {
-            tabHeight = binding.bottomTabs.getHeight();
+            View tabs = findViewById(R.id.bottomTabs);
+            tabHeight = tabs == null ? 0 : tabs.getHeight();
             if (tabHeight <= 0) {
                 tabHeight = dp(56);
             }
