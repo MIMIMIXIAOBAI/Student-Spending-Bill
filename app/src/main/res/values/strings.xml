@@ -119,6 +119,7 @@
     <string name="assistant_process_hint">这里是本机留痕：Prompt 版本、工具参数、确认和回读。密钥不会出现在这些记录里。</string>
     <string name="assistant_process_empty">还没有过程记录。先在对话里问一句「这周食堂花了多少」，确认记账之后再回来看。</string>
     <string name="assistant_emotion_license">Emotion Ball 来自 sam70361/aora-bot 的 emotion-ball 分支（commit f793bb445ebad66a1a19bae75b4c27b306d2f95e），脚本未改，放在 assets/emotion-ball/。球形造型只供本比赛演示和学习，不是商业授权，也不提供商业授权。对话、四档状态和确认卡仍然是主路径。</string>
+    <string name="home_emotion_ball_open">打开中央学生助手</string>
     <string name="chat_thinking">正在整理本机账单…</string>
     <string name="chat_thinking_online">正在联网获取 AI 回复…</string>
     <string name="chat_db_error">读取本机账单失败，请稍后再试。</string>
