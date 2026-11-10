@@ -510,3 +510,12 @@
 - docs/assistant/emotion-map.v0.1.md
 - docs/assistant/README.md
 - prompt_evolution.md
+
+【序号】18
+【时间】2026-11-10
+【任务名称】Emotion Ball 首页白卡尺寸与对话页顶栏小球
+【完成情况】已完成（文档修订，未改 Java）：按 UI 规格再更正 `docs/assistant/emotion-map.v0.1.md`。首页白卡左右 16dp、高度约 260dp（上限 300dp），球居中尽量铺满；卡上滑动走 `setGaze`，位移不超过 12dp 的轻点进入对话页，避免把上下滑误判成进入。对话页「球面板压到 160dp」作废，改为顶栏约 64dp 小球，不挡消息、状态行和确认卡。许可仍署名 aora-bot。不另开文档分支，由工程侧合入同一条工程分支。
+【修改/新增文件】
+- docs/assistant/emotion-map.v0.1.md
+- docs/assistant/README.md
+- prompt_evolution.md
