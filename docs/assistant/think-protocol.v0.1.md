@@ -1,10 +1,11 @@
 # 思考可视化与过程留痕协议 v0.1
 
-评审硬指标：流式输出 + 思考可视化；过程可复现。文字状态是主体，取值只能是下面三档（加空闲/完成可由 UI 自行补充，不要再发明新的进行中文案）：
+评审硬指标：流式输出 + 思考可视化；过程可复现。文字状态是主体。进行中只有下面三档；失败时用同一行文字状态显示 **出错**（密钥失败、余额不足、网络错误），不加新页面、不加第四种进行中文案。空闲/完成可由 UI 自行处理，不要再发明其它进行中文案：
 
 - **思考**
 - **调用工具**
 - **等待确认**
+- **出错**（失败态：密钥失败、余额不足、网络错误）
 
 ## 模型侧（流式）
 
@@ -24,6 +25,7 @@
 | 发出或执行 tool call（查询、运势、申请日记） | 调用工具 | 过程页记录工具名与参数 |
 | `propose_add_bill` 已返回或日记申请待同意 | 等待确认 | 弹出确认卡，等待用户 |
 | 确认后回读 / 最终作答 | 思考或结束态 | 用回读结果生成核对语 |
+| 密钥失败、余额不足、网络错误 | 出错 | 同一行文字状态说明原因；不加新页面 |
 
 ## 过程页事件（JSONL）
 
@@ -39,7 +41,15 @@
 {"ts":"2026-11-10T13:00:20+08:00","type":"confirm_record","action":"add_bill","accepted":true,"preview":{},"verified":{}}
 ```
 
-`type` 枚举：`status` | `prompt` | `think` | `tool_call` | `tool_result` | `confirm_record` | `decision`。
+出错示例：
+
+```json
+{"ts":"2026-11-10T13:20:00+08:00","type":"status","value":"出错","reason":"network_error","message":"网络错误，请稍后重试"}
+```
+
+`reason` 建议枚举：`key_failure`（密钥失败）| `insufficient_balance`（余额不足）| `network_error`（网络错误）。不要在日志里写入密钥本身。
+
+`type` 枚举：`status` | `prompt` | `think` | `tool_call` | `tool_result` | `confirm_record` | `decision` | `error`。
 
 `confirm_record` 必须能看出：展示给用户的字段、是否同意、回读核对值。
 
