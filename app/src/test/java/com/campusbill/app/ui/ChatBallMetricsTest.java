@@ -27,21 +27,23 @@ public class ChatBallMetricsTest {
     }
 
     @Test
-    public void 空间不够时继续缩小以免挡住输入栏() {
+    public void 可用空间低于160dp时仍停在160dp() {
         int window = 1800;
-        int height = ChatBallMetrics.heightPx(window, 700, 288, 504, 0, 0, true, DENSITY);
+        int compressed = ChatBallMetrics.heightPx(window, 700, 288, 504, 0, 0, true, DENSITY);
+        int expanded = ChatBallMetrics.heightPx(window, 700, 288, 504, 0, 0, false, DENSITY);
         int room = 1800 - 700 - 288 - 504 - dp(ChatBallMetrics.GAP_DP);
         assertTrue(room < dp(160));
-        assertEquals(room, height);
-        assertTrue(height < dp(160));
+        assertEquals(dp(160), compressed);
+        assertEquals(dp(160), expanded);
     }
 
     @Test
-    public void 三分之一放不下时给输入栏和状态行让位() {
-        int window = 1200;
-        int height = ChatBallMetrics.heightPx(window, 0, 288, 504, 0, 168, false, DENSITY);
-        int room = 1200 - 288 - 504 - 168 - dp(ChatBallMetrics.GAP_DP);
+    public void 三分之一放不下但空间仍够160dp时缩到可用空间() {
+        int window = 2400;
+        int height = ChatBallMetrics.heightPx(window, 0, 400, 900, 200, 200, false, DENSITY);
+        int room = 2400 - 400 - 900 - 200 - 200 - dp(ChatBallMetrics.GAP_DP);
         assertTrue(Math.round(window / 3f) > room);
+        assertTrue(room >= dp(160));
         assertEquals(room, height);
     }
 

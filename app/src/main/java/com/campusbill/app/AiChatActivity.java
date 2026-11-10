@@ -499,7 +499,7 @@ public class AiChatActivity extends AppCompatActivity {
         }
     }
 
-    /** 对话页球面板。键盘或确认卡出现时压到 160dp，不盖住状态行和确认卡。 */
+    /** 对话页球面板。键盘或确认卡时压到 160dp，高度不再低于 160dp。 */
     private void setupEmotionBall() {
         WebSettings settings = binding.emotionBall.getSettings();
         settings.setJavaScriptEnabled(true);
