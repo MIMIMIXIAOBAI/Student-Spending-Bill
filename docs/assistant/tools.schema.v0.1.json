@@ -1,0 +1,130 @@
+{
+  "version": "v0.1",
+  "provider": "deepseek",
+  "note": "OpenAI-compatible function tools. Write path must stay confirmation-gated in the app adapter. Do not persist API keys in this file.",
+  "week_rule": "local timezone, Monday–Sunday inclusive, dates YYYY-MM-DD matching BillEntity.date",
+  "bill_fields": {
+    "type": {"expense": 0, "income": 1},
+    "amount": "double",
+    "category": "string, prefer existing app categories",
+    "merchant": "string",
+    "remark": "string",
+    "date": "YYYY-MM-DD",
+    "time": "HH:mm optional"
+  },
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "query_spend",
+        "description": "查询本机 Room 账单合计与明细。用于本周/今日/自定义区间花销，可按商户关键词或分类筛选（如食堂）。只读，不写库。",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "period": {
+              "type": "string",
+              "enum": ["this_week", "today", "custom"],
+              "description": "this_week=本周一至周日；today=当天；custom 时必须给 start_date 与 end_date。"
+            },
+            "start_date": {"type": "string", "description": "YYYY-MM-DD，仅 custom 必填"},
+            "end_date": {"type": "string", "description": "YYYY-MM-DD，含当日，仅 custom 必填"},
+            "type": {
+              "type": "string",
+              "enum": ["expense", "income", "all"],
+              "description": "默认 expense（支出）"
+            },
+            "merchant_contains": {
+              "type": "string",
+              "description": "商户名模糊匹配，如「食堂」"
+            },
+            "category": {
+              "type": "string",
+              "description": "精确或规范分类名，如 食堂、餐饮、外卖"
+            }
+          },
+          "required": ["period"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "propose_add_bill",
+        "description": "生成一笔待确认的记账参数，供界面弹出确认卡。本调用不得直接写入 Room。用户确认后由应用执行插入并回读，再把结果返回给模型。",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "type": {"type": "string", "enum": ["expense", "income"], "description": "默认 expense"},
+            "amount": {"type": "number", "minimum": 0.01, "description": "金额，单位元"},
+            "category": {"type": "string"},
+            "merchant": {"type": "string"},
+            "remark": {"type": "string"},
+            "date": {"type": "string", "description": "YYYY-MM-DD，默认今天"},
+            "time": {"type": "string", "description": "HH:mm，可空"}
+          },
+          "required": ["amount"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "request_diary_context",
+        "description": "申请读取日记作为打招呼或语气调整的上下文。必须等用户确认后，应用才把摘要注入后续对话。未确认不得当作已读。",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "purpose": {
+              "type": "string",
+              "enum": ["greeting", "tone_adjust"],
+              "description": "greeting=打招呼；tone_adjust=调整语气。不可用于记账事实。"
+            }
+          },
+          "required": ["purpose"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "daily_fortune",
+        "description": "唯一娱乐工具：今日运势或情绪晴雨表。塔罗只是一种玩法，不是独立入口。",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "style": {
+              "type": "string",
+              "enum": ["mood", "fortune", "tarot_lite"],
+              "description": "mood=情绪晴雨表；fortune=今日运势；tarot_lite=运势下的轻量塔罗玩法。默认 fortune。"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "adapter_contract": {
+    "query_spend_result": {
+      "total": "number",
+      "count": "integer",
+      "period_start": "YYYY-MM-DD",
+      "period_end": "YYYY-MM-DD",
+      "by_category": [{"category": "string", "total": "number", "count": "integer"}],
+      "by_merchant": [{"merchant": "string", "total": "number", "count": "integer"}],
+      "items": "optional cap, e.g. 20 bills with id/date/amount/category/merchant/remark"
+    },
+    "propose_add_bill_result": {
+      "status": "awaiting_confirm",
+      "preview": "the bill fields shown on the confirm card"
+    },
+    "after_user_confirms": {
+      "app_action": "BillDao.insert then BillDao.getById",
+      "tool_result_to_model": {
+        "status": "confirmed_and_verified",
+        "bill": "echo of inserted row including id, date, amount, category, merchant, remark"
+      }
+    },
+    "after_user_cancels": {
+      "tool_result_to_model": {"status": "cancelled"}
+    }
+  }
+}
