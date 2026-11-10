@@ -70,6 +70,8 @@ public class AiChatActivity extends AppCompatActivity {
 
         binding.btnBack.setOnClickListener(v -> finish());
         binding.btnApiKey.setOnClickListener(v -> showDeepSeekWizard());
+        binding.btnProcess.setOnClickListener(v ->
+                startActivity(new android.content.Intent(this, AssistantProcessActivity.class)));
         binding.btnConfirmOk.setOnClickListener(v -> assistantHost.confirm());
         binding.btnConfirmCancel.setOnClickListener(v -> assistantHost.cancel());
         assistantHost = new AssistantHost(this, new AssistantHost.Surface() {
