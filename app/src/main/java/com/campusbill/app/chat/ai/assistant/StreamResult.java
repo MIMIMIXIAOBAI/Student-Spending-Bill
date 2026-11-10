@@ -1,0 +1,31 @@
+package com.campusbill.app.chat.ai.assistant;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+public final class StreamResult {
+    public final String think;
+    public final String content;
+    public final List<ToolCall> calls;
+    public final FailureKind failure;
+
+    private StreamResult(String think, String content, List<ToolCall> calls, FailureKind failure) {
+        this.think = think == null ? "" : think;
+        this.content = content == null ? "" : content;
+        this.calls = calls == null ? Collections.emptyList() : calls;
+        this.failure = failure;
+    }
+
+    public static StreamResult text(String content) {
+        return new StreamResult("", content, Collections.emptyList(), null);
+    }
+
+    public static StreamResult tools(ToolCall... calls) {
+        return new StreamResult("", "", Arrays.asList(calls), null);
+    }
+
+    public static StreamResult fail(FailureKind kind, String message) {
+        return new StreamResult("", message, Collections.emptyList(), kind);
+    }
+}
