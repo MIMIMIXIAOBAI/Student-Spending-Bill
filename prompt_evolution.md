@@ -611,3 +611,11 @@
 - docs/assistant/tools.schema.v0.1.json
 - docs/assistant/README.md
 - prompt_evolution.md
+
+【序号】34
+【时间】2026-11-11
+【任务名称】查账包交付：测试v0.10.apk
+【完成情况】工程已交付（文档记录；真机待确认）：Trae 报告【序号】33 已落到 PR #3，新包另存为 C:\Users\ZXM\Desktop\测试v0.10.apk（37,770,505 字节，SHA256 2619f50fdaeb281a17984b4005813ff5c302b49d3ad7b6f9b9b9ff858acad70d，打包时间 2026-11-11 01:33 Asia/Shanghai），没有覆盖测试v0.9.apk。当时头是 d691d852f8ed54c3eddbdd8ed6366be7eb1328a6。本机单元测试 39 项已通过；未指定时间会用 period=all 查全部导入和手动记录。仍不合入 master。按主管安排，测通交包后的下一件是对话页球约占屏高三分之一；视频和赛道文档仍等真机确认主路径后再做。
+【修改/新增文件】
+- docs/assistant/README.md
+- prompt_evolution.md
