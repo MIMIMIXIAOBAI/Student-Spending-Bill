@@ -1,8 +1,12 @@
 package com.campusbill.app;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -48,6 +52,8 @@ public class AiChatActivity extends AppCompatActivity {
     private AssistantHost assistantHost;
     private int streamIndex = -1;
     private String confirmBody;
+    private String lastEmotionId = "02";
+    private boolean emotionReady;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,12 +78,17 @@ public class AiChatActivity extends AppCompatActivity {
         binding.btnApiKey.setOnClickListener(v -> showDeepSeekWizard());
         binding.btnProcess.setOnClickListener(v ->
                 startActivity(new android.content.Intent(this, AssistantProcessActivity.class)));
+        setupEmotionBall();
         binding.btnConfirmOk.setOnClickListener(v -> assistantHost.confirm());
         binding.btnConfirmCancel.setOnClickListener(v -> assistantHost.cancel());
         assistantHost = new AssistantHost(this, new AssistantHost.Surface() {
             @Override
             public void onStatus(String statusText, boolean confirmVisible, String emotionId) {
                 binding.tvAssistantStatus.setText(statusText);
+                if (emotionId != null && !emotionId.isEmpty()) {
+                    lastEmotionId = emotionId;
+                }
+                pushEmotion();
                 boolean showCard = confirmVisible && confirmBody != null;
                 binding.confirmCard.setVisibility(showCard ? View.VISIBLE : View.GONE);
                 if (!confirmVisible) {
@@ -335,6 +346,53 @@ public class AiChatActivity extends AppCompatActivity {
         messages.set(index, new ChatMessage(ChatMessage.TYPE_AI, content));
         adapter.notifyItemChanged(index);
         scrollToLatest();
+    }
+
+    /** 情绪球默认关闭，只占顶栏一角，随时可关。 */
+    private void setupEmotionBall() {
+        WebSettings settings = binding.emotionBall.getSettings();
+        settings.setJavaScriptEnabled(true);
+        settings.setAllowFileAccess(true);
+        settings.setAllowFileAccessFromFileURLs(true);
+        binding.emotionBall.setBackgroundColor(Color.TRANSPARENT);
+        binding.emotionBall.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                emotionReady = true;
+                pushEmotion();
+            }
+        });
+        binding.emotionBall.loadUrl("file:///android_asset/emotion-ball/host.html");
+        boolean show = getSharedPreferences("assistant_ui", MODE_PRIVATE)
+                .getBoolean("emotion_ball", false);
+        applyEmotionVisibility(show);
+        binding.btnEmotion.setOnClickListener(v -> {
+            boolean next = binding.emotionBall.getVisibility() != View.VISIBLE;
+            getSharedPreferences("assistant_ui", MODE_PRIVATE)
+                    .edit().putBoolean("emotion_ball", next).apply();
+            applyEmotionVisibility(next);
+        });
+    }
+
+    private void applyEmotionVisibility(boolean show) {
+        binding.emotionBall.setVisibility(show ? View.VISIBLE : View.GONE);
+        binding.btnEmotion.setText(show
+                ? R.string.assistant_emotion_hide : R.string.assistant_emotion_show);
+        if (show) {
+            pushEmotion();
+        }
+    }
+
+    private void pushEmotion() {
+        if (!emotionReady || binding.emotionBall.getVisibility() != View.VISIBLE) {
+            return;
+        }
+        String id = lastEmotionId == null ? "02" : lastEmotionId.replaceAll("[^0-9]", "");
+        if (id.isEmpty()) {
+            id = "02";
+        }
+        binding.emotionBall.evaluateJavascript(
+                "window.setAssistantEmotion&&window.setAssistantEmotion('" + id + "')", null);
     }
 
     /** DeepSeek 专用向导：测通后才写入 Keystore。不提供其他厂商。 */

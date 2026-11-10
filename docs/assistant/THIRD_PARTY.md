@@ -17,8 +17,8 @@
 
 | 字段 | 值（落地后填写） |
 |---|---|
-| 使用的 git ref / commit | _待 Trae 接入后填写_ |
-| 资源在本仓库中的路径 | _待填写_ |
+| 使用的 git ref / commit | `emotion-ball` @ `f793bb445ebad66a1a19bae75b4c27b306d2f95e`（Archive Emotion Ball as the classic edition） |
+| 资源在本仓库中的路径 | `app/src/main/assets/emotion-ball/`（`rings.js`、`emotions.js`、`ball.js`、`engine.js` 未改；`host.html` 为本应用接入页；许可原文为同目录 `UPSTREAM_LICENSE`、`UPSTREAM_NOTICE.md`） |
 
 ## 2. 账本工程已有依赖（沿用根 README）
 
