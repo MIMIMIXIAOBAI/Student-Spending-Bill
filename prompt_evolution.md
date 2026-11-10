@@ -519,3 +519,12 @@
 - docs/assistant/emotion-map.v0.1.md
 - docs/assistant/README.md
 - prompt_evolution.md
+
+【序号】19
+【时间】2026-11-10
+【任务名称】对话页留球面板，并增加按住说话与倾听/思考/成功表情
+【完成情况】已完成（文档修订，未改 Java）：按用户要求与 UI 规格再更正 `docs/assistant/emotion-map.v0.1.md`。对话页「顶栏约 64dp 小球」作废，仍用球面板，键盘或确认卡时压到最低 160dp。首页白卡规格不变（左右 16dp，高度约 260dp、上限 300dp，位移不超过 12dp 的轻点进对话）。对话栏右侧按住说话：按下收音且球为倾听（listening，不新增第五档文字状态）；松开后识别文本作为用户消息发出，球与文字状态进入思考；回复结束后球为成功/激动（pleased），约 1.5 秒回 idle。识别失败或无麦克风权限走现有「出错」，球用 concerned，不要停在倾听。识别在应用侧完成，不新增工具。不另开文档分支，由工程侧合入同一条工程分支。
+【修改/新增文件】
+- docs/assistant/emotion-map.v0.1.md
+- docs/assistant/README.md
+- prompt_evolution.md
