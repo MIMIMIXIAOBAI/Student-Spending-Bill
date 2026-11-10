@@ -2,8 +2,12 @@ package com.campusbill.app;
 
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -13,6 +17,8 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.campusbill.app.chat.ChatAdapter;
@@ -56,6 +62,11 @@ public class AiChatActivity extends AppCompatActivity {
     private String confirmBody;
     private String lastEmotionId = "02";
     private boolean emotionReady;
+    private boolean ballShouldRun;
+    private boolean keyboardVisible;
+    private boolean confirmCardVisible;
+    private final Handler gazeHandler = new Handler(Looper.getMainLooper());
+    private final Runnable gazeHome = () -> pushGaze(0f, 0f);
     /** 向导测通失败时，状态行「重试」再测这一次粘贴的密钥。 */
     private boolean retryKeyProbe;
     private String retryKey = "";
@@ -97,11 +108,10 @@ public class AiChatActivity extends AppCompatActivity {
                     lastEmotionId = emotionId;
                 }
                 pushEmotion();
-                boolean showCard = confirmVisible && confirmBody != null;
-                binding.confirmCard.setVisibility(showCard ? View.VISIBLE : View.GONE);
                 if (!confirmVisible) {
                     confirmBody = null;
                 }
+                applyConfirmCard(confirmVisible && confirmBody != null);
             }
 
             @Override
@@ -121,7 +131,7 @@ public class AiChatActivity extends AppCompatActivity {
                 binding.btnConfirmOk.setText(title != null && title.contains("日记")
                         ? R.string.assistant_confirm_diary : R.string.assistant_confirm_ok);
                 if ("等待确认".equals(binding.tvAssistantStatus.getText().toString())) {
-                    binding.confirmCard.setVisibility(View.VISIBLE);
+                    applyConfirmCard(true);
                 }
             }
         });
@@ -357,7 +367,7 @@ public class AiChatActivity extends AppCompatActivity {
         scrollToLatest();
     }
 
-    /** 情绪球默认关闭，只占顶栏一角，随时可关。 */
+    /** AI 页常驻情绪球。键盘或确认卡出现时压到 160dp，不盖住状态行和确认卡。 */
     private void setupEmotionBall() {
         WebSettings settings = binding.emotionBall.getSettings();
         settings.setJavaScriptEnabled(true);
@@ -369,31 +379,85 @@ public class AiChatActivity extends AppCompatActivity {
             public void onPageFinished(WebView view, String url) {
                 emotionReady = true;
                 pushEmotion();
+                pushBallActive(ballShouldRun);
             }
         });
         binding.emotionBall.loadUrl("file:///android_asset/emotion-ball/host.html");
-        boolean show = getSharedPreferences("assistant_ui", MODE_PRIVATE)
-                .getBoolean("emotion_ball", false);
-        applyEmotionVisibility(show);
-        binding.btnEmotion.setOnClickListener(v -> {
-            boolean next = binding.emotionBall.getVisibility() != View.VISIBLE;
-            getSharedPreferences("assistant_ui", MODE_PRIVATE)
-                    .edit().putBoolean("emotion_ball", next).apply();
-            applyEmotionVisibility(next);
+        binding.getRoot().addOnLayoutChangeListener(
+                (v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+                    if (bottom - top != oldBottom - oldTop) {
+                        applyBallPanelHeight();
+                    }
+                });
+        ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, insets) -> {
+            keyboardVisible = insets.isVisible(WindowInsetsCompat.Type.ime());
+            applyBallPanelHeight();
+            return insets;
         });
+        ViewCompat.requestApplyInsets(binding.getRoot());
+        applyBallPanelHeight();
     }
 
-    private void applyEmotionVisibility(boolean show) {
-        binding.emotionBall.setVisibility(show ? View.VISIBLE : View.GONE);
-        binding.btnEmotion.setText(show
-                ? R.string.assistant_emotion_hide : R.string.assistant_emotion_show);
-        if (show) {
-            pushEmotion();
+    private void applyConfirmCard(boolean show) {
+        confirmCardVisible = show;
+        binding.confirmCard.setVisibility(show ? View.VISIBLE : View.GONE);
+        applyBallPanelHeight();
+    }
+
+    private void applyBallPanelHeight() {
+        int windowPx = binding.getRoot().getHeight();
+        if (windowPx <= 0) {
+            windowPx = getResources().getDisplayMetrics().heightPixels;
+        }
+        int expanded = Math.min(Math.round(windowPx * 0.4f), dp(320));
+        int target = (keyboardVisible || confirmCardVisible) ? dp(160) : expanded;
+        ViewGroup.LayoutParams params = binding.emotionBallPanel.getLayoutParams();
+        if (params.height != target) {
+            params.height = target;
+            binding.emotionBallPanel.setLayoutParams(params);
         }
     }
 
+    private int dp(int value) {
+        return Math.round(value * getResources().getDisplayMetrics().density);
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event) {
+        trackGaze(event);
+        return super.dispatchTouchEvent(event);
+    }
+
+    private void trackGaze(MotionEvent event) {
+        int action = event.getActionMasked();
+        if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) {
+            gazeHandler.removeCallbacks(gazeHome);
+            gazeHandler.postDelayed(gazeHome, 400);
+            return;
+        }
+        if (action != MotionEvent.ACTION_DOWN && action != MotionEvent.ACTION_MOVE
+                && action != MotionEvent.ACTION_POINTER_DOWN) {
+            return;
+        }
+        if (binding.emotionBall.getWidth() <= 0 || binding.emotionBall.getHeight() <= 0) {
+            return;
+        }
+        gazeHandler.removeCallbacks(gazeHome);
+        int[] location = new int[2];
+        binding.emotionBall.getLocationOnScreen(location);
+        float centerX = location[0] + binding.emotionBall.getWidth() / 2f;
+        float centerY = location[1] + binding.emotionBall.getHeight() / 2f;
+        float nx = clampUnit((event.getRawX() - centerX) / (binding.emotionBall.getWidth() / 2f));
+        float ny = clampUnit((event.getRawY() - centerY) / (binding.emotionBall.getHeight() / 2f));
+        pushGaze(nx, ny);
+    }
+
+    private static float clampUnit(float value) {
+        return Math.max(-1f, Math.min(1f, value));
+    }
+
     private void pushEmotion() {
-        if (!emotionReady || binding.emotionBall.getVisibility() != View.VISIBLE) {
+        if (!emotionReady) {
             return;
         }
         String id = lastEmotionId == null ? "02" : lastEmotionId.replaceAll("[^0-9]", "");
@@ -402,6 +466,37 @@ public class AiChatActivity extends AppCompatActivity {
         }
         binding.emotionBall.evaluateJavascript(
                 "window.setAssistantEmotion&&window.setAssistantEmotion('" + id + "')", null);
+    }
+
+    private void pushGaze(float nx, float ny) {
+        if (!emotionReady || !ballShouldRun) {
+            return;
+        }
+        String script = String.format(java.util.Locale.US,
+                "window.setGaze&&window.setGaze(%f,%f)", nx, ny);
+        binding.emotionBall.evaluateJavascript(script, null);
+    }
+
+    private void pushBallActive(boolean active) {
+        ballShouldRun = active;
+        if (!emotionReady) {
+            return;
+        }
+        binding.emotionBall.evaluateJavascript(
+                "window.setBallActive&&window.setBallActive(" + active + ")", null);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        pushBallActive(true);
+    }
+
+    @Override
+    protected void onPause() {
+        gazeHandler.removeCallbacks(gazeHome);
+        pushBallActive(false);
+        super.onPause();
     }
 
     /** 出错行右侧的「重试」：再测密钥，或再发一次失败的对话请求。 */
@@ -453,8 +548,8 @@ public class AiChatActivity extends AppCompatActivity {
     private void showErrorLine(String line) {
         binding.tvAssistantStatus.setText(line);
         binding.btnStatusRetry.setVisibility(View.VISIBLE);
-        binding.confirmCard.setVisibility(View.GONE);
         confirmBody = null;
+        applyConfirmCard(false);
     }
 
     private static boolean isErrorLine(String text) {

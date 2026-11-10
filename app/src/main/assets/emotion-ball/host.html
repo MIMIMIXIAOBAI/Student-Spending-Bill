@@ -27,6 +27,14 @@
       if (!ball || !id) return;
       ball.setEmotion(String(id));
     };
+    window.setGaze = function (nx, ny) {
+      if (!ball || !ball.setGaze) return;
+      ball.setGaze(Number(nx), Number(ny));
+    };
+    window.setBallActive = function (on) {
+      if (!ball || !ball.setActive) return;
+      ball.setActive(!!on);
+    };
   </script>
 </body>
 </html>
