@@ -1,6 +1,7 @@
 package com.campusbill.app.chat.ai.assistant;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.time.LocalDate;
@@ -84,6 +85,15 @@ public final class AssistantController {
     }
 
     public void start(String userText) {
+        try {
+            doStart(userText);
+        } catch (JSONException e) {
+            show("这次回复没有组好，请再试一次。");
+            setIdle();
+        }
+    }
+
+    private void doStart(String userText) throws JSONException {
         rounds = 0;
         plannerAllowed = true;
         pending = null;
@@ -102,6 +112,15 @@ public final class AssistantController {
     }
 
     public void confirm() {
+        try {
+            doConfirm();
+        } catch (JSONException e) {
+            show("确认结果没有组好，请再看一眼过程记录。");
+            setIdle();
+        }
+    }
+
+    private void doConfirm() throws JSONException {
         if (machine.current() != AssistantStatus.AWAITING_CONFIRM || pending == null) {
             return;
         }
@@ -138,6 +157,17 @@ public final class AssistantController {
     }
 
     public void cancel() {
+        try {
+            doCancel();
+        } catch (JSONException e) {
+            pending = null;
+            pendingBill = null;
+            pendingDiaryPurpose = null;
+            setIdle();
+        }
+    }
+
+    private void doCancel() throws JSONException {
         if (machine.current() != AssistantStatus.AWAITING_CONFIRM || pending == null) {
             return;
         }
@@ -159,7 +189,7 @@ public final class AssistantController {
         setIdle();
     }
 
-    private void runModelRound(String userText) {
+    private void runModelRound(String userText) throws JSONException {
         if (rounds >= MAX_ROUNDS) {
             setIdle();
             return;
@@ -210,7 +240,8 @@ public final class AssistantController {
         }
     }
 
-    private void handleCalls(List<ToolCall> calls, boolean replaceVisible, String modelContent) {
+    private void handleCalls(List<ToolCall> calls, boolean replaceVisible, String modelContent)
+            throws JSONException {
         messages.add(ChatTurn.assistantTools(calls));
         if (!replaceVisible && modelContent != null && !modelContent.isEmpty()) {
             show(modelContent);
@@ -246,7 +277,7 @@ public final class AssistantController {
         runModelRound(lastUserText());
     }
 
-    private boolean beginConfirm(ToolCall call) {
+    private boolean beginConfirm(ToolCall call) throws JSONException {
         if ("request_diary_context".equals(call.name)) {
             String purpose = parseArgs(call.arguments).optString("purpose", "greeting");
             pending = call;
@@ -277,7 +308,7 @@ public final class AssistantController {
         return true;
     }
 
-    private String execute(ToolCall call) {
+    private String execute(ToolCall call) throws JSONException {
         if ("query_spend".equals(call.name)) {
             return SpendQuery.run(ledger.all(), parseArgs(call.arguments), today).json;
         }
@@ -379,7 +410,7 @@ public final class AssistantController {
         }
     }
 
-    private static JSONObject billJson(LedgerBill bill) {
+    private static JSONObject billJson(LedgerBill bill) throws JSONException {
         if (bill == null) {
             return new JSONObject();
         }

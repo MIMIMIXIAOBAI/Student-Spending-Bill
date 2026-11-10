@@ -1,6 +1,7 @@
 package com.campusbill.app.chat.ai.assistant;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.time.LocalDate;
@@ -37,6 +38,15 @@ public final class SpendQuery {
     }
 
     public static Result run(List<LedgerBill> bills, JSONObject args, LocalDate today) {
+        try {
+            return runChecked(bills, args, today);
+        } catch (JSONException e) {
+            return new Result(0, 0, "", "", "{\"error\":\"json\"}");
+        }
+    }
+
+    private static Result runChecked(List<LedgerBill> bills, JSONObject args, LocalDate today)
+            throws JSONException {
         JSONObject query = args == null ? new JSONObject() : args;
         String period = query.optString("period", "this_week");
         LocalDate start;
@@ -102,7 +112,7 @@ public final class SpendQuery {
         return new Result(total, matched.size(), start.toString(), end.toString(), root.toString());
     }
 
-    private static Result error(String message) {
+    private static Result error(String message) throws JSONException {
         String json = new JSONObject().put("error", message).put("total", 0).put("count", 0).toString();
         return new Result(0, 0, "", "", json);
     }
@@ -145,7 +155,7 @@ public final class SpendQuery {
         return value != null && keyword != null && !keyword.isEmpty() && value.contains(keyword);
     }
 
-    private static JSONArray group(List<LedgerBill> bills, boolean byCategory) {
+    private static JSONArray group(List<LedgerBill> bills, boolean byCategory) throws JSONException {
         List<String> keys = new ArrayList<>();
         List<Long> cents = new ArrayList<>();
         List<Integer> counts = new ArrayList<>();

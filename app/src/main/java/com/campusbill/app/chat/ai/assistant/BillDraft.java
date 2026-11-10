@@ -1,5 +1,6 @@
 package com.campusbill.app.chat.ai.assistant;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.time.LocalDate;
@@ -73,14 +74,18 @@ public final class BillDraft {
     }
 
     public JSONObject preview() {
-        return new JSONObject()
-                .put("type", type == 1 ? "income" : "expense")
-                .put("amount", amount)
-                .put("category", category)
-                .put("merchant", merchant)
-                .put("remark", remark)
-                .put("date", date)
-                .put("time", time);
+        try {
+            return new JSONObject()
+                    .put("type", type == 1 ? "income" : "expense")
+                    .put("amount", amount)
+                    .put("category", category)
+                    .put("merchant", merchant)
+                    .put("remark", remark)
+                    .put("date", date)
+                    .put("time", time);
+        } catch (JSONException e) {
+            return new JSONObject();
+        }
     }
 
     public String cardBody() {

@@ -1,5 +1,6 @@
 package com.campusbill.app.chat.ai.assistant;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.time.LocalDate;
@@ -21,6 +22,14 @@ public final class AssistantIntentPlanner {
     }
 
     public static List<ToolCall> plan(String text, LocalDate today) {
+        try {
+            return planChecked(text, today);
+        } catch (JSONException e) {
+            return new ArrayList<>();
+        }
+    }
+
+    private static List<ToolCall> planChecked(String text, LocalDate today) throws JSONException {
         List<ToolCall> calls = new ArrayList<>();
         if (text == null || text.trim().isEmpty()) {
             return calls;
@@ -86,7 +95,7 @@ public final class AssistantIntentPlanner {
         return "fortune";
     }
 
-    private static String queryArgs(String text, LocalDate today) {
+    private static String queryArgs(String text, LocalDate today) throws JSONException {
         JSONObject args = new JSONObject();
         boolean week = text.contains("这周") || text.contains("本周")
                 || text.contains("这个星期") || text.contains("本星期");
@@ -111,7 +120,7 @@ public final class AssistantIntentPlanner {
         return args.toString();
     }
 
-    private static String billArgs(String text, LocalDate today) {
+    private static String billArgs(String text, LocalDate today) throws JSONException {
         JSONObject args = new JSONObject();
         Matcher matcher = AMOUNT.matcher(text);
         if (matcher.find()) {

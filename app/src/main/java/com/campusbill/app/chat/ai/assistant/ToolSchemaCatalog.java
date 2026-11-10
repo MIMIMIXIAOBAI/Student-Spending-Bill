@@ -1,6 +1,7 @@
 package com.campusbill.app.chat.ai.assistant;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -13,19 +14,31 @@ public final class ToolSchemaCatalog {
     }
 
     public static String version(String json) {
-        return new JSONObject(json).optString("version", "");
+        try {
+            return new JSONObject(json).optString("version", "");
+        } catch (JSONException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 
     public static String toolsArray(String json) {
-        return new JSONObject(json).getJSONArray("tools").toString();
+        try {
+            return new JSONObject(json).getJSONArray("tools").toString();
+        } catch (JSONException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 
     public static List<String> toolNames(String json) {
-        JSONArray tools = new JSONObject(json).getJSONArray("tools");
-        List<String> names = new ArrayList<>();
-        for (int i = 0; i < tools.length(); i++) {
-            names.add(tools.getJSONObject(i).getJSONObject("function").getString("name"));
+        try {
+            JSONArray tools = new JSONObject(json).getJSONArray("tools");
+            List<String> names = new ArrayList<>();
+            for (int i = 0; i < tools.length(); i++) {
+                names.add(tools.getJSONObject(i).getJSONObject("function").getString("name"));
+            }
+            return names;
+        } catch (JSONException e) {
+            throw new IllegalArgumentException(e);
         }
-        return names;
     }
 }

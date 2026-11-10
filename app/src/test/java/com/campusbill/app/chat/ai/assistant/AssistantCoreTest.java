@@ -25,7 +25,7 @@ public class AssistantCoreTest {
     private static final LocalDate TUESDAY = LocalDate.of(2026, 11, 10);
 
     @Test
-    public void status_只有四档且确认卡只在等待确认() {
+    public void status_只有四档且确认卡只在等待确认() throws Exception {
         assertEquals(4, AssistantStatus.values().length);
         assertEquals("思考", AssistantStatus.THINKING.label);
         assertEquals("调用工具", AssistantStatus.TOOL.label);
@@ -77,7 +77,7 @@ public class AssistantCoreTest {
     }
 
     @Test
-    public void week_本周是周一到周日() {
+    public void week_本周是周一到周日() throws Exception {
         WeekRange range = WeekRange.of(TUESDAY);
         assertEquals("2026-11-09", range.start.toString());
         assertEquals("2026-11-15", range.end.toString());
@@ -88,7 +88,7 @@ public class AssistantCoreTest {
     }
 
     @Test
-    public void querySpend_食堂按分类或商户命中且只统计支出() {
+    public void querySpend_食堂按分类或商户命中且只统计支出() throws Exception {
         List<LedgerBill> bills = new ArrayList<>();
         bills.add(bill(1, 0, 12.5, "食堂", "一食堂", "2026-11-09"));
         bills.add(bill(2, 0, 6, "餐饮", "第二食堂", "2026-11-10"));
@@ -110,7 +110,7 @@ public class AssistantCoreTest {
     }
 
     @Test
-    public void sse_拼出思考正文和分片工具参数() {
+    public void sse_拼出思考正文和分片工具参数() throws Exception {
         SseAccumulator acc = new SseAccumulator();
         acc.acceptLine("data: {\"choices\":[{\"delta\":{\"content\":\"<thi\"}}]}");
         acc.acceptLine("data: {\"choices\":[{\"delta\":{\"content\":\"nk>先查食堂</think>本周\"}}]}");
@@ -126,7 +126,7 @@ public class AssistantCoreTest {
     }
 
     @Test
-    public void failure_只把密钥配额和网络标成出错() {
+    public void failure_只把密钥配额和网络标成出错() throws Exception {
         assertEquals(FailureKind.API_KEY, FailureClassifier.classifyHttp(401, ""));
         assertEquals(FailureKind.QUOTA, FailureClassifier.classifyHttp(402, "{\"error\":\"Insufficient Balance\"}"));
         assertEquals(FailureKind.QUOTA, FailureClassifier.classifyHttp(429, "余额不足"));
@@ -135,7 +135,7 @@ public class AssistantCoreTest {
     }
 
     @Test
-    public void planner_同句先查再记且运势不抢记账() {
+    public void planner_同句先查再记且运势不抢记账() throws Exception {
         List<ToolCall> both = AssistantIntentPlanner.plan(
                 "这周食堂花了多少？再记一笔今天午餐 18 元", TUESDAY);
         assertEquals("query_spend", both.get(0).name);
@@ -157,7 +157,7 @@ public class AssistantCoreTest {
     }
 
     @Test
-    public void fortune_塔罗只是玩法且同日稳定() {
+    public void fortune_塔罗只是玩法且同日稳定() throws Exception {
         String a = FortuneComposer.compose(TUESDAY, "fortune");
         String b = FortuneComposer.compose(TUESDAY, "fortune");
         String tarot = FortuneComposer.compose(TUESDAY, "tarot_lite");
@@ -168,7 +168,7 @@ public class AssistantCoreTest {
     }
 
     @Test
-    public void diary_未确认不得引用() {
+    public void diary_未确认不得引用() throws Exception {
         DiaryGate gate = new DiaryGate();
         gate.request("greeting");
         assertEquals("", gate.citationOrEmpty("今天想吃食堂"));
@@ -179,7 +179,7 @@ public class AssistantCoreTest {
     }
 
     @Test
-    public void demo_确认前不写库确认后回读一致() {
+    public void demo_确认前不写库确认后回读一致() throws Exception {
         MemoryLedger ledger = new MemoryLedger();
         ledger.add(bill(1, 0, 12, "食堂", "一食堂", "2026-11-09"));
         ScriptedStreamer streamer = new ScriptedStreamer();
@@ -219,7 +219,7 @@ public class AssistantCoreTest {
     }
 
     @Test
-    public void demo_取消确认不写库() {
+    public void demo_取消确认不写库() throws Exception {
         MemoryLedger ledger = new MemoryLedger();
         ScriptedStreamer streamer = new ScriptedStreamer();
         streamer.enqueue(StreamResult.tools(tool("call_b", "propose_add_bill",
@@ -234,7 +234,7 @@ public class AssistantCoreTest {
     }
 
     @Test
-    public void demo_模型不调工具时仍按计划查账并等待确认() {
+    public void demo_模型不调工具时仍按计划查账并等待确认() throws Exception {
         MemoryLedger ledger = new MemoryLedger();
         ledger.add(bill(7, 0, 8, "食堂", "窗口", "2026-11-10"));
         ScriptedStreamer streamer = new ScriptedStreamer();
@@ -251,7 +251,7 @@ public class AssistantCoreTest {
     }
 
     @Test
-    public void fortune_调度第二个工具且不弹确认卡() {
+    public void fortune_调度第二个工具且不弹确认卡() throws Exception {
         ScriptedStreamer streamer = new ScriptedStreamer();
         streamer.enqueue(StreamResult.tools(tool("call_f", "daily_fortune", "{\"style\":\"mood\"}")));
         streamer.enqueue(StreamResult.text("今天适合慢慢吃午饭。"));
@@ -264,7 +264,7 @@ public class AssistantCoreTest {
     }
 
     @Test
-    public void network_出错时收起确认卡() {
+    public void network_出错时收起确认卡() throws Exception {
         ScriptedStreamer streamer = new ScriptedStreamer();
         streamer.enqueue(StreamResult.tools(tool("call_b", "propose_add_bill",
                 "{\"amount\":18,\"remark\":\"午餐\"}")));
@@ -284,7 +284,7 @@ public class AssistantCoreTest {
     }
 
     @Test
-    public void missingKey_是出错而不是新状态() {
+    public void missingKey_是出错而不是新状态() throws Exception {
         RecordingUi ui = new RecordingUi();
         AssistantController controller = controller(new MemoryLedger(), new ScriptedStreamer(), ui,
                 new ArrayList<>(), false);
@@ -295,7 +295,7 @@ public class AssistantCoreTest {
     }
 
     @Test
-    public void process_事件不留下密钥() {
+    public void process_事件不留下密钥() throws Exception {
         String line = ProcessEvents.toolCall("2026-11-10T13:00:03+08:00", "query_spend",
                 "{\"period\":\"this_week\",\"note\":\"sk-secretkey123456\"}");
         assertFalse(line.contains("sk-secretkey123456"));
@@ -305,7 +305,7 @@ public class AssistantCoreTest {
     }
 
     @Test
-    public void emotion_四状态有球映射且可被协议钩子覆盖() {
+    public void emotion_四状态有球映射且可被协议钩子覆盖() throws Exception {
         EmotionHooks hooks = EmotionHooks.load("");
         assertEquals("30", hooks.idFor(AssistantStatus.THINKING));
         assertEquals("32", hooks.idFor(AssistantStatus.TOOL));
