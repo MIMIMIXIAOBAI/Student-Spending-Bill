@@ -981,3 +981,71 @@
 - **下一步（主管大人此前已排）**：该包测通交桌面后，下一件是对话页球约占屏高三分之一。视频和赛道文档仍等真机确认主路径后再做。后续新包仍须另存并在群里报文件名，不要覆盖已交的 `测试v0.9.apk` 和 `测试v0.10.apk`，也不要合入 `master`。
 - **文档**：箱内 `REPRODUCE.md` 已改到 `测试v0.10.apk`。请 Trae 把 `/workspace/student-assistant-docs/` 合入 PR #3，不要动 `feat/ui-tokens-p0`。
 - **来源**：学生助手比赛群，Trae助手；已核 GitHub PR #3 及提交 `d691d85`。2026-11-11 01:34（Asia/Shanghai，UTC+8）。
+
+---
+
+## 2026-11-11 · 主管核对测试v0.10.apk，并安排接着做对话页球约三分之一
+
+- **安装包（主管大人已在桌面核对）**：`C:\Users\ZXM\Desktop\测试v0.10.apk`，37,770,505 字节，时间 2026-11-11 01:33:02（Asia/Shanghai），哈希与汇报一致（SHA256 `2619f50fdaeb281a17984b4005813ff5c302b49d3ad7b6f9b9b9ff858acad70d`）。`测试v0.9.apk` 还在，没被覆盖。查账这包真机效果记为待确认。
+- **仓库**：[PR #3](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/pull/3) 头仍为 [`d691d85`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/d691d852f8ed54c3eddbdd8ed6366be7eb1328a6)，仍未合入 `master`。
+- **下一包（主管大人，按 UI设计大师已冻规格）**：现在改对话页球约占屏高三分之一。默认高度约占屏高三分之一；键盘或确认卡出现时仍可压缩，最低 160dp，不能挡住状态行、确认卡、流式回复和正在输入的内容。窗口用 `adjustResize`，输入栏贴在键盘上方。不要做已经取消的顶栏 64dp 球，首页大球也不要缩小。月份同步已经在这条 PR 里，不必重做。测通后新包另存到桌面，不要覆盖 v0.9 和 v0.10，也不要合并。视频和赛道文档仍等真机确认主路径后再做。本条不把对话页球三分之一写成已落地，也不发明下一包文件名。
+- **协议**：DSH 称【序号】34 已记下 v0.10 路径与提交号，请 Trae 把协议补丁一并合进同一条 PR #3。
+- **文档**：箱内 `REPRODUCE.md` 已把 v0.10 改为主管已核对，并写入即将进行的对话页球规格。请 Trae 把 `/workspace/student-assistant-docs/` 合入 PR #3，不要动 `feat/ui-tokens-p0`。
+- **来源**：学生助手比赛群，主管大人、UI设计大师、DSH助手、Trae助手。2026-11-11 01:34（Asia/Shanghai，UTC+8）。
+
+---
+
+## 2026-11-11 · Trae 称已交付测试v0.11.apk；已核 PR #3 头提交 8266d9f
+
+- **安装包（Trae助手称，本条未打开用户桌面二次核对，主管也尚未在本轮核对该文件）**：群消息写成 `?试v0.11.apk`，按既有桌面命名记为 `C:\Users\ZXM\Desktop\测试v0.11.apk`，文件名待核对。所称大小 37,770,505 字节，打包时间 2026-11-11 01:41:39（Asia/Shanghai），SHA256 `25c39713383ffd14080c69ec7795d4bdeae0c7693b678dc7ff6736f50e48bb68`。Trae 称没有覆盖 `测试v0.9.apk` 和 `测试v0.10.apk`，也没有合并。所称体积与已核对的 v0.9、v0.10 相同，哈希不同。Trae 称本地单元测试 43 项全部通过（含球高 4 项）；键盘或确认卡时先收到 160dp，只有还会挡住输入栏才再缩小；首页大球和月份同步没有改。真机效果待确认。请装这个包测对话页球高度，不要覆盖桌面上的 `测试v0.9.apk` 和 `测试v0.10.apk`。
+- **仓库（已核 GitHub）**：[PR #3](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/pull/3) 仍为 open，尚未合入 master，现有 41 个提交（+11012 / −136，104 个文件）。头提交已更新为 01:38:03（Asia/Shanghai，UTC+8）的 [`8266d9f`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/8266d9f76dffe41b38e58e90ad2bcc2c5911b740)，父提交为 [`cb12e1f`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/cb12e1f300179aa64fb6717e3df7451cd9690ffe)。PR 更新时间为 2026-11-11 01:38:06（Asia/Shanghai，UTC+8）。PR 正文仍是旧的（仍写顶栏「球 / 关」和 19 项测试）。
+- **8266d9f（提交说明，已核文件清单）**：`fix(chat): keep the emotion ball at about one third of the window`。说明称：对话页球约占窗口三分之一，键盘或确认卡时先收到 160dp，只有还会盖住输入栏才再缩小；首页大球和注视没有改。已核该提交改了 3 个文件（+86 / −5）：`AiChatActivity.java`、新增 `ChatBallMetrics.java` 和 `ChatBallMetricsTest.java`（4 个测试方法）。本提交未见再改 `adjustResize`；是否已在既有代码里，本条未展开核对。上述为提交说明和文件清单，本条未把代码与已冻方案逐行对完写成完全一致，也不把真机效果写成已通过。
+- **文档（已核 cb12e1f）**：`docs: record the delivered v0.10 package as prompt entry 34`（同为 01:38:03），父提交为 [`d691d85`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/d691d852f8ed54c3eddbdd8ed6366be7eb1328a6)。已核该提交改了 `docs/assistant/README.md`、`docs/assistant/REPRODUCE.md`、`docs/assistant/process/DECISION_LOG.md` 和 `prompt_evolution.md`（+125 / −8）。此前未展开的父链也已见到：[`e10151d`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/e10151d994d8fee4ea3c677e50b20e10033e72b3) 说明为冻结 `period=all` 作【序号】33。本条未把箱内 `/workspace/student-assistant-docs/` 全文与仓库逐字对照，也不把 v0.11 的球规格写成已写入该文档提交。
+- **已冻规格（主管按 UI 方案，此前已记）**：对话页默认约占屏高三分之一，键盘或确认卡时最低压到 160dp，窗口用 `adjustResize`；不要做已经取消的顶栏 64dp 球，首页大球也不要缩小。月份同步已经在这条 PR 里，不必重做。视频和赛道文档仍等真机确认主路径后再做。仍不要合入 master。
+- **来源**：学生助手比赛群，Trae助手、主管大人、UI设计大师、DSH助手、WorkBuddy助手；已核 GitHub PR #3 及提交 `8266d9f`、`cb12e1f`。2026-11-11 01:42（Asia/Shanghai，UTC+8）。
+
+---
+
+## 2026-11-11 · Trae 称已交付测试v0.11.apk；已核 PR #3 头提交 8266d9f
+
+- **安装包（Trae助手称，本条未打开用户桌面二次核对，主管也尚未在本轮核对该文件）**：`C:\Users\ZXM\Desktop\测试v0.11.apk`（37,770,505 字节，SHA256 `25c39713383ffd14080c69ec7795d4bdeae0c7693b678dc7ff6736f50e48bb68`，打包时间 2026-11-11 01:41:39 Asia/Shanghai）。Trae 称没有覆盖 `测试v0.9.apk` 和 `测试v0.10.apk`，也没有合并。所称体积与已核对的 v0.9、v0.10 相同，哈希不同。Trae 称本机单元测试 43 项全部通过（含球高 4 项）；对话页球默认约占屏高三分之一，键盘或确认卡时先收到 160dp，只有还会挡住输入栏才再缩小；首页大球和月份同步没有改。请装这个包测对话页球高，以及此前的查账与历史对话。真机效果仍记为待确认。不要覆盖已经交过的包。
+- **仓库（已核 GitHub）**：[PR #3](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/pull/3) 仍为 open，尚未合入 `master`，可合并且状态 clean。现有 41 个提交（+11012 / −136，104 个文件）。头提交已更新为 01:38:03（Asia/Shanghai，UTC+8）的 [`8266d9f`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/8266d9f76dffe41b38e58e90ad2bcc2c5911b740)，父提交为 [`cb12e1f`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/cb12e1f300179aa64fb6717e3df7451cd9690ffe)。PR 更新时间为 2026-11-11 01:38:06（Asia/Shanghai，UTC+8）。
+- **8266d9f（提交说明，已核文件清单）**：`fix(chat): keep the emotion ball at about one third of the window`。说明称：对话页球面板保持大球、约占窗口三分之一；键盘或确认卡时先收到 160dp，只有还会挡住输入栏才再缩小；首页大球尺寸和视线跟随未改。已核该提交改了 3 个文件（+86 / −5），含 `AiChatActivity.java`、新增 `ChatBallMetrics.java` 和 `ChatBallMetricsTest.java`（4 项球高测试）。本提交未见文档文件。上述为提交说明和文件清单，本条未把代码与已冻方案逐行对完写成完全一致，也不把真机效果写成已通过。Trae 称【序号】34 文档在父提交 `cb12e1f`，本条未再展开核验该提交正文。
+- **视频和赛道文档**：仍等真机确认主路径后再做。仍不要合入 `master`，也不要覆盖已交的 `测试v0.9.apk`、`测试v0.10.apk` 和 `测试v0.11.apk`。本条不发明下一包文件名，也不把下一件工程写成已开始。
+- **文档**：箱内 `REPRODUCE.md` 已改到 `测试v0.11.apk`。请 Trae 把 `/workspace/student-assistant-docs/` 合入 [PR #3](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/pull/3)，不要动 `feat/ui-tokens-p0`。
+- **来源**：学生助手比赛群，Trae助手、WorkBuddy助手；已核 GitHub PR #3 及提交 `8266d9f`。2026-11-11 01:42（Asia/Shanghai，UTC+8）。
+
+---
+
+## 2026-11-11 · 主管核对测试v0.11.apk，并收回「可再缩小」，冻 160dp 为硬下限
+
+- **文件名更正（Trae助手）**：此前群消息写成 `?试v0.11.apk`，后改为以 `测试v0.11.apk` 为准；并称 `测试v0.9.apk` 和 `测试v0.10.apk` 都还在、哈希没变。
+- **安装包（主管大人已在桌面核对）**：`C:\Users\ZXM\Desktop\测试v0.11.apk`，37,770,505 字节，时间 2026-11-11 01:41:39（Asia/Shanghai），哈希与汇报一致（SHA256 `25c39713383ffd14080c69ec7795d4bdeae0c7693b678dc7ff6736f50e48bb68`）。v0.9 和 v0.10 都还在。球高这包真机效果记为待确认。
+- **规格演进（后文为准）**：主管先说「最低仍是 160dp，只有压到 160dp 后还会挡住输入栏才允许再缩小」，随后收回该句：160dp 是硬下限，不要再往下压。若压到 160dp 仍可能挡住，优先露出输入栏、状态行、确认卡和流式回复，球停在 160dp，靠 `adjustResize` 把输入栏顶在键盘上方。UI 说明：主管收回的是「还可以再缩小」那条例外，160dp 现在是硬下限，不是常规下限。
+- **协议**：DSH 称【序号】35 已记下 v0.11 路径与提交号。DSH 随后称【序号】36 按「160dp 是常规下限，只有压到 160dp 后仍挡住输入栏才允许再缩小」写好，并称上条「不要再往下压」作废、不必为此再打新包。UI 指出这与主管收回后的硬下限不符，请把【序号】36 改成：压到 160dp 后不再往下，优先露出输入栏、状态行、确认卡和流式回复，靠 `adjustResize` 把输入栏顶在键盘上方。本条未见 DSH 已按硬下限改回的确认。
+- **今晚范围（主管大人）**：已冻的功能包到此为止，不要再开新功能。请 WorkBuddy 把复现指南改到 v0.11。视频和赛道文档仍等明早真机确认主路径。若 v0.11 低于硬下限，改完后新包另存，不要覆盖 v0.9 到 v0.11，也不要合并。
+- **来源**：学生助手比赛群，主管大人、Trae助手、UI设计大师、DSH助手、WorkBuddy助手。2026-11-11 01:48（Asia/Shanghai，UTC+8）。
+
+---
+
+## 2026-11-11 · Trae 称已交付测试v0.11.1.apk；已核 PR #3 头提交 e4dfd1b
+
+- **安装包（Trae助手称，本条未打开用户桌面二次核对，主管也尚未在本轮核对该文件）**：`C:\Users\ZXM\Desktop\测试v0.11.1.apk`，37,770,505 字节，打包时间 2026-11-11 01:48:10（Asia/Shanghai），SHA256 `609ba8883f006898872bab4b7fab02d2cf2c1c297e599f0f869d3fa247822ce7`。Trae 称没有覆盖 `测试v0.9.apk`、`测试v0.10.apk`、`测试v0.11.apk`，也没有合并。所称体积与已核对的 v0.9、v0.10、v0.11 相同，哈希不同。Trae 称本地单元测试 43 项全部通过；空间不够时球也停在 160dp，消息区让位，输入栏、状态行和确认卡留在球下面；`adjustResize` 还在。真机效果待确认。请装这个包测 160dp 硬下限，不要覆盖桌面上已交的 v0.9 到 v0.11。今晚不再开新功能。
+- **仓库（已核 GitHub）**：[PR #3](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/pull/3) 仍为 open，尚未合入 master，现有 43 个提交（+11025 / −136，104 个文件）。头提交已更新为 01:45:57（Asia/Shanghai，UTC+8）的 [`e4dfd1b`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/e4dfd1b1d96304ef4ff1a3b42b653e86f1c11df9)，父提交为 [`ee847c3`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/ee847c3d64607df8cbe9441e40b53c3e6ed48a9e)。PR 更新时间为 2026-11-11 01:45:59（Asia/Shanghai，UTC+8）。PR 正文仍是旧的（仍写顶栏「球 / 关」和 19 项测试）。
+- **ee847c3（提交说明，已核文件清单）**：`fix(chat): keep the emotion ball at least 160dp`。说明称：键盘或确认卡仍压到 160dp，短窗口不再继续缩小；三分之一之外若仍剩至少 160dp，则用剩余空间。已核该提交改了 3 个文件（+19 / −15）：`AiChatActivity.java`、`ChatBallMetrics.java`（注释写明 160dp 是硬下限，返回值不会再低）、`ChatBallMetricsTest.java`（原「空间不够时继续缩小」已改为「可用空间低于 160dp 时仍停在 160dp」）。
+- **e4dfd1b（提交说明，已核文件清单）**：`fix(chat): keep the input visible when the ball stays at 160dp`。说明称：消息列表在上方栏里让位；确认卡、状态行和输入栏留在球下面，不被盖住。已核该提交只改了 `activity_ai_chat.xml`（+10 / −1），把球和消息放进可让位的上栏，确认卡仍在该栏下面；注释改为「不再低于 160dp」。本两条提交未见再改 `adjustResize`。上述为提交说明和文件清单，本条未把代码与已冻规格逐行对完写成完全一致，也不把真机效果写成已通过。
+- **文档**：WorkBuddy 称箱内复现指南已补 `测试v0.11.apk`（当时哈希还写成等主管核对；主管已在本轮核过该文件）。请 Trae 把 `/workspace/student-assistant-docs/` 和硬下限协议一并合进同一条 PR #3，不要动 `feat/ui-tokens-p0`，也不要合并。本条未见 v0.11.1 文档已合入的新提交。
+- **来源**：学生助手比赛群，Trae助手、主管大人、UI设计大师、DSH助手、WorkBuddy助手；已核 GitHub PR #3 及提交 `e4dfd1b`、`ee847c3`。2026-11-11 01:48（Asia/Shanghai，UTC+8）。
+
+---
+
+## 2026-11-11 · 主管核对测试v0.11.apk，收回「可再缩小」，Trae 称已交付测试v0.11.1.apk
+
+- **安装包核对（主管大人已在桌面核对 v0.11）**：`C:\Users\ZXM\Desktop\测试v0.11.apk`，37,770,505 字节，时间 2026-11-11 01:41:39（Asia/Shanghai），哈希与汇报一致（SHA256 `25c39713383ffd14080c69ec7795d4bdeae0c7693b678dc7ff6736f50e48bb68`）。`测试v0.9.apk` 和 `测试v0.10.apk` 都还在，没被覆盖。当时 [PR #3](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/pull/3) 头为 [`8266d9f`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/8266d9f76dffe41b38e58e90ad2bcc2c5911b740)，仍未合并。球高这包真机效果记为待确认。
+- **球高下限（主管大人，后一句覆盖前一句）**：主管先说最低仍是 160dp，只有压到 160dp 后还会挡住输入栏才允许再缩小；随即收回该例外，改为 160dp 是硬下限，不要再往下压。若压到 160dp 仍可能挡住，优先露出输入栏、状态行、确认卡和流式回复，球停在 160dp，靠 `adjustResize` 把输入栏顶在键盘上方。UI设计大师同步指出：主管收回的是「还可以再缩小」那条例外，160dp 不是常规下限。DSH 先写出的【序号】36（「160dp 是常规下限，只有仍挡住才允许再缩小」，并称不必再打新包）与本条后一句冲突，以主管收回后的硬下限为准；本条未见【序号】36 已按硬下限改完。
+- **范围（主管大人）**：今晚已冻的功能包到此为止，不要再开新功能。视频和赛道文档仍等明早真机确认主路径后再做。曾点名 WorkBuddy 把复现指南改到 v0.11；因随后交出硬下限修正包，当前指南以 v0.11.1 为准，v0.11 仍保留为已核对的上一包。
+- **安装包（Trae助手称已另存 v0.11.1，本条未打开用户桌面二次核对，主管也尚未在本轮核对该文件）**：`C:\Users\ZXM\Desktop\测试v0.11.1.apk`（37,770,505 字节，SHA256 `609ba8883f006898872bab4b7fab02d2cf2c1c297e599f0f869d3fa247822ce7`，打包时间 2026-11-11 01:48:10 Asia/Shanghai）。Trae 称没有覆盖 `测试v0.9.apk`、`测试v0.10.apk`、`测试v0.11.apk`，也没有合并。所称体积与已核对的 v0.9 至 v0.11 相同，哈希不同。Trae 称 160dp 硬下限已改完：空间不够时球也停在 160dp，消息区让位，输入栏、状态行和确认卡留在球下面；`adjustResize` 还在；本机单元测试 43 项全部通过。请装这个包测硬下限，不要再用 v0.11 测本轮球高。真机效果仍记为待确认。不要覆盖已经交过的包。
+- **仓库（已核 GitHub）**：[PR #3](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/pull/3) 仍为 open，尚未合入 `master`，可合并且状态 clean。现有 43 个提交（+11025 / −136，104 个文件）。头提交已更新为 01:45:57（Asia/Shanghai，UTC+8）的 [`e4dfd1b`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/e4dfd1b1d96304ef4ff1a3b42b653e86f1c11df9)，父提交为同一时刻的 [`ee847c3`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/ee847c3d64607df8cbe9441e40b53c3e6ed48a9e)，再上一笔为 [`8266d9f`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/8266d9f76dffe41b38e58e90ad2bcc2c5911b740)。PR 更新时间为 2026-11-11 01:45:59（Asia/Shanghai，UTC+8）。
+- **ee847c3 与 e4dfd1b（提交说明，已核文件清单）**：`ee847c3` 为 `fix(chat): keep the emotion ball at least 160dp`，已核改了 3 个文件（+19 / −15），含 `AiChatActivity.java`、`ChatBallMetrics.java`（返回值不再低于 160dp）和 `ChatBallMetricsTest.java`（空间不够时仍断言停在 160dp）。`e4dfd1b` 为 `fix(chat): keep the input visible when the ball stays at 160dp`，已核只改了 `activity_ai_chat.xml`（+10 / −1）：球和消息在上一栏让位，确认卡、状态行和输入栏留在球下面；注释改为不再低于 160dp。上述为提交说明和文件清单，本条未把代码与已冻方案逐行对完写成完全一致，也不把真机效果写成已通过。
+- **文档**：箱内 `REPRODUCE.md` 已改到 `测试v0.11.1.apk`，并按硬下限改掉「还可再缩小」的表述。请 Trae 把 `/workspace/student-assistant-docs/` 合入 [PR #3](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/pull/3)，不要动 `feat/ui-tokens-p0`。仍不要合入 `master`。本条不发明下一包文件名，也不把下一件工程写成已开始。
+- **来源**：学生助手比赛群，主管大人、UI设计大师、DSH助手、Trae助手、WorkBuddy助手；已核 GitHub PR #3 及提交 `ee847c3`、`e4dfd1b`。2026-11-11 01:48（Asia/Shanghai，UTC+8）。
