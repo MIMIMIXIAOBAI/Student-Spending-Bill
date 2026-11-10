@@ -73,6 +73,9 @@ public final class AssistantController {
     private int rounds;
     private boolean plannerAllowed = true;
     private String transcript = "";
+    private String turnText = "";
+    private boolean needsLedger;
+    private boolean ledgerQueried;
     private ToolCall pending;
     private BillDraft pendingBill;
     private String pendingDiaryPurpose;
@@ -125,6 +128,9 @@ public final class AssistantController {
         pendingBill = null;
         pendingDiaryPurpose = null;
         transcript = "";
+        turnText = userText == null ? "" : userText;
+        needsLedger = AssistantIntentPlanner.needsSpendQuery(turnText);
+        ledgerQueried = false;
         messages.add(ChatTurn.user(userText));
         log.accept(ProcessEvents.prompt(now(), docs.version(),
                 SystemPromptBody.sha256(docs.systemPromptBody())));
@@ -252,7 +258,11 @@ public final class AssistantController {
                 @Override
                 public void onContent(String chunk) {
                     live.append(chunk);
-                    ui.onTranscript(transcript.isEmpty() ? live.toString() : transcript + "\n" + live);
+                    String visible = transcript.isEmpty() ? live.toString() : transcript + "\n" + live;
+                    if (ReplyGate.withhold(needsLedger, ledgerQueried, visible)) {
+                        return;
+                    }
+                    ui.onTranscript(visible);
                 }
             });
             if (result.promptTokens > 0 || result.completionTokens > 0) {
@@ -307,14 +317,20 @@ public final class AssistantController {
             String result = execute(call);
             messages.add(ChatTurn.tool(call.id, result));
             if ("query_spend".equals(call.name)) {
-                SpendQuery.Result query = SpendQuery.run(
-                        ledger.all(), parseArgs(call.arguments), today, chartMonth);
-                log.accept(ProcessEvents.toolResult(now(), call.name,
-                        "total=" + query.total + " count=" + query.count));
-                if (replaceVisible || transcript.isEmpty()) {
-                    showOnly(query.summary());
+                if (querySucceeded(result)) {
+                    ledgerQueried = true;
+                    SpendQuery.Result query = SpendQuery.run(
+                            ledger.all(), spendArgs(call.arguments), today, chartMonth);
+                    log.accept(ProcessEvents.toolResult(now(), call.name,
+                            "total=" + query.total + " count=" + query.count));
+                    if (replaceVisible || transcript.isEmpty()) {
+                        showOnly(query.summary());
+                    } else {
+                        show(query.summary());
+                    }
                 } else {
-                    show(query.summary());
+                    log.accept(ProcessEvents.toolResult(now(), call.name, "error"));
+                    show("这次没有查成账本。");
                 }
             } else if ("daily_fortune".equals(call.name)) {
                 log.accept(ProcessEvents.toolResult(now(), call.name, "style"));
@@ -359,7 +375,7 @@ public final class AssistantController {
 
     private String execute(ToolCall call) throws JSONException {
         if ("query_spend".equals(call.name)) {
-            return SpendQuery.run(ledger.all(), parseArgs(call.arguments), today, chartMonth).json;
+            return SpendQuery.run(ledger.all(), spendArgs(call.arguments), today, chartMonth).json;
         }
         if ("daily_fortune".equals(call.name)) {
             String style = parseArgs(call.arguments).optString("style", "fortune");
@@ -404,6 +420,9 @@ public final class AssistantController {
         if (text == null || text.isEmpty()) {
             return;
         }
+        if (ReplyGate.withhold(needsLedger, ledgerQueried, text)) {
+            return;
+        }
         if (!transcript.isEmpty() && transcript.contains(text)) {
             return;
         }
@@ -412,8 +431,30 @@ public final class AssistantController {
     }
 
     private void showOnly(String text) {
+        if (ReplyGate.withhold(needsLedger, ledgerQueried, text)) {
+            return;
+        }
         transcript = text == null ? "" : text;
         ui.onTranscript(transcript);
+    }
+
+    /** 用户没点名时间时，把模型写成 this_week 的查账改成全部账本。 */
+    private JSONObject spendArgs(String arguments) throws JSONException {
+        JSONObject args = parseArgs(arguments);
+        if (AssistantIntentPlanner.wantsEntireLedger(turnText)) {
+            args.put("period", "all");
+            args.remove("start_date");
+            args.remove("end_date");
+        }
+        return args;
+    }
+
+    private static boolean querySucceeded(String json) {
+        try {
+            return !new JSONObject(json).has("error");
+        } catch (JSONException e) {
+            return false;
+        }
     }
 
     private List<ChatTurn> withSystem() {

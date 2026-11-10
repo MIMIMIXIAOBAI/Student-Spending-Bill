@@ -114,9 +114,9 @@ public class AssistantCoreTest {
     public void 当月跟随首页选中月_点名月份用那个月() throws Exception {
         YearMonth chart = YearMonth.of(2026, 9);
         List<ToolCall> selected = AssistantIntentPlanner.plan("当月花了多少", TUESDAY, chart);
-        assertEquals("this_month", new JSONObject(selected.get(0).arguments).getString("period"));
+        assertEquals("chart_month", new JSONObject(selected.get(0).arguments).getString("period"));
         List<ToolCall> words = AssistantIntentPlanner.plan("这个月消费", TUESDAY, chart);
-        assertEquals("this_month", new JSONObject(words.get(0).arguments).getString("period"));
+        assertEquals("chart_month", new JSONObject(words.get(0).arguments).getString("period"));
 
         JSONObject named = new JSONObject(
                 AssistantIntentPlanner.plan("9月花了多少", TUESDAY, chart).get(0).arguments);
@@ -142,12 +142,72 @@ public class AssistantCoreTest {
         bills.add(bill(2, 0, 8, "餐饮", "食堂", "2026-09-18"));
         bills.add(bill(3, 0, 15, "餐饮", "食堂", "2026-11-10"));
         JSONObject args = new JSONObject();
-        args.put("period", "this_month");
+        args.put("period", "chart_month");
         SpendQuery.Result result = SpendQuery.run(bills, args, TUESDAY, YearMonth.of(2026, 9));
         assertEquals(28, result.total, 0.001);
         assertEquals(2, result.count);
         assertEquals("2026-09-01", result.periodStart);
         assertEquals("2026-09-30", result.periodEnd);
+        args.put("period", "this_month");
+        SpendQuery.Result alias = SpendQuery.run(bills, args, TUESDAY, YearMonth.of(2026, 9));
+        assertEquals(28, alias.total, 0.001);
+    }
+
+    @Test
+    public void querySpend_all含导入与手动且合计不因明细截断() throws Exception {
+        List<LedgerBill> bills = new ArrayList<>();
+        bills.add(bill(1, 0, 40, "购物", "导入店", "2025-03-01"));
+        bills.add(bill(2, 0, 5, "餐饮", "食堂", "2026-11-10"));
+        for (int i = 0; i < 19; i++) {
+            bills.add(bill(10 + i, 0, 1, i % 2 == 0 ? "购物" : "餐饮", "导入店", "2025-06-01"));
+        }
+        JSONObject args = new JSONObject();
+        args.put("period", "all");
+        SpendQuery.Result result = SpendQuery.run(bills, args, TUESDAY);
+        assertEquals(64, result.total, 0.001);
+        assertEquals(21, result.count);
+        assertEquals("2025-03-01", result.periodStart);
+        assertEquals("2026-11-10", result.periodEnd);
+        JSONObject root = new JSONObject(result.json);
+        assertEquals(20, root.getJSONArray("items").length());
+        JSONArray byCategory = root.getJSONArray("by_category");
+        double categoryTotal = 0;
+        int categoryCount = 0;
+        for (int i = 0; i < byCategory.length(); i++) {
+            categoryTotal += byCategory.getJSONObject(i).getDouble("total");
+            categoryCount += byCategory.getJSONObject(i).getInt("count");
+        }
+        assertEquals(64, categoryTotal, 0.001);
+        assertEquals(21, categoryCount);
+        assertTrue(result.summary().contains("64.00"));
+
+        args.put("period", "this_week");
+        SpendQuery.Result week = SpendQuery.run(bills, args, TUESDAY);
+        assertEquals(5, week.total, 0.001);
+        assertEquals(1, week.count);
+
+        SpendQuery.Result empty = SpendQuery.run(new ArrayList<>(), new JSONObject().put("period", "all"), TUESDAY);
+        assertEquals(0, empty.count);
+        assertEquals("", empty.periodStart);
+        assertEquals("", empty.periodEnd);
+        assertEquals("没有匹配的账单。", empty.summary());
+    }
+
+    @Test
+    public void planner_未指定时间或历史导入用all且快捷句仍本地() throws Exception {
+        assertEquals("all", periodOf("导入的账单怎么样"));
+        assertEquals("all", periodOf("历史账单"));
+        assertEquals("all", periodOf("一共花了多少"));
+        assertEquals("all", periodOf("我是不是花多了"));
+        assertEquals("all", periodOf("给我点消费建议"));
+        assertEquals("all", periodOf("食堂花了多少"));
+        assertEquals("this_week", periodOf("这周食堂花了多少"));
+        assertTrue(AssistantIntentPlanner.plan("怎么导入", TUESDAY).isEmpty());
+        assertTrue(AssistantIntentPlanner.plan("如何导入账单", TUESDAY).isEmpty());
+        assertTrue(AssistantIntentPlanner.plan("省钱建议", TUESDAY).isEmpty());
+        assertTrue(AssistantIntentPlanner.plan("消费分类", TUESDAY).isEmpty());
+        assertTrue(AssistantIntentPlanner.wantsEntireLedger("导入的账单怎么样"));
+        assertFalse(AssistantIntentPlanner.wantsEntireLedger("这周花了多少"));
     }
 
     @Test
@@ -296,6 +356,47 @@ public class AssistantCoreTest {
     }
 
     @Test
+    public void 历史账单在查到之前不展示数字且包含导入记录() throws Exception {
+        MemoryLedger ledger = new MemoryLedger();
+        ledger.add(bill(1, 0, 40, "购物", "导入店", "2025-03-01"));
+        ledger.add(bill(2, 0, 5, "餐饮", "食堂", "2026-11-10"));
+        ScriptedStreamer streamer = new ScriptedStreamer();
+        streamer.enqueue(StreamResult.text("一共花了80元"));
+        RecordingUi ui = new RecordingUi();
+        AssistantController controller = controller(ledger, streamer, ui, new ArrayList<>(), true);
+        controller.start("导入的账单怎么样");
+        assertFalse(ui.confirmVisible);
+        assertFalse(ui.transcript.contains("80"));
+        assertTrue(ui.transcript.contains("45.00"));
+        assertTrue(ui.transcript.contains("2025-03-01"));
+        assertTrue(ui.transcript.contains("2026-11-10"));
+    }
+
+    @Test
+    public void 模型把历史问成这周时仍查全部账本() throws Exception {
+        MemoryLedger ledger = new MemoryLedger();
+        ledger.add(bill(1, 0, 40, "购物", "导入店", "2025-03-01"));
+        ledger.add(bill(2, 0, 5, "餐饮", "食堂", "2026-11-10"));
+        ScriptedStreamer streamer = new ScriptedStreamer();
+        streamer.enqueue(StreamResult.tools(tool("call_q", "query_spend", "{\"period\":\"this_week\"}")));
+        streamer.enqueue(StreamResult.text("查完了"));
+        RecordingUi ui = new RecordingUi();
+        AssistantController controller = controller(ledger, streamer, ui, new ArrayList<>(), true);
+        controller.start("历史账单");
+        assertFalse(ui.confirmVisible);
+        assertTrue(ui.transcript.contains("45.00"));
+        assertFalse(ui.transcript.contains("80"));
+    }
+
+    @Test
+    public void replyGate_查账成功前拦住带数字的回复() {
+        assertTrue(ReplyGate.withhold(true, false, "一共80元"));
+        assertFalse(ReplyGate.withhold(true, true, "查询结果：¥45.00，共 2 笔。"));
+        assertFalse(ReplyGate.withhold(false, false, "18元"));
+        assertFalse(ReplyGate.withhold(true, false, "我先看一下账本"));
+    }
+
+    @Test
     public void fortune_调度第二个工具且不弹确认卡() throws Exception {
         ScriptedStreamer streamer = new ScriptedStreamer();
         streamer.enqueue(StreamResult.tools(tool("call_f", "daily_fortune", "{\"style\":\"mood\"}")));
@@ -417,6 +518,12 @@ public class AssistantCoreTest {
 
     private static ToolCall tool(String id, String name, String args) {
         return new ToolCall(id, name, args);
+    }
+
+    private static String periodOf(String text) throws Exception {
+        List<ToolCall> calls = AssistantIntentPlanner.plan(text, TUESDAY);
+        assertEquals("query_spend", calls.get(0).name);
+        return new JSONObject(calls.get(0).arguments).getString("period");
     }
 
     private static LedgerBill bill(long id, int type, double amount, String category,

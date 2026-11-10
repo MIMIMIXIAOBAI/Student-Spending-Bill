@@ -21,6 +21,7 @@ public final class RoomBillLedger implements BillLedger {
     @Override
     public List<LedgerBill> all() {
         List<LedgerBill> bills = new ArrayList<>();
+        // getAllBills 没有 batch_id 条件，历史导入和手动记下的行都在这本账里。
         for (BillEntity entity : dao.getAllBills()) {
             bills.add(from(entity));
         }
