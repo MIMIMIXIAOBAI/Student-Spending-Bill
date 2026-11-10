@@ -119,7 +119,15 @@
     <string name="quick_advice">省钱建议</string>
 
     <!-- API KEY 设置 -->
-    <string name="api_key_entry">API KEY</string>
+    <string name="api_key_entry">密钥</string>
+    <string name="deepseek_wizard_title">DeepSeek 密钥</string>
+    <string name="deepseek_wizard_hint">只连接 DeepSeek。密钥测通后写入本机 Android Keystore，不会进仓库，也不会出现在过程记录里。</string>
+    <string name="deepseek_key_hint">粘贴 DeepSeek API Key</string>
+    <string name="deepseek_test_save">测通并保存</string>
+    <string name="deepseek_testing">正在测通…</string>
+    <string name="deepseek_ok">测通了，密钥已写入本机 Keystore。</string>
+    <string name="deepseek_clear">清除</string>
+    <string name="deepseek_cleared">已从本机 Keystore 清除密钥</string>
     <string name="api_key_dialog_title">设置 API KEY</string>
     <string name="api_key_label">API KEY</string>
     <string name="api_key_hint">粘贴你的 API KEY</string>

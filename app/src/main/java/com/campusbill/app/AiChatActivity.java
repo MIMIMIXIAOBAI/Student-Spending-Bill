@@ -15,6 +15,8 @@ import com.campusbill.app.chat.ChatAdapter;
 import com.campusbill.app.chat.ChatMessage;
 import com.campusbill.app.chat.ai.AiConfig;
 import com.campusbill.app.chat.ai.AiRemoteClient;
+import com.campusbill.app.chat.ai.DeepSeekKeyStore;
+import com.campusbill.app.chat.ai.assistant.AssistantCallException;
 import com.campusbill.app.chat.ai.BillAnalysisUtils;
 import com.campusbill.app.chat.ai.BillContextBuilder;
 import com.campusbill.app.chat.ai.IntentMatcher;
@@ -62,7 +64,10 @@ public class AiChatActivity extends AppCompatActivity {
         binding.rvMessages.setAdapter(adapter);
 
         binding.btnBack.setOnClickListener(v -> finish());
-        binding.btnApiKey.setOnClickListener(v -> showApiKeyDialog());
+        binding.btnApiKey.setOnClickListener(v -> showDeepSeekWizard());
+        if (!AiConfig.hasApiKey(this)) {
+            binding.getRoot().post(this::showDeepSeekWizard);
+        }
         binding.btnSend.setOnClickListener(v -> sendMessage(binding.etMessage.getText().toString()));
         binding.chipTotal.setOnClickListener(v -> sendMessage(getString(R.string.quick_total)));
         binding.chipBudget.setOnClickListener(v -> sendMessage(getString(R.string.quick_budget)));
@@ -278,38 +283,54 @@ public class AiChatActivity extends AppCompatActivity {
         scrollToLatest();
     }
 
-    /** 右上角设置 API KEY：密钥、接口地址、模型 + 可展开的获取教程，仅保存到本机 */
-    private void showApiKeyDialog() {
-        View content = getLayoutInflater().inflate(R.layout.dialog_api_key, null);
-        EditText etApiKey = content.findViewById(R.id.etApiKey);
-        EditText etApiBase = content.findViewById(R.id.etApiBase);
-        EditText etApiModel = content.findViewById(R.id.etApiModel);
-        TextView tvGuideToggle = content.findViewById(R.id.tvGuideToggle);
-        TextView tvGuide = content.findViewById(R.id.tvGuide);
-
-        etApiKey.setText(AiConfig.getApiKey(this));
-        etApiBase.setText(AiConfig.getBaseUrl(this));
-        etApiModel.setText(AiConfig.getModel(this));
-        tvGuideToggle.setOnClickListener(v -> {
-            boolean show = tvGuide.getVisibility() != View.VISIBLE;
-            tvGuide.setVisibility(show ? View.VISIBLE : View.GONE);
-            tvGuideToggle.setText(show
-                    ? R.string.api_key_guide_hide : R.string.api_key_guide_toggle);
-        });
-
-        new AlertDialog.Builder(this)
-                .setTitle(R.string.api_key_dialog_title)
+    /** DeepSeek 专用向导：测通后才写入 Keystore。不提供其他厂商。 */
+    private void showDeepSeekWizard() {
+        if (isFinishing()) {
+            return;
+        }
+        View content = getLayoutInflater().inflate(R.layout.dialog_deepseek_key, null);
+        EditText etKey = content.findViewById(R.id.etDeepSeekKey);
+        TextView tvResult = content.findViewById(R.id.tvDeepSeekResult);
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setTitle(R.string.deepseek_wizard_title)
                 .setView(content)
-                .setPositiveButton(R.string.btn_save, (dialog, which) -> {
-                    String apiKey = etApiKey.getText().toString().trim();
-                    AiConfig.saveSettings(this, apiKey,
-                            etApiBase.getText().toString(), etApiModel.getText().toString());
-                    Toast.makeText(this, apiKey.isEmpty()
-                                    ? R.string.api_key_cleared : R.string.api_key_saved,
-                            Toast.LENGTH_SHORT).show();
-                })
+                .setPositiveButton(R.string.deepseek_test_save, null)
+                .setNeutralButton(R.string.deepseek_clear, null)
                 .setNegativeButton(R.string.btn_cancel, null)
-                .show();
+                .create();
+        dialog.setOnShowListener(shown -> {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+                String apiKey = etKey.getText().toString().trim();
+                tvResult.setText(R.string.deepseek_testing);
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
+                new Thread(() -> {
+                    try {
+                        com.campusbill.app.chat.ai.DeepSeekKeyProbe.check(apiKey);
+                        AiConfig.saveSettings(this, apiKey,
+                                AiConfig.DEFAULT_BASE_URL, AiConfig.DEFAULT_MODEL);
+                        runOnUiThread(() -> {
+                            if (isFinishing()) {
+                                return;
+                            }
+                            tvResult.setText(R.string.deepseek_ok);
+                            Toast.makeText(this, R.string.deepseek_ok, Toast.LENGTH_SHORT).show();
+                            dialog.dismiss();
+                        });
+                    } catch (AssistantCallException e) {
+                        runOnUiThread(() -> {
+                            tvResult.setText(e.getMessage());
+                            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(true);
+                        });
+                    }
+                }, "deepseek-key-probe").start();
+            });
+            dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(v -> {
+                DeepSeekKeyStore.clear(this);
+                etKey.setText("");
+                tvResult.setText(R.string.deepseek_cleared);
+            });
+        });
+        dialog.show();
     }
 
     /** 滚动到最新一条消息 */
