@@ -13,6 +13,7 @@ import com.campusbill.app.chat.ai.assistant.StreamResult;
 import com.campusbill.app.chat.ai.assistant.ToolCall;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -98,7 +99,7 @@ public final class DeepSeekStreamClient implements AssistantController.Streamer 
         }
     }
 
-    private static JSONArray messagesJson(List<ChatTurn> messages) {
+    private static JSONArray messagesJson(List<ChatTurn> messages) throws JSONException {
         JSONArray array = new JSONArray();
         if (messages == null) {
             return array;
