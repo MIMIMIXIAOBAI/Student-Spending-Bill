@@ -490,3 +490,14 @@
 - docs/assistant/emotion-map.v0.1.md
 - docs/assistant/process/README.md
 - prompt_evolution.md
+
+【序号】15
+【时间】2026-11-10
+【任务名称】文字状态补「出错」档
+【完成情况】已完成（文档修订，未改 Java）：按评估页与主管确认，文字状态在原三档（思考 / 调用工具 / 等待确认）之外增加失败态「出错」，用于密钥失败、余额不足、网络错误，同一行文字状态提示，不加新页面。修订 `think-protocol.v0.1.md`、`emotion-map.v0.1.md`，并在系统提示词中写明失败时不得编造成功结果。旧材料未润色。
+【修改/新增文件】
+- docs/assistant/think-protocol.v0.1.md
+- docs/assistant/emotion-map.v0.1.md
+- docs/assistant/SYSTEM_PROMPT.v0.1.md
+- docs/assistant/README.md
+- prompt_evolution.md

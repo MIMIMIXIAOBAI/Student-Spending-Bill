@@ -9,6 +9,7 @@
 | thinking | 思考 | 轻微思考/专注，低动效 | 流式思考 |
 | tool | 调用工具 | 短暂「工作」态 | 查询、运势、申请日记 |
 | awaiting_confirm | 等待确认 | 等待/凝视，不欢快跳动 | 确认卡可见时 |
+| error | 出错 | concerned，低动效 | 密钥失败、余额不足、网络错误；说明原因后停在这一档，不加新页面 |
 
 ## 结果态（球可选，不要另做一套文案抢对话）
 
@@ -20,12 +21,12 @@
 | 用户取消确认 | idle | 表现失望 |
 | 日记未授权 | idle，不追问第二次以上 | 假装已读日记 |
 | 运势 | light / 轻松 | 改成占卜独立页 |
-| 工具失败或 Key 未配 | concerned，文案说明原因 | 假装成功 |
+| 工具失败、密钥失败、余额不足、网络错误 | 文字状态为「出错」；球可选 concerned | 假装成功、另开错误页 |
 
 ## 映射来源（应用计算，不让模型乱设情绪）
 
 优先由客户端根据状态机映射，模型不必输出情绪字段。若以后要加可选字段，仅允许：
 
-`idle | thinking | tool | awaiting_confirm | pleased | calm | concerned | light`
+`idle | thinking | tool | awaiting_confirm | error | pleased | calm | concerned | light`
 
 禁止新增恐怖、卖萌过度、持续闪烁等干扰评审阅读的状态。
