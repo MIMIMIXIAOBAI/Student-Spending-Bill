@@ -7,3 +7,11 @@ build/
 captures/
 .externalNativeBuild/
 .cxx/
+
+# 本机密钥与密钥库（助手层）
+*.jks
+*.keystore
+secrets.properties
+
+# 过程留痕：本机原始日志（可能含明细或调试信息）
+docs/assistant/process/runtime/

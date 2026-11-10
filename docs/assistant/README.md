@@ -15,5 +15,9 @@
 | `think-protocol.v0.1.md` | 流式思考可视化与过程留痕事件 |
 | `emotion-map.v0.1.md` | 情绪/状态映射（文字状态为主体；Emotion Ball 可选可关） |
 | `process/README.md` | 过程日志目录约定 |
+| [REPRODUCE.md](REPRODUCE.md) | 评委复现步骤（WorkBuddy） |
+| [THIRD_PARTY.md](THIRD_PARTY.md) | 第三方许可，含 Emotion Ball（WorkBuddy） |
+| [process/DECISION_LOG.md](process/DECISION_LOG.md) | 已拍板决策 |
+| `process/templates/` | 会话索引、Prompt、工具、确认记录模板 |
 
-修订时递增版本号（v0.2…），旧文件保留以便评委复现。
+上表中的 v0.1 Prompt / schema / 协议文件以 DSH 版本为准，工程侧只读取、不另写一套 schema。修订时递增版本号（v0.2…），旧文件保留以便评委复现。
