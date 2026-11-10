@@ -14,11 +14,16 @@ public final class VoskPcmSession implements AutoCloseable {
         recognizer = new Recognizer(model, VoskModels.SAMPLE_RATE);
     }
 
-    public void accept(byte[] pcm, int length) {
+    /** @return 识别器判断这里有一段停顿，本段结果在 {@link #result()} */
+    public boolean accept(byte[] pcm, int length) {
         if (pcm == null || length <= 0) {
-            return;
+            return false;
         }
-        recognizer.acceptWaveForm(pcm, length);
+        return recognizer.acceptWaveForm(pcm, length);
+    }
+
+    public String result() {
+        return VoskResultText.text(recognizer.getResult());
     }
 
     public String partial() {
@@ -27,6 +32,12 @@ public final class VoskPcmSession implements AutoCloseable {
 
     public String finish() {
         return VoskResultText.text(recognizer.getFinalResult());
+    }
+
+    public String finishAndReset() {
+        String text = finish();
+        recognizer.reset();
+        return text;
     }
 
     @Override

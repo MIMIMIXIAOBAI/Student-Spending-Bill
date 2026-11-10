@@ -36,6 +36,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.campusbill.app.chat.ai.assistant.EmotionHooks;
 import com.campusbill.app.chat.voice.RecognizerFailures;
+import com.campusbill.app.chat.voice.UtteranceBuffer;
 import com.campusbill.app.chat.voice.SystemRecognizerPlan;
 import com.campusbill.app.chat.voice.VoskHoldEngine;
 import com.campusbill.app.chat.voice.VoskModelStore;
@@ -124,6 +125,12 @@ public class AiChatActivity extends AppCompatActivity {
     private boolean offlineUsed;
     private boolean offlineUnavailable;
     private final VoskHoldEngine voskHold = new VoskHoldEngine();
+    private final UtteranceBuffer heard = new UtteranceBuffer();
+    private String draftBeforeVoice = "";
+    private String voskLive = "";
+    private boolean previewActive;
+    private boolean previewShown;
+    private int emptyHoldRestarts;
     private static final String VOICE_TAG = "VoiceRoute";
     private final BallAttitudeGaze attitudeGaze = new BallAttitudeGaze(new BallAttitudeGaze.Host() {
         @Override
@@ -596,6 +603,11 @@ public class AiChatActivity extends AppCompatActivity {
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
                 micFingerDown = true;
+                if (!previewActive) {
+                    draftBeforeVoice = binding.etMessage.getText().toString();
+                    previewActive = true;
+                    previewShown = false;
+                }
                 setMicPressed(true);
                 beginVoiceHold();
                 return true;
@@ -641,6 +653,9 @@ public class AiChatActivity extends AppCompatActivity {
         pendingVoiceError = -1;
         latestPartial = "";
         finalTranscript = "";
+        heard.clear();
+        voskLive = "";
+        emptyHoldRestarts = 0;
         offlineUsed = false;
         offlineUnavailable = false;
         gazeHandler.removeCallbacks(voiceFail);
@@ -706,7 +721,7 @@ public class AiChatActivity extends AppCompatActivity {
         if (offlineUsed) {
             voiceHolding = false;
             pendingStop = false;
-            String heard = firstNonEmpty(finalTranscript, latestPartial);
+            String heard = voiceText();
             if (!heard.isEmpty()) {
                 deliverRecognized(heard);
             } else {
@@ -720,7 +735,7 @@ public class AiChatActivity extends AppCompatActivity {
             return;
         }
         voiceHolding = false;
-        String readyText = firstNonEmpty(finalTranscript, latestPartial);
+        String readyText = voiceText();
         if (pendingVoiceError >= 0 && readyText.isEmpty()) {
             pendingStop = false;
             finishVoiceAfterRelease();
@@ -802,7 +817,7 @@ public class AiChatActivity extends AppCompatActivity {
                 gazeHandler.removeCallbacks(readyTimeout);
                 if (pendingStop) {
                     pendingStop = false;
-                    String early = firstNonEmpty(finalTranscript, latestPartial);
+                    String early = voiceText();
                     if (!early.isEmpty()) {
                         deliverRecognized(early);
                         cancelListening();
@@ -834,14 +849,28 @@ public class AiChatActivity extends AppCompatActivity {
                     return;
                 }
                 pendingVoiceError = error;
-                String heard = firstNonEmpty(finalTranscript, latestPartial);
-                if (!heard.isEmpty()) {
-                    if (!voiceHolding) {
-                        deliverRecognized(heard);
+                if (voiceHolding && RecognizerFailures.restartWhileHeld(error)) {
+                    heard.sealPartial();
+                    if (heard.isEmpty()) {
+                        emptyHoldRestarts++;
+                    } else {
+                        emptyHoldRestarts = 0;
+                    }
+                    showVoicePreview(voiceText());
+                    if (emptyHoldRestarts >= RecognizerFailures.MAX_EMPTY_RESTARTS) {
+                        gazeHandler.post(() -> tryNextRecognizerOrFail(generation));
+                    } else {
+                        gazeHandler.post(() -> restartCurrentListener(generation));
                     }
                     return;
                 }
+                String spoken = voiceText();
+                if (!spoken.isEmpty() && !voiceHolding) {
+                    deliverRecognized(spoken);
+                    return;
+                }
                 if (shouldTryNextRecognizer(error)) {
+                    heard.sealPartial();
                     gazeHandler.post(() -> tryNextRecognizerOrFail(generation));
                     return;
                 }
@@ -862,8 +891,14 @@ public class AiChatActivity extends AppCompatActivity {
                 if (!current()) {
                     return;
                 }
-                rememberTranscript(results);
+                String match = firstMatch(results);
+                if (!match.isEmpty()) {
+                    heard.commit(match);
+                    emptyHoldRestarts = 0;
+                }
                 if (voiceHolding) {
+                    showVoicePreview(voiceText());
+                    gazeHandler.post(() -> restartCurrentListener(generation));
                     return;
                 }
                 finishVoiceAfterRelease();
@@ -874,7 +909,15 @@ public class AiChatActivity extends AppCompatActivity {
                 if (!current()) {
                     return;
                 }
-                rememberTranscript(partialResults);
+                String match = firstMatch(partialResults);
+                if (match.isEmpty()) {
+                    return;
+                }
+                heard.setPartial(match);
+                emptyHoldRestarts = 0;
+                if (voiceHolding) {
+                    showVoicePreview(voiceText());
+                }
             }
 
             @Override
@@ -887,7 +930,8 @@ public class AiChatActivity extends AppCompatActivity {
         if (generation != listenGeneration || voiceResultSent) {
             return;
         }
-        if (!firstNonEmpty(finalTranscript, latestPartial).isEmpty()) {
+        if (!voiceHolding && !voiceText().isEmpty()) {
+            deliverRecognized(voiceText());
             return;
         }
         if (startNextListenEngine()) {
@@ -899,6 +943,51 @@ public class AiChatActivity extends AppCompatActivity {
         }
         recognizersExhausted = true;
         fallBackToOffline();
+    }
+
+    /** 手指还按着，这句话说完了就接着听，不换引擎，也不把球从 35 挪走。 */
+    private void restartCurrentListener(int generation) {
+        if (generation != listenGeneration || !voiceHolding || voiceResultSent
+                || speechRecognizer == null) {
+            return;
+        }
+        try {
+            recognizerReady = false;
+            pendingVoiceError = -1;
+            speechRecognizer.startListening(listenIntent());
+        } catch (RuntimeException e) {
+            tryNextRecognizerOrFail(generation);
+        }
+    }
+
+    private String voiceText() {
+        return UtteranceBuffer.join(heard.text(), voskLive);
+    }
+
+    /** 按住时只把已识别的字放进输入栏，不改四档状态，也不发送。 */
+    private void showVoicePreview(String text) {
+        if (!previewActive || text == null || text.isEmpty()) {
+            return;
+        }
+        if (text.contentEquals(binding.etMessage.getText())) {
+            previewShown = true;
+            return;
+        }
+        previewShown = true;
+        binding.etMessage.setText(text);
+        if (binding.etMessage.getText().length() > 0) {
+            binding.etMessage.setSelection(binding.etMessage.getText().length());
+        }
+    }
+
+    private void clearVoicePreview() {
+        if (previewActive || previewShown) {
+            binding.etMessage.setText(draftBeforeVoice == null ? "" : draftBeforeVoice);
+        }
+        previewActive = false;
+        previewShown = false;
+        draftBeforeVoice = "";
+        voskLive = "";
     }
 
     private void fallBackToOffline() {
@@ -929,9 +1018,11 @@ public class AiChatActivity extends AppCompatActivity {
             voskHold.start(model, new VoskHoldEngine.Listener() {
                 @Override
                 public void onPartial(String text) {
-                    if (!text.isEmpty()) {
-                        latestPartial = text;
+                    if (text == null || text.isEmpty() || voiceResultSent) {
+                        return;
                     }
+                    voskLive = text.trim();
+                    showVoicePreview(voiceText());
                 }
 
                 @Override
@@ -939,12 +1030,10 @@ public class AiChatActivity extends AppCompatActivity {
                     if (voiceResultSent) {
                         return;
                     }
-                    String heard = text == null ? "" : text.trim();
-                    if (heard.isEmpty()) {
-                        heard = latestPartial == null ? "" : latestPartial.trim();
-                    }
-                    if (!heard.isEmpty()) {
-                        deliverRecognized(heard);
+                    voskLive = "";
+                    String spoken = UtteranceBuffer.join(heard.text(), text);
+                    if (!spoken.isEmpty()) {
+                        deliverRecognized(spoken);
                     } else {
                         showVoiceError(getString(R.string.assistant_voice_fail));
                     }
@@ -1010,7 +1099,7 @@ public class AiChatActivity extends AppCompatActivity {
         if (voiceResultSent || voiceHolding) {
             return;
         }
-        String text = firstNonEmpty(finalTranscript, latestPartial);
+        String text = voiceText();
         if (!text.isEmpty()) {
             deliverRecognized(text);
             return;
@@ -1030,7 +1119,15 @@ public class AiChatActivity extends AppCompatActivity {
         gazeHandler.removeCallbacks(readyTimeout);
         replyActive = true;
         pushScene("thinking");
+        String draft = draftBeforeVoice;
+        previewActive = false;
+        previewShown = false;
+        draftBeforeVoice = "";
+        voskLive = "";
         sendMessage(text.trim());
+        if (draft != null && !draft.isEmpty()) {
+            binding.etMessage.setText(draft);
+        }
     }
 
     private void cancelListening() {
@@ -1114,6 +1211,7 @@ public class AiChatActivity extends AppCompatActivity {
         voiceHolding = false;
         pendingStop = false;
         replyActive = false;
+        clearVoicePreview();
         gazeHandler.removeCallbacks(pleasedDone);
         gazeHandler.removeCallbacks(readyTimeout);
         binding.tvAssistantStatus.setText(reason);
@@ -1147,6 +1245,7 @@ public class AiChatActivity extends AppCompatActivity {
             beginVoiceHold();
         } else {
             setMicPressed(false);
+            clearVoicePreview();
             pushScene("idle");
         }
     }

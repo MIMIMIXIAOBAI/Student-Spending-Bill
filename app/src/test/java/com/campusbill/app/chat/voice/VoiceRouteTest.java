@@ -47,9 +47,39 @@ public class VoiceRouteTest {
         assertTrue(RecognizerFailures.switchEngine(RecognizerFailures.NETWORK));
         assertTrue(RecognizerFailures.switchEngine(RecognizerFailures.NETWORK_TIMEOUT));
         assertTrue(RecognizerFailures.switchEngine(RecognizerFailures.AUDIO));
-        assertTrue(RecognizerFailures.switchEngine(RecognizerFailures.SPEECH_TIMEOUT));
+        assertTrue(RecognizerFailures.restartWhileHeld(RecognizerFailures.SPEECH_TIMEOUT));
+        assertTrue(RecognizerFailures.restartWhileHeld(RecognizerFailures.NO_MATCH));
+        assertFalse(RecognizerFailures.switchEngine(RecognizerFailures.SPEECH_TIMEOUT));
         assertFalse(RecognizerFailures.switchEngine(RecognizerFailures.NO_MATCH));
         assertFalse(RecognizerFailures.switchEngine(RecognizerFailures.PERMISSION));
+    }
+
+    @Test
+    public void 停顿才断句_短间隙和多段文字仍拼成一条() {
+        PauseSegmenter segmenter = new PauseSegmenter();
+        assertFalse(segmenter.push(tone(300, 4000), tone(300, 4000).length).flush);
+        assertFalse(segmenter.push(tone(200, 0), tone(200, 0).length).flush);
+        assertTrue(segmenter.push(tone(600, 0), tone(600, 0).length).flush);
+
+        UtteranceBuffer buffer = new UtteranceBuffer();
+        buffer.commit("你好");
+        buffer.setPartial("食堂");
+        assertEquals("你好 食堂", buffer.text());
+        buffer.sealPartial();
+        buffer.commit("花了多少");
+        assertEquals("你好 食堂 花了多少", buffer.text());
+        assertEquals("你好 食堂", UtteranceBuffer.join("你好", "食堂"));
+    }
+
+    private static byte[] tone(int ms, int amplitude) {
+        int samples = VoskModels.SAMPLE_RATE * ms / 1000;
+        byte[] pcm = new byte[samples * 2];
+        for (int i = 0; i < samples; i++) {
+            short sample = (short) ((i % 20 < 10) ? amplitude : -amplitude);
+            pcm[i * 2] = (byte) sample;
+            pcm[i * 2 + 1] = (byte) (sample >> 8);
+        }
+        return pcm;
     }
 
     @Test

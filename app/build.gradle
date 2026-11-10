@@ -68,7 +68,7 @@ tasks.register("fetchVoskChineseModel") {
     }
 }
 
-android.sourceSets.main.assets.srcDir(layout.buildDirectory.dir("generated/assets"))
+android.sourceSets.main.assets.srcDir("build/generated/assets")
 
 tasks.named("preBuild").configure {
     dependsOn("syncAssistantDocs", "fetchVoskChineseModel")
@@ -90,6 +90,7 @@ dependencies {
     implementation 'com.alphacephei:vosk-android:0.3.75'
 
     testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.json:json:20240303'
     // 桌面单测走带 Linux 原生库的 jar。Android 包仍用上面的 vosk-android。
     testImplementation 'com.alphacephei:vosk:0.3.45'
     testImplementation 'net.java.dev.jna:jna:5.18.1'

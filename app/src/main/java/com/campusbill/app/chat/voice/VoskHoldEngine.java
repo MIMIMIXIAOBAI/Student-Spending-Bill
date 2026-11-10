@@ -43,9 +43,9 @@ public final class VoskHoldEngine {
 
     private void capture(Model model, Listener listener) {
         AudioRecord audio = null;
-        VoskPcmSession session = null;
+        VoskSegmentReader reader = null;
         try {
-            session = new VoskPcmSession(model);
+            reader = new VoskSegmentReader(model);
             int min = AudioRecord.getMinBufferSize(
                     VoskModels.SAMPLE_RATE,
                     AudioFormat.CHANNEL_IN_MONO,
@@ -72,13 +72,13 @@ public final class VoskHoldEngine {
                     postFailed(listener);
                     return;
                 }
-                session.accept(buf, n);
-                String partial = session.partial();
-                if (!partial.isEmpty()) {
-                    main.post(() -> listener.onPartial(partial));
+                String preview = reader.push(buf, n);
+                if (!preview.isEmpty()) {
+                    String shown = preview;
+                    main.post(() -> listener.onPartial(shown));
                 }
             }
-            String text = session.finish();
+            String text = reader.finish();
             main.post(() -> {
                 running = false;
                 listener.onStopped(text);
@@ -94,8 +94,8 @@ public final class VoskHoldEngine {
                 }
                 audio.release();
             }
-            if (session != null) {
-                session.close();
+            if (reader != null) {
+                reader.close();
             }
             running = false;
         }

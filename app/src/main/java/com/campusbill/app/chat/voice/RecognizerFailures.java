@@ -18,8 +18,15 @@ public final class RecognizerFailures {
     public static final int SERVER_DISCONNECTED = 11;
     public static final int LANGUAGE_NOT_SUPPORTED = 12;
     public static final int LANGUAGE_UNAVAILABLE = 13;
+    /** 按住期间连续空超时这么多次，才放弃当前系统引擎。 */
+    public static final int MAX_EMPTY_RESTARTS = 3;
 
     private RecognizerFailures() {
+    }
+
+    /** 手指还按着时，这些结果是一句说完了，不是引擎坏了。接着听，不要换引擎。 */
+    public static boolean restartWhileHeld(int error) {
+        return error == SPEECH_TIMEOUT || error == NO_MATCH;
     }
 
     public static boolean switchEngine(int error) {
@@ -29,7 +36,6 @@ public final class RecognizerFailures {
             case AUDIO:
             case SERVER:
             case CLIENT:
-            case SPEECH_TIMEOUT:
             case BUSY:
             case SERVER_DISCONNECTED:
             case LANGUAGE_NOT_SUPPORTED:

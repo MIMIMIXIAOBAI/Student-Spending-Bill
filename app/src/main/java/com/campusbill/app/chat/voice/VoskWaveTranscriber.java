@@ -24,17 +24,21 @@ public final class VoskWaveTranscriber {
         if (audio.sampleRate != VoskModels.SAMPLE_RATE || audio.channels != 1 || audio.bitsPerSample != 16) {
             throw new IOException("需要 16 kHz 16-bit 单声道 WAV");
         }
+        return transcribePcm(modelDir, audio.pcm);
+    }
+
+    public static String transcribePcm(File modelDir, byte[] pcm) throws IOException {
         try (Model model = new Model(modelDir.getAbsolutePath());
-             VoskPcmSession session = new VoskPcmSession(model)) {
+             VoskSegmentReader reader = new VoskSegmentReader(model)) {
             int offset = 0;
-            while (offset < audio.pcm.length) {
-                int length = Math.min(4096, audio.pcm.length - offset);
+            while (offset < pcm.length) {
+                int length = Math.min(4096, pcm.length - offset);
                 byte[] slice = new byte[length];
-                System.arraycopy(audio.pcm, offset, slice, 0, length);
-                session.accept(slice, length);
+                System.arraycopy(pcm, offset, slice, 0, length);
+                reader.push(slice, length);
                 offset += length;
             }
-            return session.finish();
+            return reader.finish();
         }
     }
 }

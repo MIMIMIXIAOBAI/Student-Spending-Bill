@@ -39,6 +39,30 @@ public class VoskChineseSampleTest {
         assertTrue(text.contains("食堂"));
     }
 
+    @Test
+    public void 中间停顿的长句仍能听出中文且不短于单句() throws Exception {
+        File model = modelDir();
+        Assume.assumeTrue(model != null && model.isDirectory());
+        Assume.assumeTrue(nativeLibraryLoads());
+        byte[] phrase;
+        try (InputStream input = VoskChineseSampleTest.class.getResourceAsStream("/voice/canteen.wav")) {
+            Assume.assumeTrue(input != null);
+            phrase = WavPcm.read(input).pcm;
+        }
+        String once = VoskWaveTranscriber.transcribePcm(model, phrase);
+        assertTrue(once.contains("食堂"));
+        int gapSamples = VoskModels.SAMPLE_RATE * 800 / 1000;
+        byte[] gap = new byte[gapSamples * 2];
+        byte[] both = new byte[phrase.length * 2 + gap.length];
+        System.arraycopy(phrase, 0, both, 0, phrase.length);
+        System.arraycopy(gap, 0, both, phrase.length, gap.length);
+        System.arraycopy(phrase, 0, both, phrase.length + gap.length, phrase.length);
+        String longer = VoskWaveTranscriber.transcribePcm(model, both);
+        assertFalse(longer.isEmpty());
+        assertTrue(longer.contains("食堂"));
+        assertTrue(longer.length() > once.length());
+    }
+
     private static java.util.List<SystemRecognizerPlan.Service> CollectionsEmpty() {
         return java.util.Collections.emptyList();
     }
