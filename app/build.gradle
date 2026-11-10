@@ -38,8 +38,40 @@ tasks.register("syncAssistantDocs", Copy) {
     into("${projectDir}/src/main/assets/assistant")
 }
 
+def voskModelZip = layout.buildDirectory.file("generated/assets/vosk/vosk-model-small-cn-0.22.zip")
+
+tasks.register("fetchVoskChineseModel") {
+    def dest = voskModelZip
+    outputs.upToDateWhen {
+        def file = dest.get().asFile
+        file.isFile() && file.length() > 30_000_000L
+    }
+    doLast {
+        def file = dest.get().asFile
+        if (file.isFile() && file.length() > 30_000_000L) {
+            return
+        }
+        file.parentFile.mkdirs()
+        def connection = new URL("https://alphacephei.com/vosk/models/vosk-model-small-cn-0.22.zip")
+                .openConnection()
+        connection.connectTimeout = 20000
+        connection.readTimeout = 180000
+        connection.inputStream.withCloseable { input ->
+            file.newOutputStream().withCloseable { output ->
+                output << input
+            }
+        }
+        if (file.length() < 30_000_000L) {
+            file.delete()
+            throw new GradleException("Vosk 中文小模型下载不完整")
+        }
+    }
+}
+
+android.sourceSets.main.assets.srcDir(layout.buildDirectory.dir("generated/assets"))
+
 tasks.named("preBuild").configure {
-    dependsOn("syncAssistantDocs")
+    dependsOn("syncAssistantDocs", "fetchVoskChineseModel")
 }
 
 dependencies {
@@ -55,6 +87,10 @@ dependencies {
     implementation 'com.tom-roush:pdfbox-android:2.0.27.0'
 
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
+    implementation 'com.alphacephei:vosk-android:0.3.75'
 
     testImplementation 'junit:junit:4.13.2'
+    // 桌面单测走带 Linux 原生库的 jar。Android 包仍用上面的 vosk-android。
+    testImplementation 'com.alphacephei:vosk:0.3.45'
+    testImplementation 'net.java.dev.jna:jna:5.18.1'
 }

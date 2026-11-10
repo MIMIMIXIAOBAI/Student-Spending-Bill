@@ -20,7 +20,16 @@
 | 使用的 git ref / commit | _待 Trae 接入后填写_ |
 | 资源在本仓库中的路径 | _待填写_ |
 
-## 2. 账本工程已有依赖（沿用根 README）
+## 2. Vosk 离线中文识别
+
+| 项 | 说明 |
+|---|---|
+| 来源 | [alphacep/vosk-api](https://github.com/alphacep/vosk-api)，Android 库 `com.alphacephei:vosk-android` |
+| 模型 | `vosk-model-small-cn-0.22`，Apache-2.0。构建时从 [官方模型页](https://alphacephei.com/vosk/models/vosk-model-small-cn-0.22.zip) 下载进 APK，不提交压缩包 |
+| 用法 | 系统 `RecognitionService` 缺失或全部失败后，按住说话改走本机 Vosk。对话页打开时在后台解压模型 |
+| 许可 | Apache-2.0。过程页保留这段署名 |
+
+## 3. 账本工程已有依赖（沿用根 README）
 
 | 组件 | 版本（以 `app/build.gradle` 为准） | 用途 | 来源/许可证（请以官方仓库为准） |
 |---|---|---|---|
@@ -33,7 +42,7 @@
 
 DeepSeek 为用户自备的云端模型服务，本仓库不包含其 SDK 密钥或专有模型权重。
 
-## 3. 新增开源时的检查单
+## 4. 新增开源时的检查单
 
 - [ ] 记录仓库 URL、许可全文链接、使用的 commit
 - [ ] 比赛可用但须标注；禁止扒取付费/闭源项目

@@ -136,7 +136,7 @@ app/src/main/java/com/campusbill/app/
 
 - [docs/assistant/REPRODUCE.md](docs/assistant/REPRODUCE.md) · 10分钟极速复现指南
 - [docs/assistant/env.example](docs/assistant/env.example) · 环境变量模板（无真实 Key）
-- [docs/assistant/THIRD_PARTY.md](docs/assistant/THIRD_PARTY.md) · 第三方许可（**Emotion Ball 球形造型不可商用**，须保留署名）
+- [docs/assistant/THIRD_PARTY.md](docs/assistant/THIRD_PARTY.md) · 第三方许可（**Emotion Ball 球形造型不可商用**，须保留署名；离线语音为 Vosk Apache-2.0 与中文小模型）
 - [docs/assistant/SUBMISSION-CHECKLIST.md](docs/assistant/SUBMISSION-CHECKLIST.md) · 交赛材料清单
 - [docs/assistant/process/](docs/assistant/process/) · 决策 / Prompt / 工具参数 / 确认记录模板与归档
 
