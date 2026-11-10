@@ -1049,3 +1049,25 @@
 - **ee847c3 与 e4dfd1b（提交说明，已核文件清单）**：`ee847c3` 为 `fix(chat): keep the emotion ball at least 160dp`，已核改了 3 个文件（+19 / −15），含 `AiChatActivity.java`、`ChatBallMetrics.java`（返回值不再低于 160dp）和 `ChatBallMetricsTest.java`（空间不够时仍断言停在 160dp）。`e4dfd1b` 为 `fix(chat): keep the input visible when the ball stays at 160dp`，已核只改了 `activity_ai_chat.xml`（+10 / −1）：球和消息在上一栏让位，确认卡、状态行和输入栏留在球下面；注释改为不再低于 160dp。上述为提交说明和文件清单，本条未把代码与已冻方案逐行对完写成完全一致，也不把真机效果写成已通过。
 - **文档**：箱内 `REPRODUCE.md` 已改到 `测试v0.11.1.apk`，并按硬下限改掉「还可再缩小」的表述。请 Trae 把 `/workspace/student-assistant-docs/` 合入 [PR #3](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/pull/3)，不要动 `feat/ui-tokens-p0`。仍不要合入 `master`。本条不发明下一包文件名，也不把下一件工程写成已开始。
 - **来源**：学生助手比赛群，主管大人、UI设计大师、DSH助手、Trae助手、WorkBuddy助手；已核 GitHub PR #3 及提交 `ee847c3`、`e4dfd1b`。2026-11-11 01:48（Asia/Shanghai，UTC+8）。
+
+---
+
+## 2026-11-11 · 主管核对测试v0.11.1.apk，安装包改放到桌面「测试」文件夹
+
+- **安装包（主管大人已核对，并确认实际路径）**：`C:\Users\ZXM\Desktop\测试\测试v0.11.1.apk`，37,770,505 字节，时间 2026-11-11 01:48（Asia/Shanghai），哈希与汇报一致（SHA256 `609ba8883f006898872bab4b7fab02d2cf2c1c297e599f0f869d3fa247822ce7`）。主管称 `测试v0.9.apk` 到 `测试v0.11.apk` 的哈希也没变。这些包现在都在 `C:\Users\ZXM\Desktop\测试\` 里，不在桌面根目录。
+- **后续交付（用户提出，DSH 已转达）**：后面的安装包放到 `C:\Users\ZXM\Desktop\测试\`，不要再直接放在桌面根目录；若文件夹还没有就先建再放。已交过的 v0.9 到 v0.11.1 先留在该文件夹，不要覆盖，也不要合并。
+- **球高（主管大人，覆盖【序号】36 的例外）**：160dp 是硬下限，不是常规下限。【序号】36 里「还可以再往下压」那句作废；压到 160dp 后不再缩小，优先露出输入栏、状态行、确认卡和流式回复，靠 `adjustResize` 顶起输入栏。DSH 称【序号】37 已按收回后的稿改好，请 Trae 按 37 合进 [PR #3](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/pull/3)，不要把 36 的旧表述当现行规格。
+- **仓库**：[PR #3](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/pull/3) 头仍为 [`e4dfd1b`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/e4dfd1b1d96304ef4ff1a3b42b653e86f1c11df9)，仍未合入 `master`。真机效果待确认。今晚不再开新功能。视频和赛道文档仍等明早真机确认主路径后再做。
+- **文档**：箱内 `REPRODUCE.md` 已改到主管核对后的 v0.11.1，路径改为 `C:\Users\ZXM\Desktop\测试\`。请 Trae 把 `/workspace/student-assistant-docs/` 与【序号】37 一并合入 PR #3，不要动 `feat/ui-tokens-p0`。
+- **来源**：学生助手比赛群，用户、主管大人、DSH助手、Trae助手。2026-11-11 01:49（Asia/Shanghai，UTC+8）。
+
+---
+
+## 2026-11-11 · Trae 合入文档头为 d3e062c，复现指南路径仍是桌面根目录
+
+- **仓库（已核 GitHub）**：[PR #3](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/pull/3) 仍为 open，尚未合入 `master`，可合并且状态 clean。现有 46 个提交（+11120 / −136，104 个文件）。头提交已更新为 01:51:20（Asia/Shanghai，UTC+8）的 [`d3e062c`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/d3e062ce6a96874e134d9fcdc411f4a4ff594f26)，父提交为 [`3045b6f`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/3045b6f6af0aa01cb75356461916468f33f3947a)。PR 更新时间为 2026-11-11 01:51:22（Asia/Shanghai，UTC+8）。
+- **d3e062c（提交说明，已核文件清单与正文路径）**：`docs: copy the v0.11 reproduce guide and decision log`。说明称记录到 `测试v0.11.1` 的已交包装，不改应用。已核该提交只改了 2 个文件（+74 / −6）：`docs/assistant/REPRODUCE.md` 和 `docs/assistant/process/DECISION_LOG.md`。Trae 称【序号】35 到 37 已按原文合进同一条 PR，37 接在 36 后面只出现一次；没有改业务代码，没有打新包，也没有合并。本条未再展开核验协议正文，也未展开核验父提交 `3045b6f`。
+- **路径不符（已核合入后的 REPRODUCE.md）**：合入稿仍写成 `C:\Users\ZXM\Desktop\测试v0.11.1.apk`，并仍写「主管也尚未核对该文件」。这与主管在 01:49 的核对和路径要求不符：现行路径应为 `C:\Users\ZXM\Desktop\测试\测试v0.11.1.apk`，该包主管已核对，且 v0.9 到 v0.11.1 都在 `C:\Users\ZXM\Desktop\测试\`，不在桌面根目录。箱内 `/workspace/student-assistant-docs/` 已按该路径和核对结果改过，本次合入用的是更早一版。
+- **口头口径**：Trae 称已交过的 v0.9 到 v0.11.1 先留在桌面原处、不挪动。主管已明确这些包其实已经在 `测试` 文件夹里，文档不要再写成桌面根目录路径。已交的包不必再挪，文档按文件夹路径写即可。
+- **文档**：请 Trae 再把最新箱内 `/workspace/student-assistant-docs/` 合入 PR #3，不要动 `feat/ui-tokens-p0`，也不要合入 `master`。不要覆盖已交的包，也不要开新功能。
+- **来源**：学生助手比赛群，主管大人、Trae助手、WorkBuddy助手；已核 GitHub PR #3、提交 `d3e062c` 及其中 `REPRODUCE.md`。2026-11-11 01:52（Asia/Shanghai，UTC+8）。
