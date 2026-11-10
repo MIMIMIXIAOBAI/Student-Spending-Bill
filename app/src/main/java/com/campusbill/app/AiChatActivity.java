@@ -1,12 +1,19 @@
 package com.campusbill.app;
 
+import android.Manifest;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.speech.RecognitionListener;
+import android.speech.RecognizerIntent;
+import android.speech.SpeechRecognizer;
 import android.text.TextUtils;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -16,7 +23,13 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
+
+import com.campusbill.app.chat.ai.assistant.EmotionHooks;
 
 import com.campusbill.app.chat.ChatAdapter;
 import com.campusbill.app.chat.ChatMessage;
@@ -60,8 +73,22 @@ public class AiChatActivity extends AppCompatActivity {
     private String lastEmotionId = "02";
     private boolean emotionReady;
     private boolean ballShouldRun;
+    private boolean keyboardVisible;
+    private boolean confirmCardVisible;
+    private boolean voiceHolding;
+    private boolean voiceResultSent;
+    private boolean replyActive;
+    private SpeechRecognizer speechRecognizer;
+    private final EmotionHooks ballScenes = EmotionHooks.load("");
     private final Handler gazeHandler = new Handler(Looper.getMainLooper());
     private final Runnable gazeHome = () -> pushGaze(0f, 0f);
+    private final Runnable pleasedDone = () -> {
+        if (!voiceHolding && !confirmCardVisible) {
+            pushScene("idle");
+        }
+    };
+    private final Runnable voiceFail = () -> showVoiceError(getString(R.string.assistant_voice_fail));
+    private static final int REQUEST_MIC = 41;
     /** 向导测通失败时，状态行「重试」再测这一次粘贴的密钥。 */
     private boolean retryKeyProbe;
     private String retryKey = "";
@@ -99,15 +126,39 @@ public class AiChatActivity extends AppCompatActivity {
                 boolean errorLine = isErrorLine(statusText);
                 binding.btnStatusRetry.setVisibility(errorLine ? View.VISIBLE : View.GONE);
                 retryKeyProbe = false;
-                if (emotionId != null && !emotionId.isEmpty()) {
-                    lastEmotionId = emotionId;
-                }
-                pushEmotion();
                 if (!confirmVisible) {
                     confirmBody = null;
                 }
-                binding.confirmCard.setVisibility(
-                        confirmVisible && confirmBody != null ? View.VISIBLE : View.GONE);
+                applyConfirmCard(confirmVisible && confirmBody != null);
+                if (voiceHolding) {
+                    pushScene("listening");
+                } else if (isErrorLine(statusText)) {
+                    replyActive = false;
+                    gazeHandler.removeCallbacks(pleasedDone);
+                    pushScene("concerned");
+                } else if (statusText == null || statusText.isEmpty()) {
+                    if (replyActive) {
+                        replyActive = false;
+                        pushScene("pleased");
+                        gazeHandler.postDelayed(pleasedDone, 1500);
+                    } else if (emotionId != null && !emotionId.isEmpty()) {
+                        lastEmotionId = emotionId;
+                        pushEmotion();
+                    }
+                } else {
+                    if (AssistantStatus.THINKING.label.equals(statusText)
+                            || AssistantStatus.TOOL.label.equals(statusText)) {
+                        replyActive = true;
+                        gazeHandler.removeCallbacks(pleasedDone);
+                    } else if (confirmVisible) {
+                        replyActive = false;
+                        gazeHandler.removeCallbacks(pleasedDone);
+                    }
+                    if (emotionId != null && !emotionId.isEmpty()) {
+                        lastEmotionId = emotionId;
+                    }
+                    pushEmotion();
+                }
             }
 
             @Override
@@ -127,11 +178,12 @@ public class AiChatActivity extends AppCompatActivity {
                 binding.btnConfirmOk.setText(title != null && title.contains("日记")
                         ? R.string.assistant_confirm_diary : R.string.assistant_confirm_ok);
                 if ("等待确认".equals(binding.tvAssistantStatus.getText().toString())) {
-                    binding.confirmCard.setVisibility(View.VISIBLE);
+                    applyConfirmCard(true);
                 }
             }
         });
         binding.btnStatusRetry.setOnClickListener(v -> retryFailedRequest());
+        binding.btnHoldTalk.setOnTouchListener((v, event) -> onHoldTalk(event));
         if (!AiConfig.hasApiKey(this)) {
             binding.getRoot().post(this::showDeepSeekWizard);
         }
@@ -363,7 +415,7 @@ public class AiChatActivity extends AppCompatActivity {
         scrollToLatest();
     }
 
-    /** 对话页顶栏约 64dp 小球，只跟视线和思考表情，不挡消息、状态行和确认卡。 */
+    /** 对话页球面板。键盘或确认卡出现时压到 160dp，不盖住状态行和确认卡。 */
     private void setupEmotionBall() {
         WebSettings settings = binding.emotionBall.getSettings();
         settings.setJavaScriptEnabled(true);
@@ -379,6 +431,206 @@ public class AiChatActivity extends AppCompatActivity {
             }
         });
         binding.emotionBall.loadUrl("file:///android_asset/emotion-ball/host.html");
+        binding.getRoot().addOnLayoutChangeListener(
+                (v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+                    if (bottom - top != oldBottom - oldTop) {
+                        applyBallPanelHeight();
+                    }
+                });
+        ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, insets) -> {
+            keyboardVisible = insets.isVisible(WindowInsetsCompat.Type.ime());
+            applyBallPanelHeight();
+            return insets;
+        });
+        ViewCompat.requestApplyInsets(binding.getRoot());
+        applyBallPanelHeight();
+    }
+
+    private void applyConfirmCard(boolean show) {
+        confirmCardVisible = show;
+        binding.confirmCard.setVisibility(show ? View.VISIBLE : View.GONE);
+        applyBallPanelHeight();
+    }
+
+    private void applyBallPanelHeight() {
+        int windowPx = binding.getRoot().getHeight();
+        if (windowPx <= 0) {
+            windowPx = getResources().getDisplayMetrics().heightPixels;
+        }
+        int expanded = Math.min(Math.round(windowPx * 0.4f), dp(320));
+        int target = (keyboardVisible || confirmCardVisible) ? dp(160) : expanded;
+        ViewGroup.LayoutParams params = binding.emotionBallPanel.getLayoutParams();
+        if (params.height != target) {
+            params.height = target;
+            binding.emotionBallPanel.setLayoutParams(params);
+        }
+    }
+
+    private int dp(int value) {
+        return Math.round(value * getResources().getDisplayMetrics().density);
+    }
+
+    private boolean onHoldTalk(MotionEvent event) {
+        switch (event.getActionMasked()) {
+            case MotionEvent.ACTION_DOWN:
+                beginVoiceHold();
+                return true;
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_CANCEL:
+                endVoiceHold();
+                return true;
+            default:
+                return true;
+        }
+    }
+
+    private void beginVoiceHold() {
+        voiceHolding = true;
+        voiceResultSent = false;
+        gazeHandler.removeCallbacks(voiceFail);
+        gazeHandler.removeCallbacks(pleasedDone);
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+                != PackageManager.PERMISSION_GRANTED) {
+            voiceHolding = false;
+            showVoiceError(getString(R.string.assistant_voice_mic));
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.RECORD_AUDIO}, REQUEST_MIC);
+            return;
+        }
+        if (!SpeechRecognizer.isRecognitionAvailable(this)) {
+            voiceHolding = false;
+            showVoiceError(getString(R.string.assistant_voice_fail));
+            return;
+        }
+        pushScene("listening");
+        ensureRecognizer();
+        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "zh-CN");
+        intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, false);
+        try {
+            speechRecognizer.startListening(intent);
+        } catch (RuntimeException e) {
+            voiceHolding = false;
+            showVoiceError(getString(R.string.assistant_voice_fail));
+        }
+    }
+
+    private void endVoiceHold() {
+        if (!voiceHolding) {
+            return;
+        }
+        voiceHolding = false;
+        if (speechRecognizer != null) {
+            try {
+                speechRecognizer.stopListening();
+            } catch (RuntimeException e) {
+                showVoiceError(getString(R.string.assistant_voice_fail));
+            }
+        }
+    }
+
+    private void ensureRecognizer() {
+        if (speechRecognizer != null) {
+            return;
+        }
+        speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this);
+        speechRecognizer.setRecognitionListener(new RecognitionListener() {
+            @Override
+            public void onReadyForSpeech(Bundle params) {
+            }
+
+            @Override
+            public void onBeginningOfSpeech() {
+            }
+
+            @Override
+            public void onRmsChanged(float rmsdB) {
+            }
+
+            @Override
+            public void onBufferReceived(byte[] buffer) {
+            }
+
+            @Override
+            public void onEndOfSpeech() {
+            }
+
+            @Override
+            public void onError(int error) {
+                if (voiceResultSent || voiceHolding) {
+                    return;
+                }
+                if (error == SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS) {
+                    showVoiceError(getString(R.string.assistant_voice_mic));
+                    return;
+                }
+                gazeHandler.removeCallbacks(voiceFail);
+                gazeHandler.postDelayed(voiceFail, 350);
+            }
+
+            @Override
+            public void onResults(Bundle results) {
+                gazeHandler.removeCallbacks(voiceFail);
+                if (voiceResultSent) {
+                    return;
+                }
+                voiceResultSent = true;
+                ArrayList<String> matches = results == null
+                        ? null : results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+                String text = matches == null || matches.isEmpty() ? "" : matches.get(0);
+                if (text == null || text.trim().isEmpty()) {
+                    showVoiceError(getString(R.string.assistant_voice_fail));
+                    return;
+                }
+                replyActive = true;
+                pushScene("thinking");
+                sendMessage(text.trim());
+            }
+
+            @Override
+            public void onPartialResults(Bundle partialResults) {
+            }
+
+            @Override
+            public void onEvent(int eventType, Bundle params) {
+            }
+        });
+    }
+
+    private void showVoiceError(String reason) {
+        voiceHolding = false;
+        replyActive = false;
+        gazeHandler.removeCallbacks(pleasedDone);
+        binding.tvAssistantStatus.setText(reason);
+        binding.btnStatusRetry.setVisibility(View.GONE);
+        pushScene("concerned");
+    }
+
+    private void pushScene(String scene) {
+        lastEmotionId = ballScenes.idForScene(scene);
+        pushEmotion();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_MIC
+                && (grantResults.length == 0 || grantResults[0] != PackageManager.PERMISSION_GRANTED)) {
+            showVoiceError(getString(R.string.assistant_voice_mic));
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        gazeHandler.removeCallbacks(voiceFail);
+        gazeHandler.removeCallbacks(pleasedDone);
+        if (speechRecognizer != null) {
+            speechRecognizer.destroy();
+            speechRecognizer = null;
+        }
+        super.onDestroy();
     }
 
     @Override
@@ -508,7 +760,7 @@ public class AiChatActivity extends AppCompatActivity {
         binding.tvAssistantStatus.setText(line);
         binding.btnStatusRetry.setVisibility(View.VISIBLE);
         confirmBody = null;
-        binding.confirmCard.setVisibility(View.GONE);
+        applyConfirmCard(false);
     }
 
     private static boolean isErrorLine(String text) {

@@ -73,8 +73,11 @@ public final class EmotionHooks {
 
     /** 结果态，不新增文字状态。 */
     public String idForScene(String scene) {
+        if ("listening".equals(scene)) {
+            return "31";
+        }
         if ("pleased".equals(scene)) {
-            return "19";
+            return "33";
         }
         if ("light".equals(scene)) {
             return "10";

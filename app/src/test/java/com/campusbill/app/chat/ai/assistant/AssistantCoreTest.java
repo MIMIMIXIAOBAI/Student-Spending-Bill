@@ -333,6 +333,9 @@ public class AssistantCoreTest {
         assertEquals("32", hooks.idFor(AssistantStatus.TOOL));
         assertEquals("35", hooks.idFor(AssistantStatus.AWAITING_CONFIRM));
         assertEquals("34", hooks.idFor(AssistantStatus.ERROR));
+        assertEquals("31", hooks.idForScene("listening"));
+        assertEquals("33", hooks.idForScene("pleased"));
+        assertEquals("34", hooks.idForScene("concerned"));
         EmotionHooks updated = EmotionHooks.load("hook:出错=38\n");
         assertEquals("38", updated.idFor(AssistantStatus.ERROR));
         assertEquals("30", updated.idFor(AssistantStatus.THINKING));
