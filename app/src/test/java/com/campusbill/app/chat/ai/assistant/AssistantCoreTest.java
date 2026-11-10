@@ -14,6 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -107,6 +108,46 @@ public class AssistantCoreTest {
         assertEquals("2026-11-09", result.periodStart);
         assertEquals("2026-11-15", result.periodEnd);
         assertTrue(result.json.contains("\"count\":2"));
+    }
+
+    @Test
+    public void 当月跟随首页选中月_点名月份用那个月() throws Exception {
+        YearMonth chart = YearMonth.of(2026, 9);
+        List<ToolCall> selected = AssistantIntentPlanner.plan("当月花了多少", TUESDAY, chart);
+        assertEquals("this_month", new JSONObject(selected.get(0).arguments).getString("period"));
+        List<ToolCall> words = AssistantIntentPlanner.plan("这个月消费", TUESDAY, chart);
+        assertEquals("this_month", new JSONObject(words.get(0).arguments).getString("period"));
+
+        JSONObject named = new JSONObject(
+                AssistantIntentPlanner.plan("9月花了多少", TUESDAY, chart).get(0).arguments);
+        assertEquals("custom", named.getString("period"));
+        assertEquals("2026-09-01", named.getString("start_date"));
+        assertEquals("2026-09-30", named.getString("end_date"));
+
+        JSONObject full = new JSONObject(
+                AssistantIntentPlanner.plan("2026-09花了多少", TUESDAY, chart).get(0).arguments);
+        assertEquals("2026-09-01", full.getString("start_date"));
+        assertEquals("2026-09-30", full.getString("end_date"));
+
+        JSONObject today = new JSONObject(
+                AssistantIntentPlanner.plan("今天花了多少", TUESDAY, chart).get(0).arguments);
+        assertEquals("today", today.getString("period"));
+        assertTrue(AssistantIntentPlanner.plan("本月总支出", TUESDAY, chart).isEmpty());
+    }
+
+    @Test
+    public void querySpend_thisMonth按选中月而不是本周() throws Exception {
+        List<LedgerBill> bills = new ArrayList<>();
+        bills.add(bill(1, 0, 20, "餐饮", "食堂", "2026-09-02"));
+        bills.add(bill(2, 0, 8, "餐饮", "食堂", "2026-09-18"));
+        bills.add(bill(3, 0, 15, "餐饮", "食堂", "2026-11-10"));
+        JSONObject args = new JSONObject();
+        args.put("period", "this_month");
+        SpendQuery.Result result = SpendQuery.run(bills, args, TUESDAY, YearMonth.of(2026, 9));
+        assertEquals(28, result.total, 0.001);
+        assertEquals(2, result.count);
+        assertEquals("2026-09-01", result.periodStart);
+        assertEquals("2026-09-30", result.periodEnd);
     }
 
     @Test

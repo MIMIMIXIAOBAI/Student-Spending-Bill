@@ -5,6 +5,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -52,6 +53,7 @@ public final class AssistantController {
     private static final ZoneId SHANGHAI = ZoneId.of("Asia/Shanghai");
 
     private final LocalDate today;
+    private volatile YearMonth chartMonth;
     private final BooleanSupplier hasKey;
     private final BillLedger ledger;
     private final String diaryText;
@@ -74,6 +76,7 @@ public final class AssistantController {
     public AssistantController(LocalDate today, BooleanSupplier hasKey, BillLedger ledger, String diaryText,
                                Docs docs, Streamer streamer, Consumer<String> log, Ui ui) {
         this.today = today;
+        this.chartMonth = YearMonth.from(today);
         this.hasKey = hasKey;
         this.ledger = ledger;
         this.diaryText = diaryText == null ? "" : diaryText;
@@ -82,6 +85,13 @@ public final class AssistantController {
         this.log = log == null ? line -> { } : log;
         this.ui = ui;
         this.emotions = EmotionHooks.load(docs.emotionMap());
+    }
+
+    /** 首页图表选中的月份。「今天」「这周」仍用构造时的日历日。 */
+    public void setChartMonth(YearMonth month) {
+        if (month != null) {
+            chartMonth = month;
+        }
     }
 
     public void start(String userText) {
@@ -240,7 +250,7 @@ public final class AssistantController {
             }
             if (plannerAllowed) {
                 plannerAllowed = false;
-                List<ToolCall> planned = AssistantIntentPlanner.plan(userText, today);
+                List<ToolCall> planned = AssistantIntentPlanner.plan(userText, today, chartMonth);
                 if (!planned.isEmpty()) {
                     JSONArray names = new JSONArray();
                     for (ToolCall call : planned) {
@@ -279,7 +289,8 @@ public final class AssistantController {
             String result = execute(call);
             messages.add(ChatTurn.tool(call.id, result));
             if ("query_spend".equals(call.name)) {
-                SpendQuery.Result query = SpendQuery.run(ledger.all(), parseArgs(call.arguments), today);
+                SpendQuery.Result query = SpendQuery.run(
+                        ledger.all(), parseArgs(call.arguments), today, chartMonth);
                 log.accept(ProcessEvents.toolResult(now(), call.name,
                         "total=" + query.total + " count=" + query.count));
                 if (replaceVisible || transcript.isEmpty()) {
@@ -330,7 +341,7 @@ public final class AssistantController {
 
     private String execute(ToolCall call) throws JSONException {
         if ("query_spend".equals(call.name)) {
-            return SpendQuery.run(ledger.all(), parseArgs(call.arguments), today).json;
+            return SpendQuery.run(ledger.all(), parseArgs(call.arguments), today, chartMonth).json;
         }
         if ("daily_fortune".equals(call.name)) {
             String style = parseArgs(call.arguments).optString("style", "fortune");

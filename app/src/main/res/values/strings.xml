@@ -114,9 +114,11 @@
     <string name="assistant_confirm_cancel">取消</string>
     <string name="assistant_busy">请先确认或取消当前这一步</string>
     <string name="assistant_retry">重试</string>
-    <string name="assistant_hold_talk">按住</string>
+    <string name="assistant_hold_talk">按住说话</string>
+    <string name="assistant_hold_release">松开结束</string>
     <string name="assistant_voice_fail">识别失败</string>
     <string name="assistant_voice_mic">无麦克风</string>
+    <string name="assistant_voice_none">无识别器</string>
     <string name="assistant_process_entry">过程</string>
     <string name="assistant_process_title">过程记录</string>
     <string name="assistant_process_hint">这里是本机留痕：Prompt 版本、工具参数、确认和回读。密钥不会出现在这些记录里。</string>

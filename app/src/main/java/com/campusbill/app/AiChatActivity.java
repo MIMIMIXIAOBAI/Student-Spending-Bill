@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.Build;
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -52,7 +53,10 @@ import com.campusbill.app.chat.ai.ReplyGenerator;
 import com.campusbill.app.data.CategoryAmount;
 import com.campusbill.app.data.DBHelper;
 import com.campusbill.app.data.MerchantAmount;
+import com.campusbill.app.data.SelectedMonthStore;
 import com.campusbill.app.databinding.ActivityAiChatBinding;
+import com.campusbill.app.ui.AttitudeGazeMath;
+import com.campusbill.app.ui.BallAttitudeGaze;
 import com.campusbill.app.ui.BottomTabHelper;
 import com.campusbill.app.ui.PressScaleHelper;
 
@@ -106,6 +110,38 @@ public class AiChatActivity extends AppCompatActivity {
         }
     };
     private static final int REQUEST_MIC = 41;
+    private boolean ballGesture;
+    private final ArrayList<ListenEngine> listenEngines = new ArrayList<>();
+    private int listenEngineIndex = -1;
+    private int listenGeneration;
+    private boolean recognizersExhausted;
+    private final BallAttitudeGaze attitudeGaze = new BallAttitudeGaze(new BallAttitudeGaze.Host() {
+        @Override
+        public void onAttitudeGaze(float nx, float ny) {
+            gazeHandler.removeCallbacks(gazeHome);
+            pushGaze(nx, ny);
+        }
+
+        @Override
+        public void onAttitudeReturn() {
+            gazeHandler.removeCallbacks(gazeHome);
+            gazeHandler.postDelayed(gazeHome, AttitudeGazeMath.RETURN_MS);
+        }
+
+        @Override
+        public boolean fingerOwnsBall() {
+            return ballGesture;
+        }
+
+        @Override
+        public boolean attitudeAllowed() {
+            return ballShouldRun
+                    && "02".equals(lastEmotionId)
+                    && binding != null
+                    && binding.emotionBallPanel.getVisibility() == View.VISIBLE
+                    && binding.emotionBallPanel.getHeight() > 0;
+        }
+    });
     /** 向导测通失败时，状态行「重试」再测这一次粘贴的密钥。 */
     private boolean retryKeyProbe;
     private String retryKey = "";
@@ -117,11 +153,7 @@ public class AiChatActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
         PressScaleHelper.attach(binding.btnSend);
         BottomTabHelper.bind(this, BottomTabHelper.Tab.AI);
-
-        String fromMain = getIntent().getStringExtra("extra_month");
-        if (fromMain != null && !fromMain.trim().isEmpty()) {
-            queryMonth = fromMain.trim();
-        }
+        refreshQueryMonth();
 
         adapter = new ChatAdapter(messages);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
@@ -136,7 +168,7 @@ public class AiChatActivity extends AppCompatActivity {
         setupEmotionBall();
         binding.btnConfirmOk.setOnClickListener(v -> assistantHost.confirm());
         binding.btnConfirmCancel.setOnClickListener(v -> assistantHost.cancel());
-        assistantHost = new AssistantHost(this, new AssistantHost.Surface() {
+        assistantHost = new AssistantHost(this, YearMonth.parse(queryMonth), new AssistantHost.Surface() {
             @Override
             public void onStatus(String statusText, boolean confirmVisible, String emotionId) {
                 binding.tvAssistantStatus.setText(statusText);
@@ -238,7 +270,8 @@ public class AiChatActivity extends AppCompatActivity {
         }
         String query = rawText.trim();
 
-        boolean assistantUtterance = !AssistantIntentPlanner.plan(query, LocalDate.now()).isEmpty();
+        boolean assistantUtterance = !AssistantIntentPlanner.plan(
+                query, LocalDate.now(), YearMonth.parse(queryMonth)).isEmpty();
         boolean streamedChat = IntentMatcher.match(query) == IntentMatcher.Intent.FALLBACK
                 && AiConfig.hasApiKey(this);
         if (assistantUtterance || streamedChat) {
@@ -386,7 +419,7 @@ public class AiChatActivity extends AppCompatActivity {
         }
         // 联网前先从本机数据库构建账单快照，注入 system prompt，
         // 让远程 AI 基于用户真实账单作答，而不是凭空编造。
-        BillContextBuilder.build(this, billContext ->
+        BillContextBuilder.build(this, queryMonth, billContext ->
                 AiRemoteClient.requestReply(
                         AiConfig.getApiKey(this),
                         AiConfig.getBaseUrl(this),
@@ -473,8 +506,20 @@ public class AiChatActivity extends AppCompatActivity {
                     }
                 });
         ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, insets) -> {
-            keyboardVisible = insets.isVisible(WindowInsetsCompat.Type.ime());
+            boolean ime = insets.isVisible(WindowInsetsCompat.Type.ime());
+            int bottom = ime ? insets.getInsets(WindowInsetsCompat.Type.ime()).bottom : 0;
+            keyboardVisible = ime;
+            if (v.getPaddingBottom() != bottom) {
+                v.setPadding(v.getPaddingLeft(), v.getPaddingTop(), v.getPaddingRight(), bottom);
+            }
             applyBallPanelHeight();
+            if (ime) {
+                binding.etMessage.post(() -> {
+                    Rect shown = new Rect(0, 0, binding.etMessage.getWidth(),
+                            binding.etMessage.getHeight());
+                    binding.etMessage.requestRectangleOnScreen(shown, true);
+                });
+            }
             return insets;
         });
         ViewCompat.requestApplyInsets(binding.getRoot());
@@ -488,17 +533,44 @@ public class AiChatActivity extends AppCompatActivity {
     }
 
     private void applyBallPanelHeight() {
-        int windowPx = binding.getRoot().getHeight();
+        View root = binding.getRoot();
+        int windowPx = root.getHeight();
         if (windowPx <= 0) {
             windowPx = getResources().getDisplayMetrics().heightPixels;
         }
-        int expanded = Math.min(Math.round(windowPx * 0.4f), dp(320));
-        int target = (keyboardVisible || confirmCardVisible) ? dp(160) : expanded;
+        int above = binding.emotionBallPanel.getTop();
+        if (above <= 0) {
+            above = dp(96);
+        }
+        int inputHeight = binding.inputColumn.getHeight();
+        if (inputHeight <= 0) {
+            inputHeight = dp(168);
+        }
+        int confirmHeight = 0;
+        if (confirmCardVisible) {
+            confirmHeight = binding.confirmCard.getHeight();
+            if (confirmHeight <= 0) {
+                confirmHeight = dp(120);
+            }
+        }
+        int tabHeight = 0;
+        if (!keyboardVisible) {
+            tabHeight = binding.bottomTabs.getHeight();
+            if (tabHeight <= 0) {
+                tabHeight = dp(56);
+            }
+        }
+        int room = windowPx - root.getPaddingBottom() - above - inputHeight
+                - confirmHeight - tabHeight - dp(12);
+        boolean compress = keyboardVisible || confirmCardVisible;
+        int preferred = compress ? dp(160) : Math.round(windowPx / 3f);
+        int target = Math.min(preferred, Math.max(0, room));
         ViewGroup.LayoutParams params = binding.emotionBallPanel.getLayoutParams();
         if (params.height != target) {
             params.height = target;
             binding.emotionBallPanel.setLayoutParams(params);
         }
+        attitudeGaze.onConditionsChanged();
     }
 
     private int dp(int value) {
@@ -511,15 +583,32 @@ public class AiChatActivity extends AppCompatActivity {
         }
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
+                setMicPressed(true);
                 beginVoiceHold();
                 return true;
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
+                setMicPressed(false);
                 endVoiceHold();
                 return true;
             default:
                 return true;
         }
+    }
+
+    /** 按下缩到 0.92、换成深色并亮出 3dp 光晕。不把焦点交给输入框，避免弹出键盘。 */
+    private void setMicPressed(boolean pressed) {
+        binding.micHalo.setVisibility(pressed ? View.VISIBLE : View.INVISIBLE);
+        binding.micFace.setBackgroundResource(pressed
+                ? R.drawable.bg_mic_pressed : R.drawable.bg_mic_rest);
+        binding.micFace.animate().cancel();
+        binding.micFace.animate()
+                .scaleX(pressed ? 0.92f : 1f)
+                .scaleY(pressed ? 0.92f : 1f)
+                .setDuration(120)
+                .start();
+        binding.btnHoldTalk.setContentDescription(getString(pressed
+                ? R.string.assistant_hold_release : R.string.assistant_hold_talk));
     }
 
     private void beginVoiceHold() {
@@ -541,26 +630,16 @@ public class AiChatActivity extends AppCompatActivity {
                     new String[]{Manifest.permission.RECORD_AUDIO}, REQUEST_MIC);
             return;
         }
-        SpeechRecognizer recognizer = ensureRecognizer();
-        if (recognizer == null) {
+        listenEngines.clear();
+        listenEngineIndex = -1;
+        recognizersExhausted = false;
+        buildListenEngines();
+        if (!startNextListenEngine()) {
             voiceHolding = false;
-            showVoiceError(getString(R.string.assistant_voice_fail));
+            showVoiceError(getString(R.string.assistant_voice_none));
             return;
         }
         pushScene("listening");
-        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "zh-CN");
-        intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true);
-        intent.putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, true);
-        try {
-            recognizer.startListening(intent);
-        } catch (RuntimeException e) {
-            destroyRecognizer();
-            voiceHolding = false;
-            showVoiceError(getString(R.string.assistant_voice_fail));
-        }
     }
 
     private void endVoiceHold() {
@@ -601,17 +680,104 @@ public class AiChatActivity extends AppCompatActivity {
         }
     }
 
-    private SpeechRecognizer ensureRecognizer() {
-        if (speechRecognizer != null) {
-            return speechRecognizer;
+    private void buildListenEngines() {
+        if (SpeechRecognizer.isRecognitionAvailable(this)) {
+            listenEngines.add(new ListenEngine(null, false));
         }
-        speechRecognizer = openRecognizer();
-        if (speechRecognizer == null) {
-            return null;
+        List<ResolveInfo> services = getPackageManager().queryIntentServices(
+                new Intent(RecognitionService.SERVICE_INTERFACE), 0);
+        if (services != null) {
+            List<ResolveInfo> ranked = new ArrayList<>(services);
+            ranked.sort((left, right) -> Integer.compare(scoreRecognizer(right), scoreRecognizer(left)));
+            for (ResolveInfo info : ranked) {
+                if (info.serviceInfo == null || info.serviceInfo.packageName == null
+                        || info.serviceInfo.name == null) {
+                    continue;
+                }
+                listenEngines.add(new ListenEngine(
+                        new ComponentName(info.serviceInfo.packageName, info.serviceInfo.name),
+                        false));
+            }
         }
-        speechRecognizer.setRecognitionListener(new RecognitionListener() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            listenEngines.add(new ListenEngine(null, true));
+        }
+    }
+
+    private static int scoreRecognizer(ResolveInfo info) {
+        if (info == null || info.serviceInfo == null || info.serviceInfo.packageName == null) {
+            return 0;
+        }
+        String pkg = info.serviceInfo.packageName.toLowerCase(Locale.US);
+        if (pkg.contains("huawei") || pkg.contains("hihonor") || pkg.contains("honor")) {
+            return 50;
+        }
+        if (pkg.contains("iflytek") || pkg.contains("xfyun")) {
+            return 40;
+        }
+        if (pkg.contains("baidu")) {
+            return 30;
+        }
+        if (pkg.contains("google")) {
+            return 20;
+        }
+        return 1;
+    }
+
+    private boolean startNextListenEngine() {
+        while (listenEngineIndex + 1 < listenEngines.size()) {
+            listenEngineIndex++;
+            if (startListenEngine(listenEngines.get(listenEngineIndex))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean startListenEngine(ListenEngine engine) {
+        destroyRecognizer();
+        final int generation = ++listenGeneration;
+        try {
+            if (engine.onDevice) {
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+                    return false;
+                }
+                speechRecognizer = SpeechRecognizer.createOnDeviceSpeechRecognizer(this);
+            } else if (engine.component != null) {
+                speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this, engine.component);
+            } else {
+                speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this);
+            }
+            recognizerReady = false;
+            speechRecognizer.setRecognitionListener(recognitionListener(generation));
+            speechRecognizer.startListening(listenIntent());
+            return true;
+        } catch (RuntimeException e) {
+            destroyRecognizer();
+            return false;
+        }
+    }
+
+    private Intent listenIntent() {
+        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "zh-CN");
+        intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true);
+        return intent;
+    }
+
+    private RecognitionListener recognitionListener(int generation) {
+        return new RecognitionListener() {
+            private boolean current() {
+                return generation == listenGeneration && !voiceResultSent;
+            }
+
             @Override
             public void onReadyForSpeech(Bundle params) {
+                if (!current()) {
+                    return;
+                }
                 recognizerReady = true;
                 gazeHandler.removeCallbacks(readyTimeout);
                 if (pendingStop) {
@@ -644,16 +810,22 @@ public class AiChatActivity extends AppCompatActivity {
 
             @Override
             public void onError(int error) {
-                if (voiceResultSent) {
+                if (!current()) {
                     return;
                 }
                 pendingVoiceError = error;
-                if (voiceHolding) {
-                    return;
-                }
                 String heard = firstNonEmpty(finalTranscript, latestPartial);
                 if (!heard.isEmpty()) {
-                    deliverRecognized(heard);
+                    if (!voiceHolding) {
+                        deliverRecognized(heard);
+                    }
+                    return;
+                }
+                if (shouldTryNextRecognizer(error)) {
+                    gazeHandler.post(() -> tryNextRecognizerOrFail(generation));
+                    return;
+                }
+                if (voiceHolding) {
                     return;
                 }
                 if (error == SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS) {
@@ -666,6 +838,9 @@ public class AiChatActivity extends AppCompatActivity {
 
             @Override
             public void onResults(Bundle results) {
+                if (!current()) {
+                    return;
+                }
                 rememberTranscript(results);
                 if (voiceHolding) {
                     return;
@@ -675,72 +850,56 @@ public class AiChatActivity extends AppCompatActivity {
 
             @Override
             public void onPartialResults(Bundle partialResults) {
+                if (!current()) {
+                    return;
+                }
                 rememberTranscript(partialResults);
             }
 
             @Override
             public void onEvent(int eventType, Bundle params) {
             }
-        });
-        return speechRecognizer;
+        };
     }
 
-    private SpeechRecognizer openRecognizer() {
-        ComponentName vendor = findRecognitionService();
-        try {
-            if (vendor != null) {
-                return SpeechRecognizer.createSpeechRecognizer(this, vendor);
-            }
-        } catch (RuntimeException ignored) {
-            // try the next available recognizer
+    private void tryNextRecognizerOrFail(int generation) {
+        if (generation != listenGeneration || voiceResultSent) {
+            return;
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            try {
-                return SpeechRecognizer.createOnDeviceSpeechRecognizer(this);
-            } catch (RuntimeException ignored) {
-                // device has no on-device recognizer
-            }
+        if (!firstNonEmpty(finalTranscript, latestPartial).isEmpty()) {
+            return;
         }
-        try {
-            if (SpeechRecognizer.isRecognitionAvailable(this)) {
-                return SpeechRecognizer.createSpeechRecognizer(this);
+        if (startNextListenEngine()) {
+            pendingVoiceError = -1;
+            if (voiceHolding) {
+                pushScene("listening");
             }
-        } catch (RuntimeException ignored) {
-            return null;
+            return;
         }
-        return null;
+        recognizersExhausted = true;
+        if (voiceHolding) {
+            return;
+        }
+        finishVoiceAfterRelease();
     }
 
-    private ComponentName findRecognitionService() {
-        List<ResolveInfo> services = getPackageManager().queryIntentServices(
-                new Intent(RecognitionService.SERVICE_INTERFACE), 0);
-        ComponentName best = null;
-        int bestScore = -1;
-        if (services == null) {
-            return null;
+    private static boolean shouldTryNextRecognizer(int error) {
+        return error == SpeechRecognizer.ERROR_CLIENT
+                || error == SpeechRecognizer.ERROR_SERVER
+                || error == SpeechRecognizer.ERROR_SERVER_DISCONNECTED
+                || error == SpeechRecognizer.ERROR_RECOGNIZER_BUSY
+                || error == SpeechRecognizer.ERROR_LANGUAGE_NOT_SUPPORTED
+                || error == SpeechRecognizer.ERROR_LANGUAGE_UNAVAILABLE;
+    }
+
+    private static final class ListenEngine {
+        final ComponentName component;
+        final boolean onDevice;
+
+        ListenEngine(ComponentName component, boolean onDevice) {
+            this.component = component;
+            this.onDevice = onDevice;
         }
-        for (ResolveInfo info : services) {
-            if (info.serviceInfo == null || info.serviceInfo.packageName == null
-                    || info.serviceInfo.name == null) {
-                continue;
-            }
-            String pkg = info.serviceInfo.packageName.toLowerCase(Locale.US);
-            int score = 1;
-            if (pkg.contains("huawei") || pkg.contains("hihonor") || pkg.contains("honor")) {
-                score = 50;
-            } else if (pkg.contains("iflytek") || pkg.contains("xfyun")) {
-                score = 40;
-            } else if (pkg.contains("baidu")) {
-                score = 30;
-            } else if (pkg.contains("google")) {
-                score = 20;
-            }
-            if (score > bestScore) {
-                bestScore = score;
-                best = new ComponentName(info.serviceInfo.packageName, info.serviceInfo.name);
-            }
-        }
-        return best;
     }
 
     private void rememberTranscript(Bundle bundle) {
@@ -781,9 +940,7 @@ public class AiChatActivity extends AppCompatActivity {
             deliverRecognized(text);
             return;
         }
-        String reason = pendingVoiceError == SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS
-                ? getString(R.string.assistant_voice_mic)
-                : getString(R.string.assistant_voice_fail);
+        String reason = voiceFailureReason();
         showVoiceError(reason);
     }
 
@@ -863,6 +1020,16 @@ public class AiChatActivity extends AppCompatActivity {
         return false;
     }
 
+    private String voiceFailureReason() {
+        if (pendingVoiceError == SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS) {
+            return getString(R.string.assistant_voice_mic);
+        }
+        if (recognizersExhausted || shouldTryNextRecognizer(pendingVoiceError)) {
+            return getString(R.string.assistant_voice_none);
+        }
+        return getString(R.string.assistant_voice_fail);
+    }
+
     private void showVoiceError(String reason) {
         voiceHolding = false;
         pendingStop = false;
@@ -898,6 +1065,7 @@ public class AiChatActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
+        attitudeGaze.stop();
         gazeHandler.removeCallbacks(voiceFail);
         gazeHandler.removeCallbacks(readyTimeout);
         gazeHandler.removeCallbacks(pleasedDone);
@@ -916,13 +1084,24 @@ public class AiChatActivity extends AppCompatActivity {
 
     private void trackGaze(MotionEvent event) {
         int action = event.getActionMasked();
+        if (action == MotionEvent.ACTION_DOWN || action == MotionEvent.ACTION_POINTER_DOWN) {
+            if (touchHitsBall(event)) {
+                ballGesture = true;
+            }
+        }
         if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) {
-            gazeHandler.removeCallbacks(gazeHome);
-            gazeHandler.postDelayed(gazeHome, 400);
+            ballGesture = false;
+            if (!attitudeGaze.isDriving()) {
+                gazeHandler.removeCallbacks(gazeHome);
+                gazeHandler.postDelayed(gazeHome, AttitudeGazeMath.RETURN_MS);
+            }
             return;
         }
         if (action != MotionEvent.ACTION_DOWN && action != MotionEvent.ACTION_MOVE
                 && action != MotionEvent.ACTION_POINTER_DOWN) {
+            return;
+        }
+        if (!ballGesture && attitudeGaze.isDriving()) {
             return;
         }
         if (binding.emotionBall.getWidth() <= 0 || binding.emotionBall.getHeight() <= 0) {
@@ -936,6 +1115,18 @@ public class AiChatActivity extends AppCompatActivity {
         float nx = clampUnit((event.getRawX() - centerX) / (binding.emotionBall.getWidth() / 2f));
         float ny = clampUnit((event.getRawY() - centerY) / (binding.emotionBall.getHeight() / 2f));
         pushGaze(nx, ny);
+    }
+
+    private boolean touchHitsBall(MotionEvent event) {
+        if (binding.emotionBallPanel.getWidth() <= 0 || binding.emotionBallPanel.getHeight() <= 0) {
+            return false;
+        }
+        int[] location = new int[2];
+        binding.emotionBallPanel.getLocationOnScreen(location);
+        float x = event.getRawX();
+        float y = event.getRawY();
+        return x >= location[0] && x < location[0] + binding.emotionBallPanel.getWidth()
+                && y >= location[1] && y < location[1] + binding.emotionBallPanel.getHeight();
     }
 
     private static float clampUnit(float value) {
@@ -952,6 +1143,7 @@ public class AiChatActivity extends AppCompatActivity {
         }
         binding.emotionBall.evaluateJavascript(
                 "window.setAssistantEmotion&&window.setAssistantEmotion('" + id + "')", null);
+        attitudeGaze.onConditionsChanged();
     }
 
     private void pushGaze(float nx, float ny) {
@@ -973,13 +1165,31 @@ public class AiChatActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        refreshQueryMonth();
+    }
+
+    private void refreshQueryMonth() {
+        queryMonth = SelectedMonthStore.get(this).toString();
+        if (assistantHost != null) {
+            assistantHost.setChartMonth(YearMonth.parse(queryMonth));
+        }
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
+        refreshQueryMonth();
         pushBallActive(true);
+        attitudeGaze.setPageVisible(this, true);
+        attitudeGaze.onConditionsChanged();
     }
 
     @Override
     protected void onPause() {
+        attitudeGaze.setPageVisible(this, false);
         gazeHandler.removeCallbacks(gazeHome);
         pushBallActive(false);
         super.onPause();

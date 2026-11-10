@@ -21,15 +21,25 @@ public final class AssistantIntentPlanner {
     private AssistantIntentPlanner() {
     }
 
+    private static final Pattern NAMED_YEAR_MONTH =
+            Pattern.compile("(\\d{4})[-/.年](\\d{1,2})");
+    private static final Pattern NAMED_MONTH =
+            Pattern.compile("(?<!\\d)(\\d{1,2})月");
+
     public static List<ToolCall> plan(String text, LocalDate today) {
+        return plan(text, today, YearMonth.from(today));
+    }
+
+    public static List<ToolCall> plan(String text, LocalDate today, YearMonth chartMonth) {
         try {
-            return planChecked(text, today);
+            return planChecked(text, today, chartMonth == null ? YearMonth.from(today) : chartMonth);
         } catch (JSONException e) {
             return new ArrayList<>();
         }
     }
 
-    private static List<ToolCall> planChecked(String text, LocalDate today) throws JSONException {
+    private static List<ToolCall> planChecked(String text, LocalDate today, YearMonth chartMonth)
+            throws JSONException {
         List<ToolCall> calls = new ArrayList<>();
         if (text == null || text.trim().isEmpty()) {
             return calls;
@@ -38,7 +48,8 @@ public final class AssistantIntentPlanner {
         boolean query = isQuery(input);
         boolean bill = isBill(input);
         if (query) {
-            calls.add(new ToolCall("call_plan_query", "query_spend", queryArgs(input, today)));
+            calls.add(new ToolCall("call_plan_query", "query_spend",
+                    queryArgs(input, today, chartMonth)));
         }
         if (bill) {
             calls.add(new ToolCall("call_plan_bill", "propose_add_bill", billArgs(input, today)));
@@ -64,10 +75,39 @@ public final class AssistantIntentPlanner {
                 || text.contains("这个星期") || text.contains("本星期");
         boolean today = text.contains("今天") || text.contains("今日");
         boolean canteen = text.contains("食堂");
+        boolean monthWords = isSelectedMonthWords(text) || namedMonth(text) != null;
         boolean spend = text.contains("花") || text.contains("支出")
                 || text.contains("消费") || text.contains("多少");
         return (week && spend) || (today && spend && !text.contains("运势") && !text.contains("塔罗")
-                && !text.contains("晴雨")) || (canteen && spend);
+                && !text.contains("晴雨")) || (canteen && spend) || (monthWords && spend);
+    }
+
+    private static boolean isSelectedMonthWords(String text) {
+        return text.contains("当月") || text.contains("本月") || text.contains("这个月");
+    }
+
+    static YearMonth namedMonth(String text, YearMonth chartMonth, LocalDate today) {
+        Matcher full = NAMED_YEAR_MONTH.matcher(text);
+        if (full.find()) {
+            int year = Integer.parseInt(full.group(1));
+            int month = Integer.parseInt(full.group(2));
+            if (month >= 1 && month <= 12) {
+                return YearMonth.of(year, month);
+            }
+        }
+        Matcher bare = NAMED_MONTH.matcher(text);
+        if (bare.find()) {
+            int month = Integer.parseInt(bare.group(1));
+            if (month >= 1 && month <= 12) {
+                int year = chartMonth != null ? chartMonth.getYear() : today.getYear();
+                return YearMonth.of(year, month);
+            }
+        }
+        return null;
+    }
+
+    private static YearMonth namedMonth(String text) {
+        return namedMonth(text, null, LocalDate.now());
     }
 
     private static boolean isBill(String text) {
@@ -95,20 +135,23 @@ public final class AssistantIntentPlanner {
         return "fortune";
     }
 
-    private static String queryArgs(String text, LocalDate today) throws JSONException {
+    private static String queryArgs(String text, LocalDate today, YearMonth chartMonth)
+            throws JSONException {
         JSONObject args = new JSONObject();
         boolean week = text.contains("这周") || text.contains("本周")
                 || text.contains("这个星期") || text.contains("本星期");
         boolean todayWord = text.contains("今天") || text.contains("今日");
+        YearMonth named = namedMonth(text, chartMonth, today);
         if (week) {
             args.put("period", "this_week");
-        } else if (todayWord) {
+        } else if (todayWord && !isSelectedMonthWords(text) && named == null) {
             args.put("period", "today");
-        } else if (text.contains("本月") || text.contains("这个月")) {
-            YearMonth month = YearMonth.from(today);
+        } else if (named != null) {
             args.put("period", "custom");
-            args.put("start_date", month.atDay(1).toString());
-            args.put("end_date", month.atEndOfMonth().toString());
+            args.put("start_date", named.atDay(1).toString());
+            args.put("end_date", named.atEndOfMonth().toString());
+        } else if (isSelectedMonthWords(text)) {
+            args.put("period", "this_month");
         } else {
             args.put("period", "this_week");
         }

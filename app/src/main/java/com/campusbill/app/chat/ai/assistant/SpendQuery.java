@@ -5,6 +5,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -38,15 +39,21 @@ public final class SpendQuery {
     }
 
     public static Result run(List<LedgerBill> bills, JSONObject args, LocalDate today) {
+        return run(bills, args, today, YearMonth.from(today));
+    }
+
+    public static Result run(List<LedgerBill> bills, JSONObject args, LocalDate today,
+                             YearMonth chartMonth) {
         try {
-            return runChecked(bills, args, today);
+            return runChecked(bills, args, today,
+                    chartMonth == null ? YearMonth.from(today) : chartMonth);
         } catch (JSONException e) {
             return new Result(0, 0, "", "", "{\"error\":\"json\"}");
         }
     }
 
-    private static Result runChecked(List<LedgerBill> bills, JSONObject args, LocalDate today)
-            throws JSONException {
+    private static Result runChecked(List<LedgerBill> bills, JSONObject args, LocalDate today,
+                                     YearMonth chartMonth) throws JSONException {
         JSONObject query = args == null ? new JSONObject() : args;
         String period = query.optString("period", "this_week");
         LocalDate start;
@@ -54,6 +61,9 @@ public final class SpendQuery {
         if ("today".equals(period)) {
             start = today;
             end = today;
+        } else if ("this_month".equals(period)) {
+            start = chartMonth.atDay(1);
+            end = chartMonth.atEndOfMonth();
         } else if ("custom".equals(period)) {
             try {
                 start = LocalDate.parse(query.getString("start_date"));

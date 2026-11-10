@@ -8,6 +8,7 @@ import com.campusbill.app.chat.ai.AiConfig;
 import com.campusbill.app.chat.ai.DeepSeekStreamClient;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -29,6 +30,10 @@ public final class AssistantHost {
     private final AssistantController controller;
 
     public AssistantHost(Context context, Surface surface) {
+        this(context, YearMonth.now(), surface);
+    }
+
+    public AssistantHost(Context context, YearMonth chartMonth, Surface surface) {
         AssistantController.Docs documents;
         try {
             documents = AssistantDocuments.load(context);
@@ -63,6 +68,11 @@ public final class AssistantHost {
                         main.post(() -> surface.onConfirmCard(title, body));
                     }
                 });
+        controller.setChartMonth(chartMonth);
+    }
+
+    public void setChartMonth(YearMonth month) {
+        controller.setChartMonth(month);
     }
 
     public boolean startOrIgnore(String text, Runnable onIgnored) {
