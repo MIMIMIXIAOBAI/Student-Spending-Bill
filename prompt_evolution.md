@@ -528,3 +528,12 @@
 - docs/assistant/emotion-map.v0.1.md
 - docs/assistant/README.md
 - prompt_evolution.md
+
+【序号】27
+【时间】2026-11-10
+【任务名称】长句预览包交付为测试v0.8.1
+【完成情况】已完成（文档修订，未改 Java）：按 Trae 交付更新协议中的安装包路径为 `C:\Users\ZXM\Desktop\测试v0.8.1.apk`（118,122,128 字节，SHA256 f880445d312ce7601035e3264396da9ab98baaf579b54dc9dd24ba1aad11f46b，打包时间 2026-11-10 22:46:14 Asia/Shanghai）。工程提交为 PR #3 的 072fc1c。功能按【序号】26 冻结稿：按住边识别、按停顿断句，已识别字只在输入栏预览，松手自动发一条、不拆条；失败清预览并走 34。真机长句效果仍标待确认。不要再用测试v0.8.apk。不另开文档分支。
+【修改/新增文件】
+- docs/assistant/emotion-map.v0.1.md
+- docs/assistant/README.md
+- prompt_evolution.md
