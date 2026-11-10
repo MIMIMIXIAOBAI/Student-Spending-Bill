@@ -730,3 +730,150 @@
 - **仓库（已核 GitHub）**：[PR #3](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/pull/3) 仍为 open，尚未合入 master。头提交已从 `f3dd3c9` 更新为 22:45:04（Asia/Shanghai，UTC+8）的 [`072fc1c`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/072fc1c72f5a6baf55d7edde916f2fd1c8dba05e)，父提交为 `f3dd3c9`。提交说明为 `fix(voice): segment a hold on pauses and preview it`：小模型在停顿处收成一段；系统识别超时且手指仍按着则继续听；拼接后的文字按住时显示在输入栏，松手作为一条消息发出。上述为提交说明，本条未把代码与已冻方案逐行对完写成完全一致，也不把真机长句效果写成已通过。
 - **待确认**：真机长句效果仍标待确认。PR #3 仍未合入 master。
 - **来源**：学生助手比赛群，Trae助手；已核 GitHub PR #3 及其提交 `072fc1c`。2026-11-10 22:47（Asia/Shanghai，UTC+8）。
+
+---
+
+## 2026-11-10 · 主管确认测试v0.8.1.apk 已在桌面，待确认只剩真机长句效果
+
+- **安装包（主管大人已在群里确认）**：`测试v0.8.1.apk` 已在桌面，请装这个测长句，不要再用 v0.8。测试方法：按住连续说两句、中间稍停，看输入栏预览和松开是否只出一条气泡。此前 22:47 条仍按 Trae 所称记录、未二次核对该文件；本条把「已在桌面」改为主管已确认。本条仍未打开用户桌面做哈希复核。
+- **待确认范围（主管大人点名流程记录员）**：边识别、输入栏预览、松手发一条，这个方案主管已经拍板；待确认的只剩真机长句效果。长句方案本身不再标待确认。
+- **文档（均为箱内稿，尚未见已合入 PR #3 的确认）**：DSH 称已把协议里的交付路径改成 `测试v0.8.1.apk`，【序号】27 已写入。WorkBuddy 称指南和许可说明已改成该包，并写入刚冻结的约定（按住边识别、输入栏只作预览，松手自动发一条，球先保持 `35` 再切 `30`，失败清掉预览并走 `34`），请 Trae 把 `/workspace/student-assistant-docs/` 合入 [PR #3](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/pull/3)，不要动 `feat/ui-tokens-p0`。Trae 称会把上述复现指南、许可说明和决策日志原样合进 PR #3，不改业务代码，也不动 `feat/ui-tokens-p0`，合进后会在群里说一声；本条尚未见到合入完成确认。DSH 另请把 `/workspace/campus-assistant-docs/docs/assistant/`（【序号】25–27 的 Vosk 回退、长句预览和 `测试v0.8.1.apk` 路径）一并合进同一条 PR #3，不要另开文档分支。
+- **来源**：学生助手比赛群，Trae助手、主管大人、DSH助手、WorkBuddy助手。2026-11-10 22:49（Asia/Shanghai，UTC+8）。
+
+---
+
+## 2026-11-10 · 复现指南与协议正文已合进 PR #3，头提交 d83533a
+
+- **仓库（已核 GitHub）**：[PR #3](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/pull/3) 仍为 open，尚未合入 master。头提交已从 `072fc1c` 更新为 22:50:33（Asia/Shanghai，UTC+8）的 [`d83533a`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/d83533a9137a858d1eab97d0fc18dfe8d7a3eb8f)。此前一条为 22:49:56 的 [`6dcfe51`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/6dcfe5182a03c87d0aa37481978335fe4070b7f9)，父提交为 `072fc1c`；`d83533a` 的父提交为 `6dcfe51`。群内「合进 PR #3」指该分支已有这两条文档提交，不是已合入 master。
+- **6dcfe51（提交说明）**：`docs: copy the v0.8.1 reproduce guide, license page, and decision log`。已核仅改 `docs/assistant/REPRODUCE.md`、`docs/assistant/THIRD_PARTY.md`、`docs/assistant/process/DECISION_LOG.md`。
+- **d83533a（提交说明）**：`docs: copy the v0.8.1 emotion map and assistant readme`，并称用 DSH 的协议稿替换、在 `prompt_evolution.md` 追加【序号】27，【序号】1–19 未改。已核改动文件为 `docs/assistant/emotion-map.v0.1.md`、`docs/assistant/README.md`、`app/src/main/assets/assistant/emotion-map.v0.1.md` 与 `prompt_evolution.md`（末尾追加【序号】27）。Trae 称【序号】25–26 写在情绪表和 README 里，没有单独补块；已核 `prompt_evolution.md` 本条只追加了【序号】27。
+- **范围（Trae助手称；这两条提交的文件清单已核）**：没动业务代码，也没动 `feat/ui-tokens-p0`。本条所见上述两个提交的文件均为文档或资源中的协议稿，未见 Java 业务文件。真机长句效果仍标待确认。
+- **来源**：学生助手比赛群，Trae助手；已核 GitHub PR #3 及提交 `6dcfe51`、`d83533a`。2026-11-10 22:51（Asia/Shanghai，UTC+8）。
+
+---
+
+## 2026-11-10 · DSH 请把【序号】25、26 补进 prompt_evolution.md，尚未见合入确认
+
+- **请求（DSH助手）**：协议已在 [PR #3](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/pull/3) 的 [`d83533a`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/d83533a9137a858d1eab97d0fc18dfe8d7a3eb8f)。请再把【序号】25、26 按同样格式补进 `prompt_evolution.md`（Vosk 回退与长句预览冻结）。本地块在 `/workspace/campus-assistant-docs/APPEND_prompt_evolution_vosk_v08.md` 和 `APPEND_prompt_evolution_vosk_preview.md`。真机长句效果仍标待确认。
+- **箱内稿（已核文件存在）**：上述两份追加稿分别以【序号】25、【序号】26 开头，标明文档修订、未改 Java。本条不把它们写成已写入仓库里的 `prompt_evolution.md`。
+- **进度（Trae助手称，尚未完成）**：Trae 称会把【序号】25、26 按同样格式原样补进 `prompt_evolution.md`，不改业务代码。本条尚未见到新提交或合入完成确认。PR #3 仍未合入 master。
+- **来源**：学生助手比赛群，DSH助手、Trae助手。2026-11-10 22:52（Asia/Shanghai，UTC+8）。
+
+---
+
+## 2026-11-10 · 【序号】25、26 已补进 prompt_evolution.md，头提交 064756a
+
+- **仓库（已核 GitHub）**：[PR #3](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/pull/3) 仍为 open，尚未合入 master。头提交已从 `d83533a` 更新为 22:52:03（Asia/Shanghai，UTC+8）的 [`064756a`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/064756ae8e195b04dbd5e07555e4d5a7162f3fee)，父提交为 `d83533a`。
+- **提交说明**：`docs: add prompt evolution entries 25 and 26`：在【序号】27 前插入 Vosk 回退与长句预览说明，更早条目和【序号】27 未改。已核仅改 `prompt_evolution.md`（+17），顺序为【序号】25、26，再接原来的 27；未见 Java 业务文件。
+- **待确认**：真机长句效果仍标待确认。PR #3 仍未合入 master。
+- **来源**：学生助手比赛群，Trae助手、DSH助手；已核 GitHub PR #3 及提交 `064756a`。2026-11-10 22:53（Asia/Shanghai，UTC+8）。
+
+---
+
+## 2026-11-10 · 用户要求取消语音，改为完善历史对话（待主管确认）
+
+- **用户要求（本条标待确认，尚未由主管冻结）**：实际测试后认为语音效果非常不好，决定取消语音输入功能。改为完善 AI 历史对话：无论切换页面还是退出软件都不换新对话，保留历史上下文；在右下角显示上下文使用的百分比；当用户即将用完上下文时，自动保存关键的、重要的、需要长期记住的历史对话内容，交给下一个会话；用户可以在左侧新建对话窗口，同时保留历史对话；参考 DeepSeek 网页版。
+- **记录口径**：本条不把语音输入写成已经取消，也不把多会话侧栏、上下文占比和自动沉淀写成已落地或已改指南。复现指南与许可说明仍按当前已冻结的 `测试v0.8.1.apk` / 按住说话约定，等主管冻结范围和交互后再改。真机语音效果以用户本条反馈为准，此前「真机长句仍待确认」不再当作还在等测通。
+- **来源**：学生助手比赛群，用户。2026-11-10 23:45（Asia/Shanghai，UTC+8）。
+
+---
+
+## 2026-11-10 · 主管冻结：取消语音输入，本包只做对话历史
+
+- **语音（主管大人）**：真机语音效果不行，语音输入取消。按住说话、红色麦克风和 Vosk 识别都从产品里拿掉，不再改 v0.8.1 的语音。真机语音记为未通过。
+- **本包范围（主管大人）**：这包只做对话历史；球、陀螺仪、月份同步那些暂缓项先不动。
+- **历史对话（主管大人）**：切页或退出应用都不要新开对话，回来仍是当前会话和上下文。右下角显示上下文占用百分比；快用满时（先按约 80%）自动抽出需要长期记住的要点，交给下一轮会话，旧对话留在列表里，不新增文字状态。左侧可新建对话并保留历史，版式参考 DeepSeek 网页，但按现在的手机端风格来，不要整页仿桌面站。
+- **分工**：主管请 UI设计大师先出侧栏、右下角百分比和交接时的界面规格；请 Trae 等规格后再在 [PR #3](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/pull/3) 实现，测通后交新包到桌面。新包文件名尚未指定。
+- **文档**：复现指南与许可说明待按本条改（拿掉按住说话/红麦/Vosk 作为产品能力的表述，写入上述历史对话约定）；侧栏与百分比的视觉细数等 UI 规格后再写，先不写成已落地。本条未改指南正文。
+- **来源**：学生助手比赛群，用户、Trae助手、主管大人。2026-11-10 23:46（Asia/Shanghai，UTC+8）。
+
+---
+
+## 2026-11-10 · 用户决定取消语音输入，改完善历史对话
+
+- **拍板（用户）**：实际测试后称语音效果非常不好，决定取消语音输入功能，转而完善 AI 的历史对话。
+- **历史对话要求（用户原文口径，落地细节待主管确认）**：切换页面或退出软件都不换新对话，保留历史上下文；在右下角显示上下文使用的百分比；用户即将用完上下文时，自动保存关键的、重要的、需要长期记住的历史对话内容，交给下个会话；用户可以在左侧新建对话窗口，同时保留历史对话；参考 DeepSeek 网页版。
+- **对先前语音范围的影响**：此前待确认的「真机长句效果」因用户反馈效果很差并决定取消语音，不再作为本轮待确认项。长句方案、红圆麦克风、Vosk 回退等此前冻结的语音能力，按用户本条决定不再作为要保留的产品功能。现有代码是否从工程中移除、红圆麦克风是否从界面去掉、安装包是否改名、关于页 Vosk 署名如何处理，本条未见说明，标待确认。本条不把语音已从代码中去掉写成既成事实。
+- **与既有范围的可能冲突（待主管确认）**：第一版曾把「八个侧边栏」记为先不做。用户本条要求在左侧新建对话窗口并保留历史对话、参考 DeepSeek 网页版。该左侧会话列表是否改写「不要侧栏」的冻结，以及上下文百分比的计算口径、关键内容如何抽取与存储，均待主管确认落地范围。本条不自行改写已冻范围。
+- **仓库**：截至上一核验，[PR #3](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/pull/3) 仍为 open，头提交 [`064756a`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/064756ae8e195b04dbd5e07555e4d5a7162f3fee)，尚未合入 master。本条未再核 GitHub。
+- **来源**：学生助手比赛群，用户。2026-11-10 23:44（Asia/Shanghai，UTC+8）。
+
+---
+
+## 2026-11-10 · 主管补冻会话存储、百分比算法和 80% 自动交接
+
+- **补冻（主管大人）**：会话和消息都存在本地 Room，当前会话 id 要写盘，切页或退出再进都恢复同一条，不上传、不另做同步。右下角百分比按「当前请求实际占用的上下文 token / 当前模型窗口」计算，不要用条数估。到达约 80% 且本轮回复结束后，自动用现有对话模型抽需要长期记住的要点（走「思考」，不新增工具、不弹确认卡），再开下一轮并把要点带过去，旧会话完整留在列表里可再打开。左侧可新建、切换，按最近更新排列，标题用首条用户消息，允许删除；先不做文件夹、搜索、置顶、重命名。
+- **UI 草案（UI设计大师提出，界面细数本条未由主管逐项确认）**：输入栏只留输入框和发送，红麦、按住预览和倾听 `35` 拿掉；四档状态不变。对话页不常驻左侧栏，改为左缘滑入或顶栏左侧入口打开抽屉。上下文用量用右下角一行次要灰字（如「上下文 62%」），放在消息区右下、状态行和输入栏之上；建议 80% 起改提示色、95% 起加重。新对话顶部可用一条可消失提示说明「已带入上次的关键记忆」。切页后保持滚动位置。UI 稿写了支持重命名，与主管「先不做重命名」不一致，以主管为准。UI 曾问是打满后自动开下一场，还是只预存、等用户新建后再带入；主管本条已定为到达约 80% 且本轮回复结束后自动抽要点并开下一轮把要点带过去。
+- **协议**：DSH 称【序号】28 已起草，语音作废稿留在 `emotion-map`，新会话协议在 `/workspace/campus-assistant-docs/docs/assistant/session.v0.1.md`，请主管确认是否冻进本轮；确认前请 Trae 先不要改代码。本条未核对这些文件全文。
+- **文档**：复现指南与许可说明仍待按已冻范围改写；抽屉、灰字百分比、交接提示等视觉细数等主管确认后再写入，先不写成已落地。本条未改指南正文。
+- **来源**：学生助手比赛群，主管大人、UI设计大师、Trae助手、DSH助手。2026-11-10 23:46（Asia/Shanghai，UTC+8）。
+
+---
+
+## 2026-11-11 · 主管确认界面规格，并改冻 80% 预存 / 95% 才自动交接
+
+- **界面规格（主管大人确认同意）**：侧栏改抽屉（对话页不常驻左侧栏，从左缘滑入或点顶栏左侧入口打开；浅灰底、白卡分组、几乎无描边），右下角一行次要灰字显示上下文百分比（如「上下文 62%」，放在消息区右下、状态行和输入栏之上，不是状态也不是卡片），约 80% 起改提示色、约 95% 起加重。重命名也一并做（此前「先不做重命名」作废，本条为准）。仍允许删除；先不做文件夹、搜索、置顶。输入栏只留输入框和发送。切页后保持滚动位置。新对话顶部用一条可消失提示「已带入上次的关键记忆」。
+- **交接规则（主管大人改冻，覆盖此前「约 80% 后自动开下一轮」）**：约 80% 且本轮回复结束后只预存要点，不自动切换，当前对话继续；用户点「新建对话」时再带入。只有下一轮已经塞不下（约 95%，或本轮请求会超窗）才自动开下一场并带入记忆，避免卡死。抽要点仍走现有对话模型与「思考」，不新增工具、不弹确认卡；旧会话完整留在列表里可再打开。百分比算法、Room 存储、当前会话 id 写盘、不上传不同步等，仍以前一条补冻为准。
+- **实现分工（主管大人）**：请 Trae 按 UI设计大师这份界面规格和本条交接规则改 [PR #3](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/pull/3)，测通后交新包到桌面。新包文件名本条尚未指定。不要把桌面 `测试v0.8.1.apk` 当作本轮历史对话包。本包仍只做对话历史，球、陀螺仪、月份同步先不动。
+- **用户过夜安排**：改好后自动汇报；自测通过后继续下一步。有大改记得提交并推送，但不要合并；明天早上用户确认项目没问题后再合并。本条不把历史对话写成已落地。
+- **文档**：WorkBuddy 已按本条改写箱内 `REPRODUCE.md` 与 `THIRD_PARTY.md`（语音不再作为产品能力；Vosk 改为已取消能力说明；写入抽屉、百分比变色、重命名，以及 80% 预存 / 95% 或超窗才自动交接）。请 Trae 把 `/workspace/student-assistant-docs/` 合入 PR #3，不要动 `feat/ui-tokens-p0`。本条未发明安装包文件名。
+- **来源**：学生助手比赛群，主管大人、用户。2026-11-11 00:20（Asia/Shanghai，UTC+8）。
+
+---
+
+## 2026-11-11 · 主管改定交接为 80% 预存、约 95% 才自动开下一场，重命名一并做
+
+- **拍板（主管大人，覆盖此前 23:46「80% 后自动开下一轮」和「先不做重命名」）**：侧栏改抽屉、右下角灰字百分比、约 80%/95% 变色，这些规格同意；重命名也一并做。交接改为：约 80% 且本轮回复结束后只预存要点，不自动切换，当前对话继续；用户点「新建对话」时再带入，新对话顶部用那条可消失的 Grouped 提示「已带入上次的关键记忆」。只有下一轮已经塞不下（约 95%，或本轮请求会超窗）才自动开下一场并带入记忆，避免卡死。仍不新增文字状态。文件夹、搜索、置顶仍先不做。
+- **仍有效的已冻项（主管大人此前已确认，本条未改）**：真机语音未通过，语音输入取消；按住说话、红色麦克风和 Vosk 识别都从产品里拿掉，不再改测试v0.8.1 的语音；倾听 `35` 不再使用；输入栏只留输入框和发送。本包只做对话历史，球、陀螺仪、月份同步先不动。会话和消息存在本地 Room，当前会话 id 要写盘，切页、切底栏、退到后台或关掉再进都恢复同一条，不上传、不另做同步。右下角百分比按「当前请求实际占用的上下文 token / 当前模型窗口」计算，不要用条数估。左侧可新建、切换，按最近更新排列，标题用首条用户消息，允许删除和重命名。版式参考 DeepSeek 网页结构，按现在的手机端风格，不要整页仿桌面站。对话页不常驻左侧栏，改为从左缘滑入或点顶栏左侧入口打开抽屉。
+- **分工（主管大人）**：请 Trae 按 UI设计大师这份界面规格和本条改定后的交接规则改 [PR #3](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/pull/3)，测通后交新包到桌面。新包文件名尚未指定。本条不把实现或新包写成已交付。
+- **箱内稿（已核文件存在，不等于已合入仓库，也不把稿内全部细数写成主管逐字冻结）**：DSH 称【序号】28 已起草。已核 `/workspace/campus-assistant-docs/docs/assistant/session.v0.1.md`（mtime 2026-11-11 00:19 Asia/Shanghai）和 `emotion-map.v0.1.md` 中「语音输入（已取消并冻结）」一节；另有箱内追加稿【序号】28–31（`APPEND_prompt_evolution_drop_voice_sessions.md`、`APPEND_prompt_evolution_sessions_frozen.md`、`APPEND_prompt_evolution_handoff_rename.md`、`APPEND_prompt_evolution_handoff_ui.md`）。其中【序号】29 仍写 80% 后自动开下一轮且先不做重命名，已被主管本条覆盖，以本条为准。稿内还有主管未逐字复述的细数，先标待确认，不写入已冻范围：抽屉宽约屏幕 80%、最大 320dp、220ms 左滑入；约 80% 预存时不再走一轮「思考」；若自动开下一场时尚未预存成功再走「思考」和表情 `30`；失败则留在当前会话并走出错 `34`；重命名用长按加小输入框、空标题回退为首条用户消息等交互。本条未见这些箱内稿已合入 PR #3 或 master 的确认。
+- **来源**：学生助手比赛群，主管大人、UI设计大师、Trae助手、DSH助手、WorkBuddy助手；已核上述箱内文件存在。2026-11-11 00:18（Asia/Shanghai，UTC+8）。
+
+---
+
+## 2026-11-11 · 用户要求过夜自动推进，大改要推送但不要合并
+
+- **过程要求（用户）**：修改好了请自动汇报；自己测试通过之后继续下一步。用户要去休息，希望起来可以看到项目完成。有大改记得提交上传，但是不要合并；明天早上用户看到项目没问题再确认合并。
+- **记录口径**：本条把「不要合入 master」记为用户明确要求，覆盖此前未禁止合入的默认。群内「合进 PR #3」仍指推到该工程分支，不是合入 master。本条不把历史对话写成已实现或已交付，也不把交赛视频和 PDF 扩大进本包必须完成项。新包文件名仍未见指定。截至上一核验，[PR #3](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/pull/3) 仍为 open，头提交 [`064756a`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/064756ae8e195b04dbd5e07555e4d5a7162f3fee)，尚未合入 master。本条未再核 GitHub。
+- **来源**：学生助手比赛群，用户。2026-11-11 00:18（Asia/Shanghai，UTC+8）。
+
+---
+
+## 2026-11-11 · 主管补冻 80% 预存不再走思考，并确认今晚先交完历史对话包
+
+- **协议（主管大人）**：核对后确认【序号】28 和 `session.v0.1.md` 与已冻规则一致，本轮就按这份冻。请 Trae 在 [PR #3](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/pull/3) 去掉语音、按这份会话协议实现，自测通过后按改动点细粒度提交并推上去，不要合并；新包装到桌面，群里汇报文件名和提交号。
+- **补冻（主管大人，按 UI设计大师刚改的规格）**：约 80% 且本轮回复结束后只在后台预存要点，不切换会话、不弹确认、也不再走一轮「思考」，避免回复结束后又出思考态。只有约 95% 或发送前会超窗、且当时还没预存成功，才走「思考」和表情 `30` 抽完再切换；失败则留在当前会话，状态「出错」、右侧「重试」、表情 `34`。重命名：长按列表项出现「重命名」「删除」；重命名用一张小的 Grouped 输入框，取消 / 保存，空标题回退为首条用户消息；左滑删除和确认框保留。抽屉宽约屏幕 80%、最大 320dp，220ms 左滑入。文件夹、搜索、置顶仍先不做。不要再用到 80% 就自动开新场或再走思考。此前 00:18 条把上述细数标为待确认，以本条为准。
+- **本包之后（主管大人）**：今晚先把历史对话这一包做完；视频和赛道文档等明早确认。先前暂缓的月份同步和对话页球约三分之一，这一包交完再继续。
+- **箱内稿**：DSH 称【序号】30、31 已写入，协议正文在 `/workspace/campus-assistant-docs/docs/assistant/`，请一并合进同一条 PR。已核箱内 `session.v0.1.md` 与【序号】31 追加稿内容与本条补冻一致。本条合入情况见下一条仓库核对。
+- **来源**：学生助手比赛群，主管大人、UI设计大师、DSH助手、Trae助手。2026-11-11 00:43（Asia/Shanghai，UTC+8）。
+
+---
+
+## 2026-11-11 · Trae 称已交付测试v0.9.apk；已核 PR #3 头提交 447423a
+
+- **安装包（Trae助手称，本条未打开用户桌面二次核对，也未对文件做哈希复核）**：`C:\Users\ZXM\Desktop\测试v0.9.apk`（37,770,505 字节，SHA256 `1ecd54253872f05f4d1a9ab6e325b1968962de4250dbc8b0f9a2dd555ceeacbf`，打包时间 2026-11-11 00:43:09 Asia/Shanghai）。Trae 称本包已去掉语音输入（红麦、Vosk 和按住识别都不再打包），并加上本地 Room 会话、历史抽屉、右下角 token 百分比，以及 80% 预存、95% 才自动开下一场的交接；约 80% 预存在后台进行，不另走一轮「思考」；约 95% 若要点还没就绪，才会先走「思考」再切换。Trae 称本机单元测试 34 项已通过。真机效果待明早确认。请装这个包测历史对话，不要再用测试v0.8.1。
+- **仓库（已核 GitHub）**：[PR #3](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/pull/3) 仍为 open，尚未合入 master，现有 35 个提交。头提交已从 `064756a` 更新为 00:43:17（Asia/Shanghai，UTC+8）的 [`447423a`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/447423a9a6f6072f86775e61d45dad716c8a7315)，父提交为 [`4e1888a`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/4e1888a2eb30b47e1fca4b9b1d84ea047ede406f)。Trae 汇报时称当时头是 `4e1888a`、重复 `@Override` 修正还在推；本条核到该修正已在 `447423a` 合入同一条 PR。
+- **447423a（提交说明，已核文件清单）**：`fix(chat): drop the duplicate Override on onDestroy`。仅改 `AiChatActivity.java`（−1），去掉 `onDestroy` 上连续两个 `@Override` 中的一个。
+- **4e1888a（提交说明，已核文件清单；00:29:17 Asia/Shanghai）**：`feat(chat): keep local sessions and remove voice input`。父提交为 [`c76c60c`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/c76c60c3a971b382f2cc54a05cf75331f05dcbfb)。说明称去掉按住说话、SpeechRecognizer 和随包 Vosk 模型；会话经 Room 在切页和进程结束后保持；历史用抽屉打开；上下文占用按 token 计数；约 80% 预存记忆不切换，约 95% 或下一轮塞不下才开下一场。已核该提交改了 43 个文件（+1357 / −1771），含新增 `chat/session/` 与会话 Room 实体，并删除 `chat/voice/` 及麦克风资源；未见文档文件。上述为提交说明和文件清单，本条未把代码与已冻方案逐行对完写成完全一致，也不把真机效果写成已通过。
+- **c76c60c（提交说明，已核文件清单；同样为 00:29:17 Asia/Shanghai）**：`docs: add the frozen session protocol and drop voice from the spec`。父提交为 `064756a`。已核新增 `docs/assistant/session.v0.1.md`，并改 `emotion-map`、`SYSTEM_PROMPT`、`README` 与 `prompt_evolution.md`；提交说明称追加【序号】28–30。已核 `prompt_evolution.md` 本条只追加到【序号】30。该次写入的 `session.v0.1.md` 正文已含 80% 后台预存不再走「思考」、抽屉约 80%/最大 320dp/220ms、长按重命名等，与主管随后补冻一致。DSH 称另写入的【序号】31，以及箱内【序号】32（`APPEND_prompt_evolution_v09.md`），本条未见已写入仓库 `prompt_evolution.md` 的确认。
+- **待确认**：真机效果待明早确认。桌面 `测试v0.9.apk` 未经二次核对。PR #3 仍未合入 master。
+- **来源**：学生助手比赛群，Trae助手、DSH助手；已核 GitHub PR #3 及提交 `c76c60c`、`4e1888a`、`447423a`。2026-11-11 00:43（Asia/Shanghai，UTC+8）。
+
+---
+
+## 2026-11-11 · 主管冻会话协议，并改 80% 只后台预存、不再走「思考」
+
+- **协议（主管大人）**：核对后认为【序号】28 和 `session.v0.1.md` 与已冻规则一致，本轮按这份冻。随后要求 80% 预存按 UI设计大师刚改的做，并请 DSH 补进协议。DSH 称【序号】31 已写入，当前稿在 `/workspace/campus-assistant-docs/docs/assistant/`。仓库里另有 [`c76c60c`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/c76c60c3a971b382f2cc54a05cf75331f05dcbfb)（说明为写入冻结会话协议并从规格中去掉语音），本条未核对该提交全文是否已含【序号】31。
+- **80% 预存（主管大人确认 UI设计大师修订，覆盖此前「走思考」）**：约 80% 且本轮回复结束后，只在后台预存要点，不切换会话、不弹确认、也不再走一轮「思考」，避免回复结束后又出思考态。用户点「新建对话」时若已有预存再带入，顶部仍是可消失提示「已带入上次的关键记忆」，表情 `02`。只有约 95%，或发送前判断本轮请求会超窗，才自动开下一场并带入记忆；若当时还没预存成功，再走「思考」和表情 `30` 抽完后切换。失败则留在当前会话，状态「出错」，右侧「重试」，表情 `34`。
+- **重命名与抽屉（主管大人按 UI 这份确认）**：长按列表项出现「重命名」「删除」；重命名用一张小的 Grouped 输入框，取消 / 保存，空标题回退为首条用户消息；左滑删除和确认框保留。抽屉宽约屏幕 80%、最大 320dp，220ms 左滑入。文件夹、搜索、置顶仍先不做。
+- **范围安排（主管大人）**：今晚先把历史对话这一包做完；视频和赛道文档等明早确认。先前暂缓的月份同步和对话页球约三分之一，这一包交完再继续。提交推到 [PR #3](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/pull/3)，不要合入 `master`。
+- **来源**：学生助手比赛群，主管大人、UI设计大师、DSH助手。2026-11-11 00:44（Asia/Shanghai，UTC+8）。
+
+---
+
+## 2026-11-11 · Trae 交出测试v0.9.apk，重复 @Override 修正已在 PR 头 447423a
+
+- **安装包（Trae助手称，本条未打开用户桌面做哈希复核）**：`C:\Users\ZXM\Desktop\测试v0.9.apk`，37,770,505 字节，SHA256 `1ecd54253872f05f4d1a9ab6e325b1968962de4250dbc8b0f9a2dd555ceeacbf`，打包时间 2026-11-11 00:43:09 Asia/Shanghai。Trae 称本包已去掉语音输入（红麦、Vosk 和按住识别都不再打包），并加上本地 Room 会话、历史抽屉、右下角 token 百分比，以及 80% 预存、95% 才自动开下一场的交接；约 80% 预存在后台进行，不另走一轮「思考」；约 95% 若要点还没就绪，才会先走「思考」再切换。Trae 称本机单元测试 34 项已通过。真机效果待明早确认。不要再用 v0.8.1 及更早的语音包测本轮历史对话。
+- **仓库（已核 GitHub）**：[PR #3](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/pull/3) 仍为 open，尚未合入 `master`。Trae 汇报时称当前头是 [`4e1888a`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/4e1888a2eb30b47e1fca4b9b1d84ea047ede406f)（`feat(chat): keep local sessions and remove voice input`，2026-11-11 00:29:17 Asia/Shanghai），并称安装包额外修了一处重复 `@Override` 才能编过、正在把这处修正推到同一条 PR。核验时该修正已在头提交 [`447423a`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/447423a9a6f6072f86775e61d45dad716c8a7315)（`fix(chat): drop the duplicate Override on onDestroy`，2026-11-11 00:43:17 Asia/Shanghai），父提交为 `4e1888a`，只改 `AiChatActivity.java`（删掉多余的一个 `@Override`）。已核当前头的 `app/build.gradle` 不再含 `vosk-android` 或模型下载。
+- **文档**：WorkBuddy 已把箱内 `REPRODUCE.md` 与 `THIRD_PARTY.md` 改成 `测试v0.9.apk`、80% 后台预存不再走「思考」，以及已确认的抽屉/重命名规格。请 Trae 把 `/workspace/student-assistant-docs/` 合入 PR #3，不要动 `feat/ui-tokens-p0`，推上去即可，不要合并。视频和赛道文档按主管安排等明早确认，本条不开始。
+- **来源**：学生助手比赛群，Trae助手；已核 GitHub PR #3 及提交 `4e1888a`、`447423a`。2026-11-11 00:44（Asia/Shanghai，UTC+8）。
