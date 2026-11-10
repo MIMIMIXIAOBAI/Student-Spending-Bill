@@ -48,6 +48,7 @@ public final class DeepSeekStreamClient implements AssistantController.Streamer 
             body.put("model", AiConfig.getModel(context));
             body.put("temperature", 0.3);
             body.put("stream", true);
+            body.put("stream_options", new JSONObject().put("include_usage", true));
             body.put("messages", messagesJson(messages));
             if (toolsArray != null && !toolsArray.trim().isEmpty() && !"[]".equals(toolsArray.trim())) {
                 body.put("tools", new JSONArray(toolsArray));
@@ -86,7 +87,8 @@ public final class DeepSeekStreamClient implements AssistantController.Streamer 
                     }
                 }
             }
-            return StreamResult.of(accumulator.think(), accumulator.content(), accumulator.toolCalls());
+            return StreamResult.of(accumulator.think(), accumulator.content(), accumulator.toolCalls(),
+                    accumulator.promptTokens(), accumulator.completionTokens());
         } catch (AssistantCallException e) {
             throw e;
         } catch (Exception e) {

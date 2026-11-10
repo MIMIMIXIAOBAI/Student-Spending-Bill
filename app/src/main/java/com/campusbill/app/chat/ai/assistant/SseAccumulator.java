@@ -15,6 +15,8 @@ public final class SseAccumulator {
     private final TreeMap<Integer, StringBuilder> names = new TreeMap<>();
     private final TreeMap<Integer, StringBuilder> arguments = new TreeMap<>();
     private final TreeMap<Integer, String> ids = new TreeMap<>();
+    private int promptTokens;
+    private int completionTokens;
 
     public void acceptLine(String line) {
         if (line == null) {
@@ -29,10 +31,20 @@ public final class SseAccumulator {
             return;
         }
         try {
-            JSONObject delta = new JSONObject(data)
-                    .getJSONArray("choices")
-                    .getJSONObject(0)
-                    .getJSONObject("delta");
+            JSONObject root = new JSONObject(data);
+            JSONObject usage = root.optJSONObject("usage");
+            if (usage != null) {
+                promptTokens = usage.optInt("prompt_tokens", promptTokens);
+                completionTokens = usage.optInt("completion_tokens", completionTokens);
+            }
+            JSONArray choices = root.optJSONArray("choices");
+            if (choices == null || choices.length() == 0) {
+                return;
+            }
+            JSONObject delta = choices.getJSONObject(0).optJSONObject("delta");
+            if (delta == null) {
+                return;
+            }
             if (delta.has("content") && !delta.isNull("content")) {
                 splitter.push(delta.optString("content", ""));
             }
@@ -92,5 +104,13 @@ public final class SseAccumulator {
             }
         }
         return calls;
+    }
+
+    public int promptTokens() {
+        return promptTokens;
+    }
+
+    public int completionTokens() {
+        return completionTokens;
     }
 }

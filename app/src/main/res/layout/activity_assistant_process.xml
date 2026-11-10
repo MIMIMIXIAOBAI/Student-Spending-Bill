@@ -75,17 +75,6 @@
                 android:text="@string/assistant_emotion_license"
                 android:textColor="@color/text_secondary"
                 android:textSize="@dimen/text_caption" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:background="@drawable/bg_card"
-                android:lineSpacingExtra="3dp"
-                android:padding="16dp"
-                android:text="@string/assistant_vosk_license"
-                android:textColor="@color/text_secondary"
-                android:textSize="@dimen/text_caption" />
         </LinearLayout>
     </ScrollView>
 

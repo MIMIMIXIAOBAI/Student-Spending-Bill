@@ -1,20 +1,12 @@
 package com.campusbill.app;
 
-import android.Manifest;
-import android.content.ComponentName;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.graphics.Color;
-import android.util.Log;
 import android.graphics.Rect;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.speech.RecognitionListener;
-import android.speech.RecognitionService;
-import android.speech.RecognizerIntent;
-import android.speech.SpeechRecognizer;
 import android.text.TextUtils;
 import android.view.MotionEvent;
 import android.view.View;
@@ -23,23 +15,17 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.campusbill.app.chat.ai.assistant.EmotionHooks;
-import com.campusbill.app.chat.voice.RecognizerFailures;
-import com.campusbill.app.chat.voice.UtteranceBuffer;
-import com.campusbill.app.chat.voice.SystemRecognizerPlan;
-import com.campusbill.app.chat.voice.VoskHoldEngine;
-import com.campusbill.app.chat.voice.VoskModelStore;
 
 import com.campusbill.app.chat.ChatAdapter;
 import com.campusbill.app.chat.ChatMessage;
@@ -48,6 +34,14 @@ import com.campusbill.app.chat.ai.AiRemoteClient;
 import com.campusbill.app.chat.ai.DeepSeekKeyStore;
 import com.campusbill.app.chat.ai.assistant.AssistantCallException;
 import com.campusbill.app.chat.ai.assistant.AssistantHost;
+import com.campusbill.app.chat.ai.assistant.ChatTurn;
+import com.campusbill.app.chat.ai.DeepSeekStreamClient;
+import com.campusbill.app.chat.session.ChatSessionBook;
+import com.campusbill.app.chat.session.ChatSessionRoom;
+import com.campusbill.app.chat.session.ContextUsage;
+import com.campusbill.app.chat.session.MemoryHandoff;
+import com.campusbill.app.chat.session.ModelWindows;
+import com.campusbill.app.chat.session.TokenEstimate;
 import com.campusbill.app.chat.ai.assistant.AssistantIntentPlanner;
 import com.campusbill.app.chat.ai.assistant.AssistantStatus;
 import com.campusbill.app.chat.ai.assistant.FailureClassifier;
@@ -89,49 +83,17 @@ public class AiChatActivity extends AppCompatActivity {
     private boolean ballShouldRun;
     private boolean keyboardVisible;
     private boolean confirmCardVisible;
-    private boolean voiceHolding;
-    private boolean voiceResultSent;
-    private boolean recognizerReady;
-    private boolean pendingStop;
     private boolean replyActive;
     private boolean sawSpendTool;
-    private int pendingVoiceError = -1;
-    private String latestPartial = "";
-    private String finalTranscript = "";
-    private SpeechRecognizer speechRecognizer;
     private final EmotionHooks ballScenes = EmotionHooks.load("");
     private final Handler gazeHandler = new Handler(Looper.getMainLooper());
     private final Runnable gazeHome = () -> pushGaze(0f, 0f);
     private final Runnable pleasedDone = () -> {
-        if (!voiceHolding && !confirmCardVisible) {
+        if (!confirmCardVisible) {
             pushScene("idle");
         }
     };
-    private final Runnable voiceFail = () -> finishVoiceAfterRelease();
-    private final Runnable readyTimeout = () -> {
-        if (!voiceResultSent && pendingStop) {
-            pendingStop = false;
-            finishVoiceAfterRelease();
-        }
-    };
-    private static final int REQUEST_MIC = 41;
     private boolean ballGesture;
-    private final ArrayList<ListenEngine> listenEngines = new ArrayList<>();
-    private int listenEngineIndex = -1;
-    private int listenGeneration;
-    private boolean recognizersExhausted;
-    private boolean micFingerDown;
-    private boolean awaitingMicGrant;
-    private boolean offlineUsed;
-    private boolean offlineUnavailable;
-    private final VoskHoldEngine voskHold = new VoskHoldEngine();
-    private final UtteranceBuffer heard = new UtteranceBuffer();
-    private String draftBeforeVoice = "";
-    private String voskLive = "";
-    private boolean previewActive;
-    private boolean previewShown;
-    private int emptyHoldRestarts;
-    private static final String VOICE_TAG = "VoiceRoute";
     private final BallAttitudeGaze attitudeGaze = new BallAttitudeGaze(new BallAttitudeGaze.Host() {
         @Override
         public void onAttitudeGaze(float nx, float ny) {
@@ -162,6 +124,17 @@ public class AiChatActivity extends AppCompatActivity {
     /** 向导测通失败时，状态行「重试」再测这一次粘贴的密钥。 */
     private boolean retryKeyProbe;
     private String retryKey = "";
+    private ChatSessionBook sessionBook = new ChatSessionBook();
+    private boolean sessionReady;
+    private boolean restoringSession;
+    private int lastPromptTokens;
+    private int lastCompletionTokens;
+    private boolean handoffRetry;
+    private String pendingAfterHandoff = "";
+    private float edgeDownX;
+    private float edgeDownY;
+    private boolean edgeTracking;
+    private boolean drawerOpen;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -171,7 +144,6 @@ public class AiChatActivity extends AppCompatActivity {
         PressScaleHelper.attach(binding.btnSend);
         BottomTabHelper.bind(this, BottomTabHelper.Tab.AI);
         refreshQueryMonth();
-        VoskModelStore.prepare(this);
 
         adapter = new ChatAdapter(messages);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
@@ -197,10 +169,6 @@ public class AiChatActivity extends AppCompatActivity {
                     confirmBody = null;
                 }
                 applyConfirmCard(confirmVisible && confirmBody != null);
-                if (voiceHolding) {
-                    pushScene("listening");
-                    return;
-                }
                 if (isErrorLine(statusText)) {
                     replyActive = false;
                     sawSpendTool = false;
@@ -214,6 +182,7 @@ public class AiChatActivity extends AppCompatActivity {
                         pushScene(sawSpendTool && transcriptHasNumber() ? "number" : "pleased");
                         sawSpendTool = false;
                         gazeHandler.postDelayed(pleasedDone, 1500);
+                        considerHandoff();
                     } else {
                         pushScene("idle");
                     }
@@ -249,10 +218,17 @@ public class AiChatActivity extends AppCompatActivity {
                 } else {
                     replaceMessage(streamIndex, text);
                 }
-                if (!voiceHolding && AssistantStatus.THINKING.label.contentEquals(
+                if (AssistantStatus.THINKING.label.contentEquals(
                         binding.tvAssistantStatus.getText()) && text != null && !text.isEmpty()) {
                     pushScene("streaming");
                 }
+            }
+
+            @Override
+            public void onUsage(int promptTokens, int completionTokens) {
+                lastPromptTokens = promptTokens;
+                lastCompletionTokens = completionTokens;
+                showContextPercent();
             }
 
             @Override
@@ -268,25 +244,37 @@ public class AiChatActivity extends AppCompatActivity {
             }
         });
         binding.btnStatusRetry.setOnClickListener(v -> retryFailedRequest());
-        binding.btnHoldTalk.setOnTouchListener(this::onHoldTalk);
         if (!AiConfig.hasApiKey(this)) {
             binding.getRoot().post(this::showDeepSeekWizard);
         }
         binding.btnSend.setOnClickListener(v -> sendMessage(binding.etMessage.getText().toString()));
+        binding.btnSessions.setOnClickListener(v -> openDrawer());
+        binding.btnNewChat.setOnClickListener(v -> {
+            closeDrawer();
+            openFreshSession(true);
+        });
+        binding.drawerScrim.setOnClickListener(v -> closeDrawer());
+        binding.memoryTip.setOnClickListener(v -> {
+            sessionBook.dismissTip();
+            binding.memoryTip.setVisibility(View.GONE);
+            persistSession();
+        });
+        loadSessions();
         binding.chipTotal.setOnClickListener(v -> sendMessage(getString(R.string.quick_total)));
         binding.chipBudget.setOnClickListener(v -> sendMessage(getString(R.string.quick_budget)));
         binding.chipCategory.setOnClickListener(v -> sendMessage(getString(R.string.quick_category)));
         binding.chipAdvice.setOnClickListener(v -> sendMessage(getString(R.string.quick_advice)));
-
-        addMessage(ChatMessage.TYPE_AI, getString(R.string.chat_welcome));
     }
 
     /** 发送一条问题：用户气泡 + 「正在整理账单」占位，随后按意图填充回复 */
     private void sendMessage(String rawText) {
-        if (TextUtils.isEmpty(rawText) || rawText.trim().isEmpty()) {
+        if (TextUtils.isEmpty(rawText) || rawText.trim().isEmpty() || !sessionReady) {
             return;
         }
         String query = rawText.trim();
+        if (sessionReady && maybeHoldForWindow(query)) {
+            return;
+        }
 
         boolean assistantUtterance = !AssistantIntentPlanner.plan(
                 query, LocalDate.now(), YearMonth.parse(queryMonth)).isEmpty();
@@ -488,6 +476,10 @@ public class AiChatActivity extends AppCompatActivity {
         int index = messages.size() - 1;
         adapter.notifyItemInserted(index);
         scrollToLatest();
+        if (sessionReady && !restoringSession && sessionBook.current() != null) {
+            sessionBook.append(type, content);
+            persistSession();
+        }
         return index;
     }
 
@@ -499,6 +491,11 @@ public class AiChatActivity extends AppCompatActivity {
         messages.set(index, new ChatMessage(ChatMessage.TYPE_AI, content));
         adapter.notifyItemChanged(index);
         scrollToLatest();
+        if (sessionReady && !restoringSession && sessionBook.current() != null
+                && index == sessionBook.current().messages.size() - 1) {
+            sessionBook.replaceLast(content);
+            persistSession();
+        }
     }
 
     /** 对话页球面板。键盘或确认卡出现时压到 160dp，不盖住状态行和确认卡。 */
@@ -596,573 +593,9 @@ public class AiChatActivity extends AppCompatActivity {
         return Math.round(value * getResources().getDisplayMetrics().density);
     }
 
-    private boolean onHoldTalk(View view, MotionEvent event) {
-        if (event.getActionMasked() == MotionEvent.ACTION_DOWN && view.getParent() != null) {
-            view.getParent().requestDisallowInterceptTouchEvent(true);
-        }
-        switch (event.getActionMasked()) {
-            case MotionEvent.ACTION_DOWN:
-                micFingerDown = true;
-                if (!previewActive) {
-                    draftBeforeVoice = binding.etMessage.getText().toString();
-                    previewActive = true;
-                    previewShown = false;
-                }
-                setMicPressed(true);
-                beginVoiceHold();
-                return true;
-            case MotionEvent.ACTION_UP:
-                micFingerDown = false;
-                awaitingMicGrant = false;
-                setMicPressed(false);
-                endVoiceHold();
-                return true;
-            case MotionEvent.ACTION_CANCEL:
-                if (awaitingMicGrant) {
-                    return true;
-                }
-                micFingerDown = false;
-                setMicPressed(false);
-                endVoiceHold();
-                return true;
-            default:
-                return true;
-        }
-    }
-
     /** 按下缩到 0.92、换成深色并亮出 3dp 光晕。不把焦点交给输入框，避免弹出键盘。 */
-    private void setMicPressed(boolean pressed) {
-        binding.micHalo.setVisibility(pressed ? View.VISIBLE : View.INVISIBLE);
-        binding.micFace.setBackgroundResource(pressed
-                ? R.drawable.bg_mic_pressed : R.drawable.bg_mic_rest);
-        binding.micFace.animate().cancel();
-        binding.micFace.animate()
-                .scaleX(pressed ? 0.92f : 1f)
-                .scaleY(pressed ? 0.92f : 1f)
-                .setDuration(120)
-                .start();
-        binding.btnHoldTalk.setContentDescription(getString(pressed
-                ? R.string.assistant_hold_release : R.string.assistant_hold_talk));
-    }
-
-    private void beginVoiceHold() {
-        voiceHolding = true;
-        voiceResultSent = false;
-        recognizerReady = false;
-        pendingStop = false;
-        pendingVoiceError = -1;
-        latestPartial = "";
-        finalTranscript = "";
-        heard.clear();
-        voskLive = "";
-        emptyHoldRestarts = 0;
-        offlineUsed = false;
-        offlineUnavailable = false;
-        gazeHandler.removeCallbacks(voiceFail);
-        gazeHandler.removeCallbacks(readyTimeout);
-        gazeHandler.removeCallbacks(pleasedDone);
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
-                != PackageManager.PERMISSION_GRANTED) {
-            voiceHolding = false;
-            awaitingMicGrant = true;
-            pushScene("idle");
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.RECORD_AUDIO}, REQUEST_MIC);
-            return;
-        }
-        awaitingMicGrant = false;
-        listenEngines.clear();
-        listenEngineIndex = -1;
-        recognizersExhausted = false;
-        List<SystemRecognizerPlan.Service> installed = listRecognitionServices();
-        if (SystemRecognizerPlan.offlineImmediately(installed)) {
-            Log.i(VOICE_TAG, "RecognitionService none, offline");
-            fallBackToOffline();
-            return;
-        }
-        for (SystemRecognizerPlan.Service service : SystemRecognizerPlan.order(installed)) {
-            listenEngines.add(new ListenEngine(
-                    new ComponentName(service.packageName, service.className)));
-        }
-        if (!startNextListenEngine()) {
-            fallBackToOffline();
-            return;
-        }
-        pushScene("listening");
-    }
-
-    private List<SystemRecognizerPlan.Service> listRecognitionServices() {
-        List<SystemRecognizerPlan.Service> found = new ArrayList<>();
-        List<ResolveInfo> services = getPackageManager().queryIntentServices(
-                new Intent(RecognitionService.SERVICE_INTERFACE), 0);
-        if (services == null) {
-            return found;
-        }
-        for (ResolveInfo info : services) {
-            if (info.serviceInfo == null || info.serviceInfo.packageName == null
-                    || info.serviceInfo.name == null) {
-                continue;
-            }
-            SystemRecognizerPlan.Service service = new SystemRecognizerPlan.Service(
-                    info.serviceInfo.packageName, info.serviceInfo.name);
-            found.add(service);
-            Log.i(VOICE_TAG, "RecognitionService " + service.packageName + "/" + service.className);
-        }
-        return found;
-    }
-
-    private void endVoiceHold() {
-        if (voskHold.isRunning()) {
-            voiceHolding = false;
-            pendingStop = false;
-            voskHold.stop();
-            return;
-        }
-        if (offlineUsed) {
-            voiceHolding = false;
-            pendingStop = false;
-            String heard = voiceText();
-            if (!heard.isEmpty()) {
-                deliverRecognized(heard);
-            } else {
-                showVoiceError(getString(offlineUnavailable
-                        ? R.string.assistant_voice_none
-                        : R.string.assistant_voice_fail));
-            }
-            return;
-        }
-        if (!voiceHolding && !pendingStop) {
-            return;
-        }
-        voiceHolding = false;
-        String readyText = voiceText();
-        if (pendingVoiceError >= 0 && readyText.isEmpty()) {
-            pendingStop = false;
-            finishVoiceAfterRelease();
-            return;
-        }
-        if (!readyText.isEmpty()) {
-            pendingStop = false;
-            deliverRecognized(readyText);
-            cancelListening();
-            return;
-        }
-        if (!recognizerReady) {
-            pendingStop = true;
-            gazeHandler.removeCallbacks(readyTimeout);
-            gazeHandler.postDelayed(readyTimeout, 4000);
-            return;
-        }
-        stopListeningWhenReady();
-    }
-
-    private void stopListeningWhenReady() {
-        if (speechRecognizer == null) {
-            finishVoiceAfterRelease();
-            return;
-        }
-        try {
-            speechRecognizer.stopListening();
-        } catch (RuntimeException e) {
-            finishVoiceAfterRelease();
-        }
-    }
-
-    private boolean startNextListenEngine() {
-        while (listenEngineIndex + 1 < listenEngines.size()) {
-            listenEngineIndex++;
-            if (startListenEngine(listenEngines.get(listenEngineIndex))) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean startListenEngine(ListenEngine engine) {
-        destroyRecognizer();
-        final int generation = ++listenGeneration;
-        try {
-            speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this, engine.component);
-            recognizerReady = false;
-            speechRecognizer.setRecognitionListener(recognitionListener(generation));
-            speechRecognizer.startListening(listenIntent());
-            return true;
-        } catch (RuntimeException e) {
-            destroyRecognizer();
-            return false;
-        }
-    }
-
-    private Intent listenIntent() {
-        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "zh-CN");
-        intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true);
-        return intent;
-    }
-
-    private RecognitionListener recognitionListener(int generation) {
-        return new RecognitionListener() {
-            private boolean current() {
-                return generation == listenGeneration && !voiceResultSent;
-            }
-
-            @Override
-            public void onReadyForSpeech(Bundle params) {
-                if (!current()) {
-                    return;
-                }
-                recognizerReady = true;
-                gazeHandler.removeCallbacks(readyTimeout);
-                if (pendingStop) {
-                    pendingStop = false;
-                    String early = voiceText();
-                    if (!early.isEmpty()) {
-                        deliverRecognized(early);
-                        cancelListening();
-                    } else {
-                        stopListeningWhenReady();
-                    }
-                }
-            }
-
-            @Override
-            public void onBeginningOfSpeech() {
-            }
-
-            @Override
-            public void onRmsChanged(float rmsdB) {
-            }
-
-            @Override
-            public void onBufferReceived(byte[] buffer) {
-            }
-
-            @Override
-            public void onEndOfSpeech() {
-            }
-
-            @Override
-            public void onError(int error) {
-                if (!current()) {
-                    return;
-                }
-                pendingVoiceError = error;
-                if (voiceHolding && RecognizerFailures.restartWhileHeld(error)) {
-                    heard.sealPartial();
-                    if (heard.isEmpty()) {
-                        emptyHoldRestarts++;
-                    } else {
-                        emptyHoldRestarts = 0;
-                    }
-                    showVoicePreview(voiceText());
-                    if (emptyHoldRestarts >= RecognizerFailures.MAX_EMPTY_RESTARTS) {
-                        gazeHandler.post(() -> tryNextRecognizerOrFail(generation));
-                    } else {
-                        gazeHandler.post(() -> restartCurrentListener(generation));
-                    }
-                    return;
-                }
-                String spoken = voiceText();
-                if (!spoken.isEmpty() && !voiceHolding) {
-                    deliverRecognized(spoken);
-                    return;
-                }
-                if (shouldTryNextRecognizer(error)) {
-                    heard.sealPartial();
-                    gazeHandler.post(() -> tryNextRecognizerOrFail(generation));
-                    return;
-                }
-                if (voiceHolding) {
-                    return;
-                }
-                if (error == RecognizerFailures.PERMISSION
-                        || error == SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS) {
-                    showVoiceError(getString(R.string.assistant_voice_mic));
-                    return;
-                }
-                gazeHandler.removeCallbacks(voiceFail);
-                gazeHandler.postDelayed(voiceFail, 350);
-            }
-
-            @Override
-            public void onResults(Bundle results) {
-                if (!current()) {
-                    return;
-                }
-                String match = firstMatch(results);
-                if (!match.isEmpty()) {
-                    heard.commit(match);
-                    emptyHoldRestarts = 0;
-                }
-                if (voiceHolding) {
-                    showVoicePreview(voiceText());
-                    gazeHandler.post(() -> restartCurrentListener(generation));
-                    return;
-                }
-                finishVoiceAfterRelease();
-            }
-
-            @Override
-            public void onPartialResults(Bundle partialResults) {
-                if (!current()) {
-                    return;
-                }
-                String match = firstMatch(partialResults);
-                if (match.isEmpty()) {
-                    return;
-                }
-                heard.setPartial(match);
-                emptyHoldRestarts = 0;
-                if (voiceHolding) {
-                    showVoicePreview(voiceText());
-                }
-            }
-
-            @Override
-            public void onEvent(int eventType, Bundle params) {
-            }
-        };
-    }
-
-    private void tryNextRecognizerOrFail(int generation) {
-        if (generation != listenGeneration || voiceResultSent) {
-            return;
-        }
-        if (!voiceHolding && !voiceText().isEmpty()) {
-            deliverRecognized(voiceText());
-            return;
-        }
-        if (startNextListenEngine()) {
-            pendingVoiceError = -1;
-            if (voiceHolding) {
-                pushScene("listening");
-            }
-            return;
-        }
-        recognizersExhausted = true;
-        fallBackToOffline();
-    }
-
     /** 手指还按着，这句话说完了就接着听，不换引擎，也不把球从 35 挪走。 */
-    private void restartCurrentListener(int generation) {
-        if (generation != listenGeneration || !voiceHolding || voiceResultSent
-                || speechRecognizer == null) {
-            return;
-        }
-        try {
-            recognizerReady = false;
-            pendingVoiceError = -1;
-            speechRecognizer.startListening(listenIntent());
-        } catch (RuntimeException e) {
-            tryNextRecognizerOrFail(generation);
-        }
-    }
-
-    private String voiceText() {
-        return UtteranceBuffer.join(heard.text(), voskLive);
-    }
-
     /** 按住时只把已识别的字放进输入栏，不改四档状态，也不发送。 */
-    private void showVoicePreview(String text) {
-        if (!previewActive || text == null || text.isEmpty()) {
-            return;
-        }
-        if (text.contentEquals(binding.etMessage.getText())) {
-            previewShown = true;
-            return;
-        }
-        previewShown = true;
-        binding.etMessage.setText(text);
-        if (binding.etMessage.getText().length() > 0) {
-            binding.etMessage.setSelection(binding.etMessage.getText().length());
-        }
-    }
-
-    private void clearVoicePreview() {
-        if (previewActive || previewShown) {
-            binding.etMessage.setText(draftBeforeVoice == null ? "" : draftBeforeVoice);
-        }
-        previewActive = false;
-        previewShown = false;
-        draftBeforeVoice = "";
-        voskLive = "";
-    }
-
-    private void fallBackToOffline() {
-        gazeHandler.removeCallbacks(readyTimeout);
-        gazeHandler.removeCallbacks(voiceFail);
-        destroyRecognizer();
-        if (offlineUsed) {
-            if (!voiceHolding && !voskHold.isRunning()) {
-                finishVoiceAfterRelease();
-            }
-            return;
-        }
-        offlineUsed = true;
-        if (!voiceHolding) {
-            offlineUnavailable = true;
-            showVoiceError(getString(R.string.assistant_voice_none));
-            return;
-        }
-        pushScene("listening");
-        VoskModelStore.whenReady(model -> {
-            if (voiceResultSent) {
-                return;
-            }
-            if (!voiceHolding) {
-                showVoiceError(getString(R.string.assistant_voice_fail));
-                return;
-            }
-            voskHold.start(model, new VoskHoldEngine.Listener() {
-                @Override
-                public void onPartial(String text) {
-                    if (text == null || text.isEmpty() || voiceResultSent) {
-                        return;
-                    }
-                    voskLive = text.trim();
-                    showVoicePreview(voiceText());
-                }
-
-                @Override
-                public void onStopped(String text) {
-                    if (voiceResultSent) {
-                        return;
-                    }
-                    voskLive = "";
-                    String spoken = UtteranceBuffer.join(heard.text(), text);
-                    if (!spoken.isEmpty()) {
-                        deliverRecognized(spoken);
-                    } else {
-                        showVoiceError(getString(R.string.assistant_voice_fail));
-                    }
-                }
-
-                @Override
-                public void onFailed() {
-                    if (voiceResultSent) {
-                        return;
-                    }
-                    offlineUnavailable = true;
-                    showVoiceError(getString(R.string.assistant_voice_none));
-                }
-            });
-        }, () -> {
-            offlineUnavailable = true;
-            showVoiceError(getString(R.string.assistant_voice_none));
-        });
-    }
-
-    private static boolean shouldTryNextRecognizer(int error) {
-        return RecognizerFailures.switchEngine(error);
-    }
-
-    private static final class ListenEngine {
-        final ComponentName component;
-
-        ListenEngine(ComponentName component) {
-            this.component = component;
-        }
-    }
-
-    private void rememberTranscript(Bundle bundle) {
-        String text = firstMatch(bundle);
-        if (!text.isEmpty()) {
-            if (bundle != null && bundle.containsKey(SpeechRecognizer.RESULTS_RECOGNITION)
-                    && !voiceHolding) {
-                finalTranscript = text;
-            }
-            latestPartial = text;
-            if (finalTranscript.isEmpty()) {
-                finalTranscript = text;
-            }
-        }
-    }
-
-    private static String firstMatch(Bundle bundle) {
-        if (bundle == null) {
-            return "";
-        }
-        ArrayList<String> matches = bundle.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-        if (matches != null) {
-            for (String match : matches) {
-                if (match != null && !match.trim().isEmpty()) {
-                    return match.trim();
-                }
-            }
-        }
-        return "";
-    }
-
-    private void finishVoiceAfterRelease() {
-        if (voiceResultSent || voiceHolding) {
-            return;
-        }
-        String text = voiceText();
-        if (!text.isEmpty()) {
-            deliverRecognized(text);
-            return;
-        }
-        String reason = voiceFailureReason();
-        showVoiceError(reason);
-    }
-
-    private void deliverRecognized(String text) {
-        if (voiceResultSent || text == null || text.trim().isEmpty()) {
-            return;
-        }
-        voiceResultSent = true;
-        pendingStop = false;
-        voiceHolding = false;
-        gazeHandler.removeCallbacks(voiceFail);
-        gazeHandler.removeCallbacks(readyTimeout);
-        replyActive = true;
-        pushScene("thinking");
-        String draft = draftBeforeVoice;
-        previewActive = false;
-        previewShown = false;
-        draftBeforeVoice = "";
-        voskLive = "";
-        sendMessage(text.trim());
-        if (draft != null && !draft.isEmpty()) {
-            binding.etMessage.setText(draft);
-        }
-    }
-
-    private void cancelListening() {
-        if (speechRecognizer == null) {
-            return;
-        }
-        try {
-            speechRecognizer.cancel();
-        } catch (RuntimeException ignored) {
-            destroyRecognizer();
-        }
-    }
-
-    private void destroyRecognizer() {
-        if (speechRecognizer != null) {
-            try {
-                speechRecognizer.destroy();
-            } catch (RuntimeException ignored) {
-                // already gone
-            }
-            speechRecognizer = null;
-        }
-        recognizerReady = false;
-    }
-
-    private static String firstNonEmpty(String first, String second) {
-        if (first != null && !first.trim().isEmpty()) {
-            return first.trim();
-        }
-        if (second != null && !second.trim().isEmpty()) {
-            return second.trim();
-        }
-        return "";
-    }
-
     private boolean lastUserAsksSpend() {
         for (int i = messages.size() - 1; i >= 0; i--) {
             ChatMessage message = messages.get(i);
@@ -1192,33 +625,6 @@ public class AiChatActivity extends AppCompatActivity {
         return false;
     }
 
-    private String voiceFailureReason() {
-        if (pendingVoiceError == SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS
-                || pendingVoiceError == RecognizerFailures.PERMISSION) {
-            return getString(R.string.assistant_voice_mic);
-        }
-        if (offlineUnavailable) {
-            return getString(R.string.assistant_voice_none);
-        }
-        return getString(R.string.assistant_voice_fail);
-    }
-
-    private void showVoiceError(String reason) {
-        if (voiceResultSent) {
-            return;
-        }
-        voiceResultSent = true;
-        voiceHolding = false;
-        pendingStop = false;
-        replyActive = false;
-        clearVoicePreview();
-        gazeHandler.removeCallbacks(pleasedDone);
-        gazeHandler.removeCallbacks(readyTimeout);
-        binding.tvAssistantStatus.setText(reason);
-        binding.btnStatusRetry.setVisibility(View.GONE);
-        pushScene("concerned");
-    }
-
     private void pushScene(String scene) {
         String id = ballScenes.idForScene(scene);
         if (id == null || !id.matches("\\d{2}")) {
@@ -1229,44 +635,18 @@ public class AiChatActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode != REQUEST_MIC) {
-            return;
-        }
-        awaitingMicGrant = false;
-        if (grantResults.length == 0 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-            micFingerDown = false;
-            setMicPressed(false);
-            showVoiceError(getString(R.string.assistant_voice_mic));
-            return;
-        }
-        if (micFingerDown) {
-            beginVoiceHold();
-        } else {
-            setMicPressed(false);
-            clearVoicePreview();
-            pushScene("idle");
-        }
-    }
-
     @Override
     protected void onDestroy() {
-        voiceResultSent = true;
-        voskHold.stop();
         attitudeGaze.stop();
-        gazeHandler.removeCallbacks(voiceFail);
-        gazeHandler.removeCallbacks(readyTimeout);
         gazeHandler.removeCallbacks(pleasedDone);
-        if (speechRecognizer != null) {
-            speechRecognizer.destroy();
-            speechRecognizer = null;
-        }
         super.onDestroy();
     }
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
+        if (trackDrawerEdge(event)) {
+            return true;
+        }
         trackGaze(event);
         return super.dispatchTouchEvent(event);
     }
@@ -1378,6 +758,7 @@ public class AiChatActivity extends AppCompatActivity {
 
     @Override
     protected void onPause() {
+        saveScroll();
         attitudeGaze.setPageVisible(this, false);
         gazeHandler.removeCallbacks(gazeHome);
         pushBallActive(false);
@@ -1386,6 +767,10 @@ public class AiChatActivity extends AppCompatActivity {
 
     /** 出错行右侧的「重试」：再测密钥，或再发一次失败的对话请求。 */
     private void retryFailedRequest() {
+        if (handoffRetry) {
+            extractMemory(true, pendingAfterHandoff);
+            return;
+        }
         if (retryKeyProbe) {
             probeDeepSeekKey(retryKey, true);
             return;
@@ -1506,6 +891,343 @@ public class AiChatActivity extends AppCompatActivity {
     /** 滚动到最新一条消息 */
     private void scrollToLatest() {
         binding.rvMessages.post(() ->
-                binding.rvMessages.scrollToPosition(messages.size() - 1));
+                binding.rvMessages.scrollToPosition(Math.max(0, messages.size() - 1)));
+    }
+
+    private void loadSessions() {
+        new Thread(() -> {
+            ChatSessionBook loaded = ChatSessionRoom.load(this);
+            long saved = ChatSessionRoom.savedId(this);
+            runOnUiThread(() -> {
+                if (isFinishing()) {
+                    return;
+                }
+                sessionBook = loaded;
+                ChatSessionBook.Session session = sessionBook.restore(saved);
+                sessionReady = true;
+                if (session.messages.isEmpty()) {
+                    addMessage(ChatMessage.TYPE_AI, getString(R.string.chat_welcome));
+                } else {
+                    showStoredSession(session, false);
+                }
+                persistSession();
+            });
+        }, "chat-session-load").start();
+    }
+
+    private void showStoredSession(ChatSessionBook.Session session, boolean stickToEnd) {
+        restoringSession = true;
+        messages.clear();
+        adapter.notifyDataSetChanged();
+        for (ChatSessionBook.Message message : session.messages) {
+            messages.add(new ChatMessage(message.type, message.content));
+        }
+        adapter.notifyDataSetChanged();
+        restoringSession = false;
+        java.util.ArrayList<ChatTurn> turns = new java.util.ArrayList<>();
+        for (ChatSessionBook.Message message : session.messages) {
+            if (message.type == ChatSessionBook.TYPE_USER) {
+                turns.add(ChatTurn.user(message.content));
+            } else if (message.content != null && !message.content.equals(getString(R.string.chat_welcome))) {
+                turns.add(ChatTurn.assistant(message.content));
+            }
+        }
+        assistantHost.setInjectedMemory(session.injectedMemory);
+        assistantHost.restoreTurns(turns);
+        binding.memoryTip.setVisibility(session.showMemoryTip ? View.VISIBLE : View.GONE);
+        if (stickToEnd || session.scrollPosition <= 0) {
+            scrollToLatest();
+        } else {
+            binding.rvMessages.scrollToPosition(session.scrollPosition);
+        }
+        pushScene("idle");
+    }
+
+    private void openFreshSession(boolean fromUser) {
+        sessionBook.open(fromUser);
+        showStoredSession(sessionBook.current(), true);
+        if (sessionBook.current().messages.isEmpty() && !sessionBook.current().showMemoryTip) {
+            addMessage(ChatMessage.TYPE_AI, getString(R.string.chat_welcome));
+        }
+        lastPromptTokens = 0;
+        lastCompletionTokens = 0;
+        showContextPercent();
+        persistSession();
+    }
+
+    private void persistSession() {
+        if (!sessionReady) {
+            return;
+        }
+        ChatSessionBook snapshot = sessionBook;
+        new Thread(() -> ChatSessionRoom.save(this, snapshot), "chat-session-save").start();
+    }
+
+    private void saveScroll() {
+        if (!sessionReady || sessionBook.current() == null) {
+            return;
+        }
+        if (binding.rvMessages.getLayoutManager() instanceof LinearLayoutManager) {
+            LinearLayoutManager manager = (LinearLayoutManager) binding.rvMessages.getLayoutManager();
+            int position = manager.findFirstVisibleItemPosition();
+            if (position >= 0) {
+                sessionBook.setScroll(position);
+                persistSession();
+            }
+        }
+    }
+
+    private int contextWindow() {
+        return ModelWindows.tokensFor(AiConfig.getModel(this));
+    }
+
+    private void showContextPercent() {
+        int occupied = lastPromptTokens + lastCompletionTokens;
+        int percent = ContextUsage.percent(occupied, contextWindow());
+        if (occupied <= 0) {
+            binding.tvContextUsage.setText("");
+            return;
+        }
+        binding.tvContextUsage.setText(getString(R.string.chat_context_percent, percent));
+        int color = R.color.text_secondary;
+        if (ContextUsage.level(percent) == ContextUsage.Level.FULL) {
+            color = R.color.color_warning;
+        } else if (ContextUsage.level(percent) == ContextUsage.Level.HINT) {
+            color = R.color.color_context_hint;
+        }
+        binding.tvContextUsage.setTextColor(getColor(color));
+    }
+
+    private boolean maybeHoldForWindow(String query) {
+        MemoryHandoff.Step step = MemoryHandoff.beforeSend(
+                lastPromptTokens, TokenEstimate.ofText(query), contextWindow(), sessionBook.memoryReady());
+        if (step == MemoryHandoff.Step.NONE) {
+            return false;
+        }
+        if (step == MemoryHandoff.Step.AUTO_SWITCH) {
+            openFreshSession(true);
+            return false;
+        }
+        pendingAfterHandoff = query;
+        extractMemory(true, query);
+        return true;
+    }
+
+    private void considerHandoff() {
+        if (!sessionReady) {
+            return;
+        }
+        int percent = ContextUsage.percent(lastPromptTokens + lastCompletionTokens, contextWindow());
+        showContextPercent();
+        MemoryHandoff.Step step = MemoryHandoff.afterReply(percent, sessionBook.memoryReady());
+        if (step == MemoryHandoff.Step.PRESTORE) {
+            extractMemory(false, "");
+        } else if (step == MemoryHandoff.Step.AUTO_SWITCH) {
+            openFreshSession(true);
+        } else if (step == MemoryHandoff.Step.EXTRACT_THEN_SWITCH) {
+            extractMemory(true, "");
+        }
+    }
+
+    private void extractMemory(boolean switchAfter, String sendAfter) {
+        StringBuilder transcript = new StringBuilder();
+        for (ChatMessage message : messages) {
+            transcript.append(message.type == ChatMessage.TYPE_USER ? "用户：" : "助手：")
+                    .append(message.content == null ? "" : message.content)
+                    .append('\n');
+        }
+        long source = sessionBook.currentId();
+        if (switchAfter) {
+            handoffRetry = false;
+            binding.tvAssistantStatus.setText(AssistantStatus.THINKING.label);
+            binding.btnStatusRetry.setVisibility(View.GONE);
+            pushScene("thinking");
+        }
+        DeepSeekStreamClient client = new DeepSeekStreamClient(this);
+        new Thread(() -> {
+            try {
+                java.util.List<ChatTurn> turns = java.util.Arrays.asList(
+                        ChatTurn.system("只输出需要长期记住的要点，每条一行。包括消费习惯、已确认账单、偏好和仍有效的约束。不要复述整段原文，不要写密钥。"),
+                        ChatTurn.user(transcript.toString()));
+                com.campusbill.app.chat.ai.assistant.StreamResult result =
+                        client.stream(turns, "[]", null);
+                String points = result.content == null ? "" : result.content.trim();
+                runOnUiThread(() -> {
+                    if (isFinishing()) {
+                        return;
+                    }
+                    if (points.isEmpty()) {
+                        if (switchAfter) {
+                            failHandoff(sendAfter);
+                        }
+                        return;
+                    }
+                    sessionBook.remember(points, source);
+                    handoffRetry = false;
+                    if (switchAfter) {
+                        binding.tvAssistantStatus.setText("");
+                        openFreshSession(true);
+                        if (sendAfter != null && !sendAfter.isEmpty()) {
+                            sendMessage(sendAfter);
+                        }
+                    } else {
+                        persistSession();
+                    }
+                });
+            } catch (RuntimeException e) {
+                runOnUiThread(() -> {
+                    if (!isFinishing() && switchAfter) {
+                        failHandoff(sendAfter);
+                    }
+                });
+            }
+        }, "chat-memory").start();
+    }
+
+    private void failHandoff(String sendAfter) {
+        pendingAfterHandoff = sendAfter == null ? "" : sendAfter;
+        handoffRetry = true;
+        showErrorLine(AssistantStatus.ERROR.label);
+        binding.btnStatusRetry.setVisibility(View.VISIBLE);
+        pushScene("concerned");
+    }
+
+    private void openDrawer() {
+        int screen = getResources().getDisplayMetrics().widthPixels;
+        int width = Math.min(Math.round(screen * 0.8f), dp(320));
+        ViewGroup.LayoutParams params = binding.historyDrawer.getLayoutParams();
+        params.width = width;
+        binding.historyDrawer.setLayoutParams(params);
+        renderSessionList();
+        binding.drawerScrim.setVisibility(View.VISIBLE);
+        binding.historyDrawer.setVisibility(View.VISIBLE);
+        binding.historyDrawer.setTranslationX(-width);
+        binding.historyDrawer.animate().translationX(0f).setDuration(220).start();
+        drawerOpen = true;
+    }
+
+    private void closeDrawer() {
+        if (!drawerOpen) {
+            binding.historyDrawer.setVisibility(View.GONE);
+            binding.drawerScrim.setVisibility(View.GONE);
+            return;
+        }
+        float width = binding.historyDrawer.getWidth();
+        binding.historyDrawer.animate().translationX(-width).setDuration(220).withEndAction(() -> {
+            binding.historyDrawer.setVisibility(View.GONE);
+            binding.drawerScrim.setVisibility(View.GONE);
+        }).start();
+        drawerOpen = false;
+    }
+
+    private void renderSessionList() {
+        binding.sessionList.removeAllViews();
+        for (ChatSessionBook.Session session : sessionBook.historyNewestFirst()) {
+            TextView row = new TextView(this);
+            String title = session.title == null || session.title.isEmpty()
+                    ? getString(R.string.chat_untitled) : session.title;
+            row.setText(title);
+            row.setTextSize(15f);
+            row.setPadding(dp(14), dp(14), dp(14), dp(14));
+            row.setBackgroundResource(R.drawable.bg_card);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            lp.bottomMargin = dp(8);
+            row.setLayoutParams(lp);
+            boolean current = session.id == sessionBook.currentId();
+            row.setTextColor(getColor(current ? R.color.color_primary : R.color.text_primary));
+            row.setTypeface(null, current ? Typeface.BOLD : Typeface.NORMAL);
+            row.setOnClickListener(v -> {
+                sessionBook.select(session.id);
+                showStoredSession(sessionBook.current(), false);
+                persistSession();
+                closeDrawer();
+            });
+            row.setOnLongClickListener(v -> {
+                askRename(session.id);
+                return true;
+            });
+            row.setOnTouchListener((v, event) -> trackRowSwipe(v, event, session.id));
+            binding.sessionList.addView(row);
+        }
+    }
+
+    private void askRename(long id) {
+        ChatSessionBook.Session session = sessionBook.find(id);
+        if (session == null) {
+            return;
+        }
+        EditText input = new EditText(this);
+        input.setText(session.title);
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.chat_rename_title)
+                .setView(input)
+                .setPositiveButton(R.string.btn_save, (dialog, which) -> {
+                    sessionBook.rename(id, input.getText().toString());
+                    persistSession();
+                    renderSessionList();
+                })
+                .setNegativeButton(R.string.btn_cancel, null)
+                .setNeutralButton(R.string.chat_delete, (dialog, which) -> confirmDelete(id))
+                .show();
+    }
+
+    private void confirmDelete(long id) {
+        new AlertDialog.Builder(this)
+                .setMessage(R.string.chat_delete_confirm)
+                .setPositiveButton(R.string.chat_delete, (dialog, which) -> {
+                    boolean current = id == sessionBook.currentId();
+                    sessionBook.delete(id);
+                    if (current) {
+                        showStoredSession(sessionBook.current(), true);
+                    }
+                    persistSession();
+                    renderSessionList();
+                })
+                .setNegativeButton(R.string.btn_cancel, null)
+                .show();
+    }
+
+    private boolean trackRowSwipe(View view, MotionEvent event, long id) {
+        if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+            view.setTag(event.getRawX());
+            return false;
+        }
+        if (event.getActionMasked() == MotionEvent.ACTION_UP && view.getTag() instanceof Float) {
+            if (event.getRawX() - (Float) view.getTag() < -dp(72)) {
+                confirmDelete(id);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean trackDrawerEdge(MotionEvent event) {
+        if (drawerOpen) {
+            return false;
+        }
+        int action = event.getActionMasked();
+        if (action == MotionEvent.ACTION_DOWN) {
+            edgeTracking = event.getX() < dp(24);
+            edgeDownX = event.getRawX();
+            edgeDownY = event.getRawY();
+            return false;
+        }
+        if (!edgeTracking) {
+            return false;
+        }
+        if (action == MotionEvent.ACTION_MOVE) {
+            float dx = event.getRawX() - edgeDownX;
+            float dy = event.getRawY() - edgeDownY;
+            if (dx > dp(48) && Math.abs(dx) > Math.abs(dy)) {
+                edgeTracking = false;
+                openDrawer();
+                return true;
+            }
+        }
+        if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) {
+            edgeTracking = false;
+        }
+        return false;
     }
 }

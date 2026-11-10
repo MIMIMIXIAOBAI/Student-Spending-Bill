@@ -108,6 +108,15 @@
     <string name="chat_back">‹</string>
     <string name="chat_input_hint">说说你的消费困惑…</string>
     <string name="chat_send">发送</string>
+    <string name="chat_new">新建对话</string>
+    <string name="chat_history">历史</string>
+    <string name="chat_context_percent">上下文 %1$d%%</string>
+    <string name="chat_memory_tip">已带入上次的关键记忆</string>
+    <string name="chat_rename">重命名</string>
+    <string name="chat_delete">删除</string>
+    <string name="chat_delete_confirm">删除这条对话？</string>
+    <string name="chat_rename_title">重命名对话</string>
+    <string name="chat_untitled">新对话</string>
     <string name="chat_welcome">你好，我是中央学生助手。\n查本周花销、确认后记账，都在这个对话里完成。DeepSeek 密钥只进本机 Keystore。\n下面的快捷问题仍在本机计算。</string>
     <string name="assistant_confirm_ok">确认记下</string>
     <string name="assistant_confirm_diary">允许引用</string>
@@ -119,7 +128,6 @@
     <string name="assistant_voice_fail">未识别到内容</string>
     <string name="assistant_voice_mic">无麦克风权限</string>
     <string name="assistant_voice_none">引擎不可用</string>
-    <string name="assistant_vosk_license">离线语音使用 Vosk（Apache-2.0）。中文小模型 vosk-model-small-cn-0.22 随安装包附带，来源 https://alphacephei.com/vosk/models ，代码 https://github.com/alphacep/vosk-api 。</string>
     <string name="assistant_process_entry">过程</string>
     <string name="assistant_process_title">过程记录</string>
     <string name="assistant_process_hint">这里是本机留痕：Prompt 版本、工具参数、确认和回读。密钥不会出现在这些记录里。</string>

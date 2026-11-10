@@ -47,6 +47,9 @@ public final class AssistantController {
         void onTranscript(String text);
 
         void onConfirmCard(String title, String body);
+
+        default void onUsage(int promptTokens, int completionTokens) {
+        }
     }
 
     private static final int MAX_ROUNDS = 4;
@@ -54,6 +57,7 @@ public final class AssistantController {
 
     private final LocalDate today;
     private volatile YearMonth chartMonth;
+    private volatile String injectedMemory = "";
     private final BooleanSupplier hasKey;
     private final BillLedger ledger;
     private final String diaryText;
@@ -88,6 +92,17 @@ public final class AssistantController {
     }
 
     /** 首页图表选中的月份。「今天」「这周」仍用构造时的日历日。 */
+    public void setInjectedMemory(String memory) {
+        injectedMemory = memory == null ? "" : memory.trim();
+    }
+
+    public void restoreTurns(List<ChatTurn> turns) {
+        messages.clear();
+        if (turns != null) {
+            messages.addAll(turns);
+        }
+    }
+
     public void setChartMonth(YearMonth month) {
         if (month != null) {
             chartMonth = month;
@@ -240,6 +255,9 @@ public final class AssistantController {
                     ui.onTranscript(transcript.isEmpty() ? live.toString() : transcript + "\n" + live);
                 }
             });
+            if (result.promptTokens > 0 || result.completionTokens > 0) {
+                ui.onUsage(result.promptTokens, result.completionTokens);
+            }
             if (!result.think.isEmpty()) {
                 log.accept(ProcessEvents.think(now(), result.think));
             }
@@ -401,6 +419,10 @@ public final class AssistantController {
     private List<ChatTurn> withSystem() {
         List<ChatTurn> all = new ArrayList<>();
         all.add(ChatTurn.system(docs.systemPromptBody()));
+        if (injectedMemory != null && !injectedMemory.isEmpty()) {
+            all.add(ChatTurn.system("上一会话要点：\n" + injectedMemory
+                    + "\n只使用其中已经写出的事实，不要假装记得没有写入的内容。日记仍须先请求确认。"));
+        }
         all.addAll(messages);
         return all;
     }
