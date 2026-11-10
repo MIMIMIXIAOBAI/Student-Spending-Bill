@@ -10,6 +10,13 @@
     android:background="@drawable/bg_page_gradient"
     android:orientation="vertical">
 
+    <!-- 球和消息在这块里让位；确认卡、状态行和输入栏留在下面，不被球盖住。 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
     <!-- 顶部标题栏 -->
     <LinearLayout
         android:layout_width="match_parent"
@@ -96,7 +103,7 @@
         android:layout_height="1dp"
         android:background="@color/divider" />
 
-    <!-- 对话页球面板：展开约三分之一窗口；键盘或确认卡时先收到 160dp，仍挡输入就再收。 -->
+    <!-- 对话页球面板：展开约三分之一窗口；键盘或确认卡时收到 160dp，不再低于 160dp。 -->
     <FrameLayout
         android:id="@+id/emotionBallPanel"
         android:layout_width="match_parent"
@@ -142,6 +149,8 @@
         android:paddingTop="16dp"
         android:paddingEnd="@dimen/page_padding"
         android:paddingBottom="8dp" />
+
+    </LinearLayout>
 
     <!-- 确认卡：只在状态为「等待确认」时显示。白卡片落在灰底上，几乎无描边。 -->
     <LinearLayout
