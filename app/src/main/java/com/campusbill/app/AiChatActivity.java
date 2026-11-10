@@ -23,6 +23,8 @@ import com.campusbill.app.chat.ai.DeepSeekKeyStore;
 import com.campusbill.app.chat.ai.assistant.AssistantCallException;
 import com.campusbill.app.chat.ai.assistant.AssistantHost;
 import com.campusbill.app.chat.ai.assistant.AssistantIntentPlanner;
+import com.campusbill.app.chat.ai.assistant.AssistantStatus;
+import com.campusbill.app.chat.ai.assistant.FailureClassifier;
 import com.campusbill.app.chat.ai.BillAnalysisUtils;
 import com.campusbill.app.chat.ai.BillContextBuilder;
 import com.campusbill.app.chat.ai.IntentMatcher;
@@ -54,6 +56,9 @@ public class AiChatActivity extends AppCompatActivity {
     private String confirmBody;
     private String lastEmotionId = "02";
     private boolean emotionReady;
+    /** 向导测通失败时，状态行「重试」再测这一次粘贴的密钥。 */
+    private boolean retryKeyProbe;
+    private String retryKey = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,6 +90,9 @@ public class AiChatActivity extends AppCompatActivity {
             @Override
             public void onStatus(String statusText, boolean confirmVisible, String emotionId) {
                 binding.tvAssistantStatus.setText(statusText);
+                boolean errorLine = isErrorLine(statusText);
+                binding.btnStatusRetry.setVisibility(errorLine ? View.VISIBLE : View.GONE);
+                retryKeyProbe = false;
                 if (emotionId != null && !emotionId.isEmpty()) {
                     lastEmotionId = emotionId;
                 }
@@ -117,6 +125,7 @@ public class AiChatActivity extends AppCompatActivity {
                 }
             }
         });
+        binding.btnStatusRetry.setOnClickListener(v -> retryFailedRequest());
         if (!AiConfig.hasApiKey(this)) {
             binding.getRoot().post(this::showDeepSeekWizard);
         }
@@ -395,6 +404,64 @@ public class AiChatActivity extends AppCompatActivity {
                 "window.setAssistantEmotion&&window.setAssistantEmotion('" + id + "')", null);
     }
 
+    /** 出错行右侧的「重试」：再测密钥，或再发一次失败的对话请求。 */
+    private void retryFailedRequest() {
+        if (retryKeyProbe) {
+            probeDeepSeekKey(retryKey, true);
+            return;
+        }
+        assistantHost.retry(() ->
+                Toast.makeText(this, R.string.assistant_busy, Toast.LENGTH_SHORT).show());
+    }
+
+    private void probeDeepSeekKey(String apiKey, boolean fromStatusLine) {
+        if (fromStatusLine) {
+            binding.tvAssistantStatus.setText(AssistantStatus.THINKING.label);
+            binding.btnStatusRetry.setVisibility(View.GONE);
+        }
+        new Thread(() -> {
+            try {
+                com.campusbill.app.chat.ai.DeepSeekKeyProbe.check(apiKey);
+                AiConfig.saveSettings(this, apiKey,
+                        AiConfig.DEFAULT_BASE_URL, AiConfig.DEFAULT_MODEL);
+                runOnUiThread(() -> {
+                    if (isFinishing()) {
+                        return;
+                    }
+                    retryKeyProbe = false;
+                    if (isErrorLine(binding.tvAssistantStatus.getText().toString())
+                            || AssistantStatus.THINKING.label.contentEquals(
+                            binding.tvAssistantStatus.getText())) {
+                        binding.tvAssistantStatus.setText("");
+                        binding.btnStatusRetry.setVisibility(View.GONE);
+                    }
+                    Toast.makeText(this, R.string.deepseek_ok, Toast.LENGTH_SHORT).show();
+                });
+            } catch (AssistantCallException e) {
+                runOnUiThread(() -> {
+                    if (isFinishing()) {
+                        return;
+                    }
+                    retryKey = apiKey == null ? "" : apiKey;
+                    retryKeyProbe = true;
+                    showErrorLine(FailureClassifier.statusLine(e.kind));
+                });
+            }
+        }, "deepseek-key-probe").start();
+    }
+
+    private void showErrorLine(String line) {
+        binding.tvAssistantStatus.setText(line);
+        binding.btnStatusRetry.setVisibility(View.VISIBLE);
+        binding.confirmCard.setVisibility(View.GONE);
+        confirmBody = null;
+    }
+
+    private static boolean isErrorLine(String text) {
+        return "出错".equals(text) || "密钥失败".equals(text)
+                || "余额不足".equals(text) || "网络错误".equals(text);
+    }
+
     /** DeepSeek 专用向导：测通后才写入 Keystore。不提供其他厂商。 */
     private void showDeepSeekWizard() {
         if (isFinishing()) {
@@ -424,12 +491,23 @@ public class AiChatActivity extends AppCompatActivity {
                             if (isFinishing()) {
                                 return;
                             }
+                            retryKeyProbe = false;
                             tvResult.setText(R.string.deepseek_ok);
+                            if (isErrorLine(binding.tvAssistantStatus.getText().toString())) {
+                                binding.tvAssistantStatus.setText("");
+                                binding.btnStatusRetry.setVisibility(View.GONE);
+                            }
                             Toast.makeText(this, R.string.deepseek_ok, Toast.LENGTH_SHORT).show();
                             dialog.dismiss();
                         });
                     } catch (AssistantCallException e) {
                         runOnUiThread(() -> {
+                            if (isFinishing()) {
+                                return;
+                            }
+                            retryKey = apiKey;
+                            retryKeyProbe = true;
+                            showErrorLine(FailureClassifier.statusLine(e.kind));
                             tvResult.setText(e.getMessage());
                             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(true);
                         });

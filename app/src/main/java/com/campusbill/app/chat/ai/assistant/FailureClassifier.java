@@ -23,8 +23,19 @@ public final class FailureClassifier {
             return "密钥无效或未授权，请在 DeepSeek 密钥向导里重新测通。";
         }
         if (kind == FailureKind.QUOTA) {
-            return "DeepSeek 余额或配额不足，请到服务商控制台检查后再试。";
+            return "DeepSeek 余额或配额不足，请到服务商控制台检查。";
         }
         return "网络异常，这次没有连上 DeepSeek。";
+    }
+
+    /** 出错这一档在状态行左侧的短原因。不要把「重试」写进这里。 */
+    public static String statusLine(FailureKind kind) {
+        if (kind == FailureKind.API_KEY) {
+            return "密钥失败";
+        }
+        if (kind == FailureKind.QUOTA) {
+            return "余额不足";
+        }
+        return "网络错误";
     }
 }

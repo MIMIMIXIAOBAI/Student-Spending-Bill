@@ -88,7 +88,7 @@ public final class AssistantController {
         try {
             doStart(userText);
         } catch (JSONException e) {
-            show("这次回复没有组好，请再试一次。");
+            show("这次回复没有组好。");
             setIdle();
         }
     }
@@ -109,6 +109,26 @@ public final class AssistantController {
             return;
         }
         runModelRound(userText);
+    }
+
+    /** 再发一次失败的 DeepSeek 请求，不新增用户气泡。 */
+    public void retry() {
+        if (machine.current() != AssistantStatus.ERROR) {
+            return;
+        }
+        try {
+            if (rounds > 0) {
+                rounds--;
+            }
+            if (hasKey == null || !hasKey.getAsBoolean()) {
+                fail(FailureKind.API_KEY, "请先在 DeepSeek 密钥向导里填写并测通密钥。");
+                return;
+            }
+            runModelRound(lastUserText());
+        } catch (JSONException e) {
+            show("这次回复没有组好。");
+            setIdle();
+        }
     }
 
     public void confirm() {
@@ -329,7 +349,10 @@ public final class AssistantController {
         pending = null;
         pendingBill = null;
         pendingDiaryPurpose = null;
-        setStatus(AssistantStatus.ERROR);
+        machine.set(AssistantStatus.ERROR);
+        ui.onStatus(FailureClassifier.statusLine(kind), false,
+                emotions.idFor(AssistantStatus.ERROR));
+        log.accept(ProcessEvents.status(now(), AssistantStatus.ERROR.label));
         show(message);
     }
 

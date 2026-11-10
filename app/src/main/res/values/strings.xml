@@ -113,6 +113,7 @@
     <string name="assistant_confirm_diary">允许引用</string>
     <string name="assistant_confirm_cancel">取消</string>
     <string name="assistant_busy">请先确认或取消当前这一步</string>
+    <string name="assistant_retry">重试</string>
     <string name="assistant_process_entry">过程</string>
     <string name="assistant_process_title">过程记录</string>
     <string name="assistant_process_hint">这里是本机留痕：Prompt 版本、工具参数、确认和回读。密钥不会出现在这些记录里。</string>

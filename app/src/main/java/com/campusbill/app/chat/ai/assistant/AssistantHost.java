@@ -81,6 +81,20 @@ public final class AssistantHost {
         return true;
     }
 
+    public void retry(Runnable onIgnored) {
+        if (!busy.compareAndSet(false, true)) {
+            main.post(onIgnored);
+            return;
+        }
+        executor.execute(() -> {
+            try {
+                controller.retry();
+            } catch (RuntimeException e) {
+                busy.set(false);
+            }
+        });
+    }
+
     public void confirm() {
         executor.execute(controller::confirm);
     }

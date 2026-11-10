@@ -132,6 +132,10 @@ public class AssistantCoreTest {
         assertEquals(FailureKind.QUOTA, FailureClassifier.classifyHttp(429, "余额不足"));
         assertEquals(FailureKind.NETWORK, FailureClassifier.classifyHttp(500, "bad gateway"));
         assertEquals("出错", AssistantStatus.ERROR.label);
+        assertEquals("密钥失败", FailureClassifier.statusLine(FailureKind.API_KEY));
+        assertEquals("余额不足", FailureClassifier.statusLine(FailureKind.QUOTA));
+        assertEquals("网络错误", FailureClassifier.statusLine(FailureKind.NETWORK));
+        assertFalse(FailureClassifier.statusLine(FailureKind.NETWORK).contains("重试"));
     }
 
     @Test
@@ -276,7 +280,8 @@ public class AssistantCoreTest {
         assertTrue(ui.confirmVisible);
         controller.confirm();
         assertEquals(1, ledger.all().size());
-        assertEquals("出错", ui.status);
+        assertEquals("网络错误", ui.status);
+        assertFalse(ui.status.contains("重试"));
         assertFalse(ui.confirmVisible);
         assertNull(ui.cardBody);
         assertTrue(ui.transcript.contains("网络"));
@@ -289,9 +294,26 @@ public class AssistantCoreTest {
         AssistantController controller = controller(new MemoryLedger(), new ScriptedStreamer(), ui,
                 new ArrayList<>(), false);
         controller.start("这周食堂花了多少");
-        assertEquals("出错", ui.status);
+        assertEquals("密钥失败", ui.status);
+        assertFalse(ui.status.contains("重试"));
         assertFalse(ui.confirmVisible);
         assertTrue(ui.transcript.contains("密钥"));
+    }
+
+    @Test
+    public void retry_再发一次失败的流式请求() throws Exception {
+        ScriptedStreamer streamer = new ScriptedStreamer();
+        streamer.enqueue(StreamResult.fail(FailureKind.NETWORK, "网络异常，这次没有连上 DeepSeek。"));
+        streamer.enqueue(StreamResult.text("回来了"));
+        RecordingUi ui = new RecordingUi();
+        AssistantController controller = controller(new MemoryLedger(), streamer, ui, new ArrayList<>(), true);
+        controller.start("你好呀");
+        assertEquals("网络错误", ui.status);
+        assertFalse(ui.confirmVisible);
+        controller.retry();
+        assertEquals("", ui.status);
+        assertTrue(ui.transcript.contains("回来了"));
+        assertFalse(ui.transcript.contains("请重试"));
     }
 
     @Test
