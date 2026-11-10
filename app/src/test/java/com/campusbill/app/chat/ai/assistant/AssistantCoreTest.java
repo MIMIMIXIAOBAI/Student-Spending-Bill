@@ -329,13 +329,20 @@ public class AssistantCoreTest {
     @Test
     public void emotion_四状态有球映射且可被协议钩子覆盖() throws Exception {
         EmotionHooks hooks = EmotionHooks.load("");
+        assertEquals("02", hooks.idFor(null));
         assertEquals("30", hooks.idFor(AssistantStatus.THINKING));
         assertEquals("32", hooks.idFor(AssistantStatus.TOOL));
-        assertEquals("35", hooks.idFor(AssistantStatus.AWAITING_CONFIRM));
+        assertEquals("03", hooks.idFor(AssistantStatus.AWAITING_CONFIRM));
         assertEquals("34", hooks.idFor(AssistantStatus.ERROR));
-        assertEquals("31", hooks.idForScene("listening"));
+        assertEquals("35", hooks.idForScene("listening"));
+        assertEquals("30", hooks.idForScene("thinking"));
+        assertEquals("39", hooks.idForScene("streaming"));
+        assertEquals("40", hooks.idForScene("query_tool"));
         assertEquals("33", hooks.idForScene("pleased"));
+        assertEquals("19", hooks.idForScene("number"));
+        assertEquals("02", hooks.idForScene("idle"));
         assertEquals("34", hooks.idForScene("concerned"));
+        assertEquals("02", hooks.idForScene("not-an-id"));
         EmotionHooks updated = EmotionHooks.load("hook:出错=38\n");
         assertEquals("38", updated.idFor(AssistantStatus.ERROR));
         assertEquals("30", updated.idFor(AssistantStatus.THINKING));

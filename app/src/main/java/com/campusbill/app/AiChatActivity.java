@@ -1,13 +1,17 @@
 package com.campusbill.app;
 
 import android.Manifest;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.os.Build;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.speech.RecognitionListener;
+import android.speech.RecognitionService;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.text.TextUtils;
@@ -56,6 +60,7 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * AI 消费助手对话页：本地意图识别 + 本机账单分析，全程不联网、不收集隐私数据。
@@ -77,7 +82,13 @@ public class AiChatActivity extends AppCompatActivity {
     private boolean confirmCardVisible;
     private boolean voiceHolding;
     private boolean voiceResultSent;
+    private boolean recognizerReady;
+    private boolean pendingStop;
     private boolean replyActive;
+    private boolean sawSpendTool;
+    private int pendingVoiceError = -1;
+    private String latestPartial = "";
+    private String finalTranscript = "";
     private SpeechRecognizer speechRecognizer;
     private final EmotionHooks ballScenes = EmotionHooks.load("");
     private final Handler gazeHandler = new Handler(Looper.getMainLooper());
@@ -87,7 +98,13 @@ public class AiChatActivity extends AppCompatActivity {
             pushScene("idle");
         }
     };
-    private final Runnable voiceFail = () -> showVoiceError(getString(R.string.assistant_voice_fail));
+    private final Runnable voiceFail = () -> finishVoiceAfterRelease();
+    private final Runnable readyTimeout = () -> {
+        if (!voiceResultSent && pendingStop) {
+            pendingStop = false;
+            finishVoiceAfterRelease();
+        }
+    };
     private static final int REQUEST_MIC = 41;
     /** 向导测通失败时，状态行「重试」再测这一次粘贴的密钥。 */
     private boolean retryKeyProbe;
@@ -132,28 +149,42 @@ public class AiChatActivity extends AppCompatActivity {
                 applyConfirmCard(confirmVisible && confirmBody != null);
                 if (voiceHolding) {
                     pushScene("listening");
-                } else if (isErrorLine(statusText)) {
+                    return;
+                }
+                if (isErrorLine(statusText)) {
                     replyActive = false;
+                    sawSpendTool = false;
                     gazeHandler.removeCallbacks(pleasedDone);
                     pushScene("concerned");
-                } else if (statusText == null || statusText.isEmpty()) {
+                    return;
+                }
+                if (statusText == null || statusText.isEmpty()) {
                     if (replyActive) {
                         replyActive = false;
-                        pushScene("pleased");
+                        pushScene(sawSpendTool && transcriptHasNumber() ? "number" : "pleased");
+                        sawSpendTool = false;
                         gazeHandler.postDelayed(pleasedDone, 1500);
-                    } else if (emotionId != null && !emotionId.isEmpty()) {
+                    } else {
+                        pushScene("idle");
+                    }
+                    return;
+                }
+                gazeHandler.removeCallbacks(pleasedDone);
+                if (AssistantStatus.THINKING.label.equals(statusText)) {
+                    replyActive = true;
+                    pushScene("thinking");
+                } else if (AssistantStatus.TOOL.label.equals(statusText)) {
+                    replyActive = true;
+                    boolean spend = lastUserAsksSpend();
+                    sawSpendTool = sawSpendTool || spend;
+                    pushScene(spend ? "query_tool" : "tool");
+                } else if (confirmVisible) {
+                    replyActive = false;
+                    if (emotionId != null && !emotionId.isEmpty()) {
                         lastEmotionId = emotionId;
-                        pushEmotion();
                     }
+                    pushEmotion();
                 } else {
-                    if (AssistantStatus.THINKING.label.equals(statusText)
-                            || AssistantStatus.TOOL.label.equals(statusText)) {
-                        replyActive = true;
-                        gazeHandler.removeCallbacks(pleasedDone);
-                    } else if (confirmVisible) {
-                        replyActive = false;
-                        gazeHandler.removeCallbacks(pleasedDone);
-                    }
                     if (emotionId != null && !emotionId.isEmpty()) {
                         lastEmotionId = emotionId;
                     }
@@ -167,6 +198,10 @@ public class AiChatActivity extends AppCompatActivity {
                     streamIndex = addMessage(ChatMessage.TYPE_AI, text);
                 } else {
                     replaceMessage(streamIndex, text);
+                }
+                if (!voiceHolding && AssistantStatus.THINKING.label.contentEquals(
+                        binding.tvAssistantStatus.getText()) && text != null && !text.isEmpty()) {
+                    pushScene("streaming");
                 }
             }
 
@@ -183,7 +218,7 @@ public class AiChatActivity extends AppCompatActivity {
             }
         });
         binding.btnStatusRetry.setOnClickListener(v -> retryFailedRequest());
-        binding.btnHoldTalk.setOnTouchListener((v, event) -> onHoldTalk(event));
+        binding.btnHoldTalk.setOnTouchListener(this::onHoldTalk);
         if (!AiConfig.hasApiKey(this)) {
             binding.getRoot().post(this::showDeepSeekWizard);
         }
@@ -470,7 +505,10 @@ public class AiChatActivity extends AppCompatActivity {
         return Math.round(value * getResources().getDisplayMetrics().density);
     }
 
-    private boolean onHoldTalk(MotionEvent event) {
+    private boolean onHoldTalk(View view, MotionEvent event) {
+        if (event.getActionMasked() == MotionEvent.ACTION_DOWN && view.getParent() != null) {
+            view.getParent().requestDisallowInterceptTouchEvent(true);
+        }
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
                 beginVoiceHold();
@@ -487,58 +525,105 @@ public class AiChatActivity extends AppCompatActivity {
     private void beginVoiceHold() {
         voiceHolding = true;
         voiceResultSent = false;
+        recognizerReady = false;
+        pendingStop = false;
+        pendingVoiceError = -1;
+        latestPartial = "";
+        finalTranscript = "";
         gazeHandler.removeCallbacks(voiceFail);
+        gazeHandler.removeCallbacks(readyTimeout);
         gazeHandler.removeCallbacks(pleasedDone);
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
                 != PackageManager.PERMISSION_GRANTED) {
             voiceHolding = false;
-            showVoiceError(getString(R.string.assistant_voice_mic));
+            pushScene("idle");
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.RECORD_AUDIO}, REQUEST_MIC);
             return;
         }
-        if (!SpeechRecognizer.isRecognitionAvailable(this)) {
+        SpeechRecognizer recognizer = ensureRecognizer();
+        if (recognizer == null) {
             voiceHolding = false;
             showVoiceError(getString(R.string.assistant_voice_fail));
             return;
         }
         pushScene("listening");
-        ensureRecognizer();
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
                 RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "zh-CN");
-        intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, false);
+        intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true);
+        intent.putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, true);
         try {
-            speechRecognizer.startListening(intent);
+            recognizer.startListening(intent);
         } catch (RuntimeException e) {
+            destroyRecognizer();
             voiceHolding = false;
             showVoiceError(getString(R.string.assistant_voice_fail));
         }
     }
 
     private void endVoiceHold() {
-        if (!voiceHolding) {
+        if (!voiceHolding && !pendingStop) {
             return;
         }
         voiceHolding = false;
-        if (speechRecognizer != null) {
-            try {
-                speechRecognizer.stopListening();
-            } catch (RuntimeException e) {
-                showVoiceError(getString(R.string.assistant_voice_fail));
-            }
+        String readyText = firstNonEmpty(finalTranscript, latestPartial);
+        if (pendingVoiceError >= 0 && readyText.isEmpty()) {
+            pendingStop = false;
+            finishVoiceAfterRelease();
+            return;
+        }
+        if (!readyText.isEmpty()) {
+            pendingStop = false;
+            deliverRecognized(readyText);
+            cancelListening();
+            return;
+        }
+        if (!recognizerReady) {
+            pendingStop = true;
+            gazeHandler.removeCallbacks(readyTimeout);
+            gazeHandler.postDelayed(readyTimeout, 4000);
+            return;
+        }
+        stopListeningWhenReady();
+    }
+
+    private void stopListeningWhenReady() {
+        if (speechRecognizer == null) {
+            finishVoiceAfterRelease();
+            return;
+        }
+        try {
+            speechRecognizer.stopListening();
+        } catch (RuntimeException e) {
+            finishVoiceAfterRelease();
         }
     }
 
-    private void ensureRecognizer() {
+    private SpeechRecognizer ensureRecognizer() {
         if (speechRecognizer != null) {
-            return;
+            return speechRecognizer;
         }
-        speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this);
+        speechRecognizer = openRecognizer();
+        if (speechRecognizer == null) {
+            return null;
+        }
         speechRecognizer.setRecognitionListener(new RecognitionListener() {
             @Override
             public void onReadyForSpeech(Bundle params) {
+                recognizerReady = true;
+                gazeHandler.removeCallbacks(readyTimeout);
+                if (pendingStop) {
+                    pendingStop = false;
+                    String early = firstNonEmpty(finalTranscript, latestPartial);
+                    if (!early.isEmpty()) {
+                        deliverRecognized(early);
+                        cancelListening();
+                    } else {
+                        stopListeningWhenReady();
+                    }
+                }
             }
 
             @Override
@@ -559,7 +644,16 @@ public class AiChatActivity extends AppCompatActivity {
 
             @Override
             public void onError(int error) {
-                if (voiceResultSent || voiceHolding) {
+                if (voiceResultSent) {
+                    return;
+                }
+                pendingVoiceError = error;
+                if (voiceHolding) {
+                    return;
+                }
+                String heard = firstNonEmpty(finalTranscript, latestPartial);
+                if (!heard.isEmpty()) {
+                    deliverRecognized(heard);
                     return;
                 }
                 if (error == SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS) {
@@ -572,59 +666,240 @@ public class AiChatActivity extends AppCompatActivity {
 
             @Override
             public void onResults(Bundle results) {
-                gazeHandler.removeCallbacks(voiceFail);
-                if (voiceResultSent) {
+                rememberTranscript(results);
+                if (voiceHolding) {
                     return;
                 }
-                voiceResultSent = true;
-                ArrayList<String> matches = results == null
-                        ? null : results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-                String text = matches == null || matches.isEmpty() ? "" : matches.get(0);
-                if (text == null || text.trim().isEmpty()) {
-                    showVoiceError(getString(R.string.assistant_voice_fail));
-                    return;
-                }
-                replyActive = true;
-                pushScene("thinking");
-                sendMessage(text.trim());
+                finishVoiceAfterRelease();
             }
 
             @Override
             public void onPartialResults(Bundle partialResults) {
+                rememberTranscript(partialResults);
             }
 
             @Override
             public void onEvent(int eventType, Bundle params) {
             }
         });
+        return speechRecognizer;
+    }
+
+    private SpeechRecognizer openRecognizer() {
+        ComponentName vendor = findRecognitionService();
+        try {
+            if (vendor != null) {
+                return SpeechRecognizer.createSpeechRecognizer(this, vendor);
+            }
+        } catch (RuntimeException ignored) {
+            // try the next available recognizer
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            try {
+                return SpeechRecognizer.createOnDeviceSpeechRecognizer(this);
+            } catch (RuntimeException ignored) {
+                // device has no on-device recognizer
+            }
+        }
+        try {
+            if (SpeechRecognizer.isRecognitionAvailable(this)) {
+                return SpeechRecognizer.createSpeechRecognizer(this);
+            }
+        } catch (RuntimeException ignored) {
+            return null;
+        }
+        return null;
+    }
+
+    private ComponentName findRecognitionService() {
+        List<ResolveInfo> services = getPackageManager().queryIntentServices(
+                new Intent(RecognitionService.SERVICE_INTERFACE), 0);
+        ComponentName best = null;
+        int bestScore = -1;
+        if (services == null) {
+            return null;
+        }
+        for (ResolveInfo info : services) {
+            if (info.serviceInfo == null || info.serviceInfo.packageName == null
+                    || info.serviceInfo.name == null) {
+                continue;
+            }
+            String pkg = info.serviceInfo.packageName.toLowerCase(Locale.US);
+            int score = 1;
+            if (pkg.contains("huawei") || pkg.contains("hihonor") || pkg.contains("honor")) {
+                score = 50;
+            } else if (pkg.contains("iflytek") || pkg.contains("xfyun")) {
+                score = 40;
+            } else if (pkg.contains("baidu")) {
+                score = 30;
+            } else if (pkg.contains("google")) {
+                score = 20;
+            }
+            if (score > bestScore) {
+                bestScore = score;
+                best = new ComponentName(info.serviceInfo.packageName, info.serviceInfo.name);
+            }
+        }
+        return best;
+    }
+
+    private void rememberTranscript(Bundle bundle) {
+        String text = firstMatch(bundle);
+        if (!text.isEmpty()) {
+            if (bundle != null && bundle.containsKey(SpeechRecognizer.RESULTS_RECOGNITION)
+                    && !voiceHolding) {
+                finalTranscript = text;
+            }
+            latestPartial = text;
+            if (finalTranscript.isEmpty()) {
+                finalTranscript = text;
+            }
+        }
+    }
+
+    private static String firstMatch(Bundle bundle) {
+        if (bundle == null) {
+            return "";
+        }
+        ArrayList<String> matches = bundle.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+        if (matches != null) {
+            for (String match : matches) {
+                if (match != null && !match.trim().isEmpty()) {
+                    return match.trim();
+                }
+            }
+        }
+        return "";
+    }
+
+    private void finishVoiceAfterRelease() {
+        if (voiceResultSent || voiceHolding) {
+            return;
+        }
+        String text = firstNonEmpty(finalTranscript, latestPartial);
+        if (!text.isEmpty()) {
+            deliverRecognized(text);
+            return;
+        }
+        String reason = pendingVoiceError == SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS
+                ? getString(R.string.assistant_voice_mic)
+                : getString(R.string.assistant_voice_fail);
+        showVoiceError(reason);
+    }
+
+    private void deliverRecognized(String text) {
+        if (voiceResultSent || text == null || text.trim().isEmpty()) {
+            return;
+        }
+        voiceResultSent = true;
+        pendingStop = false;
+        voiceHolding = false;
+        gazeHandler.removeCallbacks(voiceFail);
+        gazeHandler.removeCallbacks(readyTimeout);
+        replyActive = true;
+        pushScene("thinking");
+        sendMessage(text.trim());
+    }
+
+    private void cancelListening() {
+        if (speechRecognizer == null) {
+            return;
+        }
+        try {
+            speechRecognizer.cancel();
+        } catch (RuntimeException ignored) {
+            destroyRecognizer();
+        }
+    }
+
+    private void destroyRecognizer() {
+        if (speechRecognizer != null) {
+            try {
+                speechRecognizer.destroy();
+            } catch (RuntimeException ignored) {
+                // already gone
+            }
+            speechRecognizer = null;
+        }
+        recognizerReady = false;
+    }
+
+    private static String firstNonEmpty(String first, String second) {
+        if (first != null && !first.trim().isEmpty()) {
+            return first.trim();
+        }
+        if (second != null && !second.trim().isEmpty()) {
+            return second.trim();
+        }
+        return "";
+    }
+
+    private boolean lastUserAsksSpend() {
+        for (int i = messages.size() - 1; i >= 0; i--) {
+            ChatMessage message = messages.get(i);
+            if (message.type != ChatMessage.TYPE_USER || message.content == null) {
+                continue;
+            }
+            String text = message.content;
+            return text.contains("花") || text.contains("多少") || text.contains("食堂")
+                    || text.contains("支出");
+        }
+        return false;
+    }
+
+    private boolean transcriptHasNumber() {
+        if (streamIndex < 0 || streamIndex >= messages.size()) {
+            return false;
+        }
+        String text = messages.get(streamIndex).content;
+        if (text == null) {
+            return false;
+        }
+        for (int i = 0; i < text.length(); i++) {
+            if (Character.isDigit(text.charAt(i))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void showVoiceError(String reason) {
         voiceHolding = false;
+        pendingStop = false;
         replyActive = false;
         gazeHandler.removeCallbacks(pleasedDone);
+        gazeHandler.removeCallbacks(readyTimeout);
         binding.tvAssistantStatus.setText(reason);
         binding.btnStatusRetry.setVisibility(View.GONE);
         pushScene("concerned");
     }
 
     private void pushScene(String scene) {
-        lastEmotionId = ballScenes.idForScene(scene);
+        String id = ballScenes.idForScene(scene);
+        if (id == null || !id.matches("\\d{2}")) {
+            id = "02";
+        }
+        lastEmotionId = id;
         pushEmotion();
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQUEST_MIC
-                && (grantResults.length == 0 || grantResults[0] != PackageManager.PERMISSION_GRANTED)) {
+        if (requestCode != REQUEST_MIC) {
+            return;
+        }
+        if (grantResults.length == 0 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
             showVoiceError(getString(R.string.assistant_voice_mic));
+        } else {
+            pushScene("idle");
         }
     }
 
     @Override
     protected void onDestroy() {
         gazeHandler.removeCallbacks(voiceFail);
+        gazeHandler.removeCallbacks(readyTimeout);
         gazeHandler.removeCallbacks(pleasedDone);
         if (speechRecognizer != null) {
             speechRecognizer.destroy();
