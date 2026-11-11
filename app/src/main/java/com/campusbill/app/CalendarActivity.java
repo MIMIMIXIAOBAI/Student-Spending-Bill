@@ -1,6 +1,7 @@
 package com.campusbill.app;
 
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -88,6 +89,28 @@ public class CalendarActivity extends AppCompatActivity {
         binding.btnNextMonth.setOnClickListener(v -> switchMonth(1));
 
         buildWeekHeader();
+        updateMonthLabel();
+        loadMonthBills();
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        if (intent == null) {
+            return;
+        }
+        String monthExtra = intent.getStringExtra(EXTRA_MONTH);
+        if (monthExtra == null || monthExtra.trim().isEmpty()) {
+            return;
+        }
+        YearMonth next = parseMonth(monthExtra);
+        if (next.equals(month)) {
+            return;
+        }
+        month = next;
+        LocalDate today = LocalDate.now();
+        selectedDate = month.equals(YearMonth.from(today)) ? today : null;
         updateMonthLabel();
         loadMonthBills();
     }

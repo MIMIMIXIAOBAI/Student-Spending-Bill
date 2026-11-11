@@ -23,6 +23,10 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".AssistantProcessActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+        <activity
             android:name=".AiChatActivity"
             android:exported="false"
             android:launchMode="singleTop"

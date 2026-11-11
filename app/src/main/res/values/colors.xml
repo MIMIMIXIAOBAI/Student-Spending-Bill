@@ -9,6 +9,7 @@
 
     <!-- 语义色 -->
     <color name="color_warning">#F0564A</color>
+    <color name="color_context_hint">#C47A12</color>
     <color name="color_income">#34B37E</color>
 
     <!-- Text (iOS label colors) -->

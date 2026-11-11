@@ -3,11 +3,19 @@ package com.campusbill.app;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.GradientDrawable.Orientation;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.MotionEvent;
+import android.view.View;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.campusbill.app.R.color;
@@ -15,10 +23,12 @@ import com.campusbill.app.R.drawable;
 import com.campusbill.app.R.string;
 import com.campusbill.app.chart.CandyBarChartRenderer;
 import com.campusbill.app.chat.ai.BillAnalysisUtils;
-import com.campusbill.app.chat.ai.ReplyGenerator;
 import com.campusbill.app.data.BillEntity;
 import com.campusbill.app.data.DBHelper;
+import com.campusbill.app.data.SelectedMonthStore;
 import com.campusbill.app.databinding.ActivityMainBinding;
+import com.campusbill.app.ui.AttitudeGazeMath;
+import com.campusbill.app.ui.BallAttitudeGaze;
 import com.campusbill.app.ui.BottomTabHelper;
 import com.campusbill.app.ui.PressScaleHelper;
 import com.github.mikephil.charting.charts.BarChart;
@@ -56,19 +66,49 @@ public class MainActivity extends AppCompatActivity {
    private double monthIncome;
    private String topMerchant;
    private double topAmount;
+   private boolean homeBallReady;
+   private boolean homeBallActive;
+   private boolean homeBallGazing;
+   private float homeBallDownX;
+   private float homeBallDownY;
+   private final Handler homeGazeHandler = new Handler(Looper.getMainLooper());
+   private final Runnable homeGazeFront = () -> this.pushHomeGaze(0.0F, 0.0F);
+   private boolean homeFingerDown;
+   private final BallAttitudeGaze homeAttitudeGaze = new BallAttitudeGaze(new BallAttitudeGaze.Host() {
+      public void onAttitudeGaze(float nx, float ny) {
+         MainActivity.this.homeGazeHandler.removeCallbacks(MainActivity.this.homeGazeFront);
+         MainActivity.this.pushHomeGaze(nx, ny);
+      }
+
+      public void onAttitudeReturn() {
+         MainActivity.this.homeGazeHandler.removeCallbacks(MainActivity.this.homeGazeFront);
+         MainActivity.this.homeGazeHandler.postDelayed(MainActivity.this.homeGazeFront, AttitudeGazeMath.RETURN_MS);
+      }
+
+      public boolean fingerOwnsBall() {
+         return MainActivity.this.homeFingerDown;
+      }
+
+      public boolean attitudeAllowed() {
+         return MainActivity.this.homeBallActive
+               && MainActivity.this.binding != null
+               && MainActivity.this.binding.homeEmotionBall.getVisibility() == View.VISIBLE
+               && MainActivity.this.binding.homeEmotionBall.getHeight() > 0;
+      }
+   });
 
    protected void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
       this.binding = ActivityMainBinding.inflate(this.getLayoutInflater());
       this.setContentView(this.binding.getRoot());
       PressScaleHelper.attach(this.binding.btnAddBill);
-      PressScaleHelper.attach(this.binding.panelAi);
       PressScaleHelper.attach(this.binding.panelIncome);
       PressScaleHelper.attach(this.binding.panelRank);
       PressScaleHelper.attach(this.binding.panelCalendar);
       BottomTabHelper.bind(this, BottomTabHelper.Tab.HOME);
       this.dbHelper = DBHelper.getInstance(this);
-      this.selectedMonth = YearMonth.now();
+      this.selectedMonth = SelectedMonthStore.get(this);
+      SelectedMonthStore.save(this, this.selectedMonth);
       double savedBudget = BillAnalysisUtils.getBudget(this);
       if (savedBudget > (double)0.0F) {
          this.binding.etBudget.setText(this.formatAmount(savedBudget));
@@ -86,11 +126,7 @@ public class MainActivity extends AppCompatActivity {
             BillAnalysisUtils.saveBudget(MainActivity.this, MainActivity.this.parseAmount(s == null ? "" : s.toString()));
          }
       });
-      this.binding.panelAi.setOnClickListener((v) -> {
-         Intent intent = new Intent(this, AiChatActivity.class);
-         intent.putExtra("extra_month", this.selectedMonth.toString());
-         this.startActivity(intent);
-      });
+      this.setupHomeEmotionBall();
       this.binding.btnViewDetail.setOnClickListener((v) -> {
          Intent intent = new Intent(this, IncomeDetailActivity.class);
          intent.putExtra("extra_month", this.selectedMonth.toString());
@@ -123,6 +159,8 @@ public class MainActivity extends AppCompatActivity {
 
    protected void onResume() {
       super.onResume();
+      this.pushHomeBallActive(true);
+      this.homeAttitudeGaze.setPageVisible(this, true);
       if (this.resumedOnce) {
          this.loadMonthData();
       } else {
@@ -149,6 +187,7 @@ public class MainActivity extends AppCompatActivity {
                (new AlertDialog.Builder(MainActivity.this)).setTitle(string.month_picker_title).setSingleChoiceItems(labels, checked, (dialog, which) -> {
                   dialog.dismiss();
                   MainActivity.this.selectedMonth = YearMonth.parse((CharSequence)months.get(which));
+                  SelectedMonthStore.save(MainActivity.this, MainActivity.this.selectedMonth);
                   MainActivity.this.loadMonthData();
                }).setNegativeButton(string.btn_cancel, (DialogInterface.OnClickListener)null).show();
             } else {
@@ -185,7 +224,6 @@ public class MainActivity extends AppCompatActivity {
       this.monthIncome = (double)0.0F;
       this.topMerchant = "";
       this.topAmount = (double)0.0F;
-      this.binding.tvAiSummary.setText(string.ai_panel_empty);
       this.binding.tvMonthCompare.setText(string.main_empty_hint);
       this.binding.tvMonthCompare.setTextColor(this.getColor(color.text_secondary));
       this.binding.tvIncomePreview.setText(string.main_empty_hint);
@@ -198,7 +236,6 @@ public class MainActivity extends AppCompatActivity {
 
    private void loadRealMonth() {
       this.emptyState = false;
-      this.binding.tvAiSummary.setText(string.ai_panel_summary);
       String month = this.selectedMonth.toString();
       this.dbHelper.getBillsByMonth(month, new DBHelper.DataCallback<List<BillEntity>>() {
          public void onSuccess(List<BillEntity> bills) {
@@ -293,28 +330,121 @@ public class MainActivity extends AppCompatActivity {
       this.setupCategoryChart(categoryNames, categoryAmounts);
       this.updateBudgetPanel();
       this.updateEntriesPanel();
-      this.binding.tvAiSummary.setText(this.buildAiAdvice(expense, categoryNames, categoryAmounts));
    }
 
-   /** 根据当月支出与分类构成，生成一句简短的 AI 消费建议 */
-   private String buildAiAdvice(double expense, String[] categoryNames, float[] categoryAmounts) {
-      if (expense <= 0 || categoryNames == null || categoryAmounts == null
-            || categoryNames.length == 0 || categoryAmounts.length == 0) {
-         return this.getString(string.ai_panel_empty);
-      }
-      int topIndex = 0;
-      for (int i = 1; i < categoryAmounts.length; i++) {
-         if (categoryAmounts[i] > categoryAmounts[topIndex]) {
-            topIndex = i;
+   /** 首页「AI消费建议」卡换成常驻情绪球。轻点进对话，滑动只跟视线。 */
+   private void setupHomeEmotionBall() {
+      WebSettings settings = this.binding.homeEmotionBall.getSettings();
+      settings.setJavaScriptEnabled(true);
+      settings.setAllowFileAccess(true);
+      settings.setAllowFileAccessFromFileURLs(true);
+      this.binding.homeEmotionBall.setBackgroundColor(Color.TRANSPARENT);
+      this.binding.homeEmotionBall.setWebViewClient(new WebViewClient() {
+         public void onPageFinished(WebView view, String url) {
+            MainActivity.this.homeBallReady = true;
+            MainActivity.this.pushHomeBallActive(MainActivity.this.homeBallActive);
          }
+      });
+      this.binding.homeEmotionBall.loadUrl("file:///android_asset/emotion-ball/host.html");
+      float tapPx = 12.0F * this.getResources().getDisplayMetrics().density;
+      this.binding.homeEmotionBallTouch.setOnTouchListener((v, event) -> this.onHomeBallTouch(v, event, tapPx));
+   }
+
+   /** 位移不超过 12dp 才算轻点进对话。超过则只跟视线，并把纵向滑动还给首页滚动。 */
+   private boolean onHomeBallTouch(View view, MotionEvent event, float tapPx) {
+      switch (event.getActionMasked()) {
+         case MotionEvent.ACTION_DOWN:
+            this.homeGazeHandler.removeCallbacks(this.homeGazeFront);
+            this.homeFingerDown = true;
+            this.homeBallGazing = false;
+            this.homeBallDownX = event.getRawX();
+            this.homeBallDownY = event.getRawY();
+            view.getParent().requestDisallowInterceptTouchEvent(true);
+            return true;
+         case MotionEvent.ACTION_MOVE:
+            float dx = event.getRawX() - this.homeBallDownX;
+            float dy = event.getRawY() - this.homeBallDownY;
+            if (dx * dx + dy * dy > tapPx * tapPx) {
+               this.homeBallGazing = true;
+               this.trackHomeGaze(event);
+               if (Math.abs(dy) > Math.abs(dx)) {
+                  view.getParent().requestDisallowInterceptTouchEvent(false);
+               }
+            }
+            return true;
+         case MotionEvent.ACTION_UP:
+            view.getParent().requestDisallowInterceptTouchEvent(false);
+            this.homeFingerDown = false;
+            if (!this.homeBallGazing) {
+               this.openAssistant();
+            } else if (!this.homeAttitudeGaze.isDriving()) {
+               this.homeGazeHandler.postDelayed(this.homeGazeFront, AttitudeGazeMath.RETURN_MS);
+            }
+            return true;
+         case MotionEvent.ACTION_CANCEL:
+            view.getParent().requestDisallowInterceptTouchEvent(false);
+            this.homeFingerDown = false;
+            if (this.homeBallGazing && !this.homeAttitudeGaze.isDriving()) {
+               this.homeGazeHandler.postDelayed(this.homeGazeFront, AttitudeGazeMath.RETURN_MS);
+            }
+            return true;
+         default:
+            return true;
       }
-      String topCategory = categoryNames[topIndex];
-      double topAmount = categoryAmounts[topIndex];
-      double percent = topAmount / expense * 100;
-      String monthLabel = ReplyGenerator.monthLabel(this.selectedMonth.toString());
-      return this.getString(string.ai_panel_advice,
-            monthLabel, this.formatAmount(expense), topCategory,
-            String.format(Locale.CHINA, "%.1f", percent), this.formatAmount(topAmount * 0.9));
+   }
+
+   private void trackHomeGaze(MotionEvent event) {
+      WebView ball = this.binding.homeEmotionBall;
+      if (ball.getWidth() <= 0 || ball.getHeight() <= 0) {
+         return;
+      }
+      int[] location = new int[2];
+      ball.getLocationOnScreen(location);
+      float centerX = location[0] + ball.getWidth() / 2.0F;
+      float centerY = location[1] + ball.getHeight() / 2.0F;
+      float nx = this.clampUnit((event.getRawX() - centerX) / (ball.getWidth() / 2.0F));
+      float ny = this.clampUnit((event.getRawY() - centerY) / (ball.getHeight() / 2.0F));
+      this.pushHomeGaze(nx, ny);
+   }
+
+   private void openAssistant() {
+      SelectedMonthStore.save(this, this.selectedMonth);
+      Intent intent = new Intent(this, AiChatActivity.class);
+      intent.putExtra("extra_month", this.selectedMonth.toString());
+      this.startActivity(intent);
+   }
+
+   private void pushHomeGaze(float nx, float ny) {
+      if (!this.homeBallReady || !this.homeBallActive) {
+         return;
+      }
+      String script = String.format(Locale.US, "window.setGaze&&window.setGaze(%f,%f)", nx, ny);
+      this.binding.homeEmotionBall.evaluateJavascript(script, null);
+   }
+
+   private void pushHomeBallActive(boolean active) {
+      this.homeBallActive = active;
+      if (!this.homeBallReady) {
+         return;
+      }
+      this.binding.homeEmotionBall.evaluateJavascript(
+            "window.setBallActive&&window.setBallActive(" + active + ")", null);
+   }
+
+   private float clampUnit(float value) {
+      return Math.max(-1.0F, Math.min(1.0F, value));
+   }
+
+   protected void onPause() {
+      this.homeAttitudeGaze.setPageVisible(this, false);
+      this.homeGazeHandler.removeCallbacks(this.homeGazeFront);
+      this.pushHomeBallActive(false);
+      super.onPause();
+   }
+
+   protected void onDestroy() {
+      this.homeAttitudeGaze.stop();
+      super.onDestroy();
    }
 
    private void updateEntriesPanel() {

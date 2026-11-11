@@ -4,8 +4,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 /**
- * AI 配置：API KEY 仅保存在本机 SharedPreferences 中，不上传服务器。
- * 后续接入真实 AI 服务时，可在此补充服务地址、模型等配置项。
+ * AI 配置。DeepSeek API Key 经 {@link DeepSeekKeyStore} 放进 Android Keystore，
+ * 本类的偏好里只留接口地址和模型名，不留明文密钥。
  */
 public final class AiConfig {
 
@@ -22,14 +22,14 @@ public final class AiConfig {
     private AiConfig() {
     }
 
-    /** 读取本机保存的 API KEY，未设置时返回空字符串 */
+    /** 读取 Keystore 里的 API Key，未设置时返回空字符串 */
     public static String getApiKey(Context context) {
-        return prefs(context).getString(KEY_API_KEY, "");
+        return DeepSeekKeyStore.get(context);
     }
 
-    /** 保存 API KEY，传入空字符串表示清空 */
+    /** 保存 API Key 到 Keystore，传入空字符串表示清空 */
     public static void saveApiKey(Context context, String apiKey) {
-        prefs(context).edit().putString(KEY_API_KEY, apiKey == null ? "" : apiKey.trim()).apply();
+        DeepSeekKeyStore.save(context, apiKey);
     }
 
     /** 读取接口地址，未设置时返回默认值 */
@@ -44,10 +44,11 @@ public final class AiConfig {
         return model == null || model.trim().isEmpty() ? DEFAULT_MODEL : model.trim();
     }
 
-    /** 一次性保存 API KEY、接口地址与模型名称 */
+    /** 保存 Keystore 中的密钥，以及接口地址和模型名。密钥不会写进偏好明文。 */
     public static void saveSettings(Context context, String apiKey, String baseUrl, String model) {
+        DeepSeekKeyStore.save(context, apiKey);
         prefs(context).edit()
-                .putString(KEY_API_KEY, apiKey == null ? "" : apiKey.trim())
+                .remove(KEY_API_KEY)
                 .putString(KEY_BASE_URL, baseUrl == null ? "" : baseUrl.trim())
                 .putString(KEY_MODEL, model == null ? "" : model.trim())
                 .apply();

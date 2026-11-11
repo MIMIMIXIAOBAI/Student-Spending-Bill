@@ -1,0 +1,9 @@
+Classic Emotion Ball (blob sphere) vendored for this non-commercial contest build.
+
+Source: https://github.com/sam70361/aora-bot
+Branch: emotion-ball
+Commit: f793bb445ebad66a1a19bae75b4c27b306d2f95e
+Files: rings.js, emotions.js, ball.js, engine.js (unmodified), plus UPSTREAM_LICENSE and UPSTREAM_NOTICE.md.
+
+The spherical character visuals are for study and this contest demo only. They are not commercially licensed and this project does not present them as such.
+host.html is the only file added by this app.

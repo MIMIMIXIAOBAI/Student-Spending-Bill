@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    html, body { margin: 0; background: transparent; overflow: hidden; }
+    #bot { width: 100vw; height: 100vh; }
+  </style>
+</head>
+<body>
+  <div id="bot"></div>
+  <!-- Classic Emotion Ball from sam70361/aora-bot emotion-ball @ f793bb445ebad66a1a19bae75b4c27b306d2f95e. Contest use only. -->
+  <script src="rings.js"></script>
+  <script src="emotions.js"></script>
+  <script src="ball.js"></script>
+  <script src="engine.js"></script>
+  <script>
+    var ball = EmotionBall.create(document.getElementById('bot'), {
+      emotion: '02',
+      shape: 'blob',
+      idle: true,
+      lite: true,
+      eyeScale: 1.7
+    });
+    window.setAssistantEmotion = function (id) {
+      if (!ball || !id) return;
+      ball.setEmotion(String(id));
+    };
+    window.setGaze = function (nx, ny) {
+      if (!ball || !ball.setGaze) return;
+      ball.setGaze(Number(nx), Number(ny));
+    };
+    window.setBallActive = function (on) {
+      if (!ball || !ball.setActive) return;
+      ball.setActive(!!on);
+    };
+  </script>
+</body>
+</html>
