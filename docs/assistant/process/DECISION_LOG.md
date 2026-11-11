@@ -1195,3 +1195,12 @@
 - **协议**：DSH 称【序号】40 写入渐变定稿，【序号】41 已把安装包改成主管已核对，真机效果仍待确认。请 Trae 把协议附录与箱内文档一并合进同一条 PR，不必另打文档包。
 - **文档**：箱内 `REPRODUCE.md` 已把 `测试v0.12.apk` 改成「主管已核对」，真机效果仍记待确认。请 Trae 把 `/workspace/student-assistant-docs/` 合入 [PR #3](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/pull/3)，不要动 `feat/ui-tokens-p0`，也不要合入 `master`。
 - **来源**：学生助手比赛群，主管大人、DSH助手、Trae助手。2026-11-11 12:58（Asia/Shanghai，UTC+8）。
+
+---
+
+## 2026-11-11 · 已核 PR #3 头 2614d20，合入指南仍写「主管尚未核对」
+
+- **仓库（已核 GitHub）**：[PR #3](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/pull/3) 仍为 open，尚未合入 `master`，可合并且状态 clean。现有 56 个提交（+11684 / −159，109 个文件）。头提交已更新为 12:59:02（Asia/Shanghai，UTC+8）的 [`2614d20`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/2614d20b61aecd2b731a4390b89990e58df80551)，父提交为同一时刻的 [`ec0e9f6`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/ec0e9f6c67140194922677d916227febec10aa64)。PR 更新时间为 2026-11-11 12:59:04（Asia/Shanghai，UTC+8）。这是连续三个文档提交的最后一笔：[`1650d90`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/1650d9045900de638ec3ed837bde9913bdbb9deb)（append prompt entries 39, 40, and 41）、`ec0e9f6`（copy the v0.12 assistant readme, emotion map, and session note），以及头提交 `2614d20`（`docs: copy the v0.12 reproduce guide and decision log`）。Trae 称只改了协议和复现文档，没有改应用代码，没有另打文档包，也没有合入 master。本条未把【序号】39 到 41 正文与 DSH 原稿逐字对完，也未展开核验两个父提交全文。
+- **2614d20（已核文件清单与 REPRODUCE.md 口径）**：只改了 `docs/assistant/REPRODUCE.md` 和 `docs/assistant/process/DECISION_LOG.md`（+126 / −6）。路径和哈希是对的：当前调试包已写成 `C:\Users\ZXM\Desktop\测试\测试v0.12.apk`，体积和 SHA256 `2642c3b4df22afa17e7b5a13feaa82d41ea0d8632dfd3642a1ae6d50560c53b7` 与主管核对一致，也未再写成桌面根目录。但当前包说明仍写成「Trae 汇报……主管尚未核对该文件」，红线处同样写「Trae 已汇报，主管尚未核对该文件」。这与主管在 12:58 的核对不符：该包主管已核对，协议【序号】41 也已改成「主管已核对」。箱内 `/workspace/student-assistant-docs/` 已按核对结果改过，本次合入用的是更早一版。合入的决策日志止于「Trae 称已交测试v0.12.apk / 主管尚未核对」，没有后面「主管已核对」那条。
+- **文档**：请 Trae 再把最新箱内 `/workspace/student-assistant-docs/` 合入 PR #3，不要动 `feat/ui-tokens-p0`，也不要合入 `master`。不必另打文档包，也不要覆盖已交的包。真机效果仍待确认。
+- **来源**：学生助手比赛群，Trae助手、流程记录员、WorkBuddy助手；已核 GitHub PR #3、提交 `2614d20` 及其中 `REPRODUCE.md`。2026-11-11 13:00（Asia/Shanghai，UTC+8）。
