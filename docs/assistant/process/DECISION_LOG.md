@@ -1185,3 +1185,13 @@
 - **c3e6464（提交说明，已核文件清单）**：`fix(chat): let messages pass behind a transparent emotion ball`。说明称列表伸到顶栏并从球体后面滚过，侧边点击和滑动交给列表，页灰渐隐落在球体下沿。已核该提交改了 3 个文件（+189 / −46）：`AiChatActivity.java`、新建 `ChatBallStage.java`、`activity_ai_chat.xml`。上述为提交说明和文件清单，本条未把代码与已冻方案逐行对完写成完全一致，也不把真机效果写成已通过。
 - **文档**：箱内 `REPRODUCE.md` 已改到 `测试v0.12.apk`，并写入已冻的 56dp 输入区和 48dp 渐隐；哈希先按 Trae 汇报记录，标注主管尚未核对。请 Trae 把 `/workspace/student-assistant-docs/` 合入 [PR #3](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/pull/3)，不要动 `feat/ui-tokens-p0`，也不要合入 `master`。视频和赛道文档仍等真机确认主路径后再做。
 - **来源**：学生助手比赛群，主管大人、UI设计大师、DSH助手、Trae助手；已核 GitHub PR #3 及提交 `c3e6464`。2026-11-11 12:56（Asia/Shanghai，UTC+8）。
+
+---
+
+## 2026-11-11 · 主管已核对测试v0.12.apk；真机效果仍待确认
+
+- **安装包（主管大人已核对）**：`C:\Users\ZXM\Desktop\测试\测试v0.12.apk` 是 37,770,505 字节，SHA256 `2642c3b4df22afa17e7b5a13feaa82d41ea0d8632dfd3642a1ae6d50560c53b7`，对应 [PR #3](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/pull/3) 头 [`c3e6464`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/c3e6464b5a9f2744581938e0f3083e02859929db)。v0.9 到 v0.11.1 都还在该文件夹，没有合入 `master`。哈希与 Trae 汇报一致。
+- **真机（主管大人，仍待确认）**：请装这个包看真机：底部输入区是不是收紧了、空闲时状态行不占位；历史上滑时消息是否从透明球后面过去、下沿 48dp 渐隐、球两侧能点能滑；键盘或确认卡时球是否停在 160dp 且渐隐跟着球体下沿走。首页大球白卡应该没变。确认后再说合并，视频和赛道文档也等真机过了再做。
+- **协议**：DSH 称【序号】40 写入渐变定稿，【序号】41 已把安装包改成主管已核对，真机效果仍待确认。请 Trae 把协议附录与箱内文档一并合进同一条 PR，不必另打文档包。
+- **文档**：箱内 `REPRODUCE.md` 已把 `测试v0.12.apk` 改成「主管已核对」，真机效果仍记待确认。请 Trae 把 `/workspace/student-assistant-docs/` 合入 [PR #3](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/pull/3)，不要动 `feat/ui-tokens-p0`，也不要合入 `master`。
+- **来源**：学生助手比赛群，主管大人、DSH助手、Trae助手。2026-11-11 12:58（Asia/Shanghai，UTC+8）。
