@@ -3,6 +3,7 @@ package com.campusbill.app;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Rect;
+import android.graphics.drawable.GradientDrawable;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
@@ -42,6 +43,7 @@ import com.campusbill.app.chat.session.ContextUsage;
 import com.campusbill.app.chat.session.MemoryHandoff;
 import com.campusbill.app.chat.session.ModelWindows;
 import com.campusbill.app.chat.session.TokenEstimate;
+import com.campusbill.app.ui.ChatBallFade;
 import com.campusbill.app.ui.ChatBallMetrics;
 import com.campusbill.app.ui.ChatInputChrome;
 import com.campusbill.app.chat.ai.assistant.AssistantIntentPlanner;
@@ -148,7 +150,10 @@ public class AiChatActivity extends AppCompatActivity {
         refreshQueryMonth();
 
         adapter = new ChatAdapter(messages);
-        binding.rvMessages.setLayoutManager(new LinearLayoutManager(this));
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        // 短对话贴在输入栏上方；往上翻时旧消息从球后面穿过，而不是被方框切断。
+        layoutManager.setStackFromEnd(true);
+        binding.rvMessages.setLayoutManager(layoutManager);
         binding.rvMessages.setAdapter(adapter);
 
         binding.btnBack.setOnClickListener(v -> finish());
@@ -504,6 +509,13 @@ public class AiChatActivity extends AppCompatActivity {
         settings.setAllowFileAccess(true);
         settings.setAllowFileAccessFromFileURLs(true);
         binding.emotionBall.setBackgroundColor(Color.TRANSPARENT);
+        binding.emotionBall.setLayerType(android.view.View.LAYER_TYPE_HARDWARE, null);
+        binding.emotionBallPanel.setBackgroundColor(Color.TRANSPARENT);
+        int page = getColor(R.color.bg_page);
+        binding.ballFade.setBackground(new GradientDrawable(
+                GradientDrawable.Orientation.BOTTOM_TOP,
+                new int[]{page & 0x00FFFFFF, page}));
+        binding.chatStage.bind(binding.emotionBallPanel, binding.rvMessages, binding.memoryTip);
         binding.emotionBall.setWebViewClient(new WebViewClient() {
             @Override
             public void onPageFinished(WebView view, String url) {
@@ -513,6 +525,13 @@ public class AiChatActivity extends AppCompatActivity {
             }
         });
         binding.emotionBall.loadUrl("file:///android_asset/emotion-ball/host.html");
+        binding.emotionBallPanel.addOnLayoutChangeListener(
+                (v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+                    if (right - left != oldRight - oldLeft || bottom - top != oldBottom - oldTop
+                            || top != oldTop) {
+                        placeBallFade();
+                    }
+                });
         binding.getRoot().addOnLayoutChangeListener(
                 (v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
                     if (bottom - top != oldBottom - oldTop) {
@@ -552,7 +571,7 @@ public class AiChatActivity extends AppCompatActivity {
         if (windowPx <= 0) {
             windowPx = getResources().getDisplayMetrics().heightPixels;
         }
-        int above = binding.emotionBallPanel.getTop();
+        int above = binding.chatHeader.getHeight() + binding.chatHeaderDivider.getHeight();
         if (above <= 0) {
             above = dp(96);
         }
@@ -589,7 +608,49 @@ public class AiChatActivity extends AppCompatActivity {
             params.height = target;
             binding.emotionBallPanel.setLayoutParams(params);
         }
+        placeBallFade();
         attitudeGaze.onConditionsChanged();
+    }
+
+    /** 48dp 浅灰渐隐的底边贴着球体下沿。球压到 160dp 时下沿上移，渐隐跟着走。 */
+    private void placeBallFade() {
+        android.view.View panel = binding.emotionBallPanel;
+        int width = panel.getWidth();
+        int height = panel.getHeight();
+        if (width <= 0 || height <= 0) {
+            return;
+        }
+        float sphereBottom = ChatBallFade.sphereBottomPx(width, height);
+        int side = Math.min(width, height);
+        android.widget.FrameLayout.LayoutParams ballParams =
+                (android.widget.FrameLayout.LayoutParams) binding.emotionBall.getLayoutParams();
+        if (ballParams.width != side || ballParams.height != side
+                || ballParams.gravity != android.view.Gravity.CENTER) {
+            ballParams.width = side;
+            ballParams.height = side;
+            ballParams.gravity = android.view.Gravity.CENTER;
+            binding.emotionBall.setLayoutParams(ballParams);
+        }
+        int fade = dp(ChatBallFade.FADE_DP);
+        int top = panel.getTop() + ChatBallFade.fadeTopPx(sphereBottom, fade);
+        if (top < 0) {
+            top = 0;
+        }
+        android.view.ViewGroup.MarginLayoutParams fadeParams =
+                (android.view.ViewGroup.MarginLayoutParams) binding.ballFade.getLayoutParams();
+        if (fadeParams.height != fade || fadeParams.topMargin != top) {
+            fadeParams.height = fade;
+            fadeParams.width = android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+            fadeParams.topMargin = top;
+            binding.ballFade.setLayoutParams(fadeParams);
+        }
+        android.view.ViewGroup.MarginLayoutParams tipParams =
+                (android.view.ViewGroup.MarginLayoutParams) binding.memoryTip.getLayoutParams();
+        int tipTop = panel.getTop() + Math.round(sphereBottom) + dp(8);
+        if (tipParams.topMargin != tipTop) {
+            tipParams.topMargin = tipTop;
+            binding.memoryTip.setLayoutParams(tipParams);
+        }
     }
 
     private int dp(int value) {
@@ -694,10 +755,11 @@ public class AiChatActivity extends AppCompatActivity {
         }
         int[] location = new int[2];
         binding.emotionBallPanel.getLocationOnScreen(location);
-        float x = event.getRawX();
-        float y = event.getRawY();
-        return x >= location[0] && x < location[0] + binding.emotionBallPanel.getWidth()
-                && y >= location[1] && y < location[1] + binding.emotionBallPanel.getHeight();
+        return ChatBallFade.insideSphere(
+                event.getRawX() - location[0],
+                event.getRawY() - location[1],
+                binding.emotionBallPanel.getWidth(),
+                binding.emotionBallPanel.getHeight());
     }
 
     private static float clampUnit(float value) {
