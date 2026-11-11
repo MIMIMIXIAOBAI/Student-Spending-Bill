@@ -1204,3 +1204,95 @@
 - **2614d20（已核文件清单与 REPRODUCE.md 口径）**：只改了 `docs/assistant/REPRODUCE.md` 和 `docs/assistant/process/DECISION_LOG.md`（+126 / −6）。路径和哈希是对的：当前调试包已写成 `C:\Users\ZXM\Desktop\测试\测试v0.12.apk`，体积和 SHA256 `2642c3b4df22afa17e7b5a13feaa82d41ea0d8632dfd3642a1ae6d50560c53b7` 与主管核对一致，也未再写成桌面根目录。但当前包说明仍写成「Trae 汇报……主管尚未核对该文件」，红线处同样写「Trae 已汇报，主管尚未核对该文件」。这与主管在 12:58 的核对不符：该包主管已核对，协议【序号】41 也已改成「主管已核对」。箱内 `/workspace/student-assistant-docs/` 已按核对结果改过，本次合入用的是更早一版。合入的决策日志止于「Trae 称已交测试v0.12.apk / 主管尚未核对」，没有后面「主管已核对」那条。
 - **文档**：请 Trae 再把最新箱内 `/workspace/student-assistant-docs/` 合入 PR #3，不要动 `feat/ui-tokens-p0`，也不要合入 `master`。不必另打文档包，也不要覆盖已交的包。真机效果仍待确认。
 - **来源**：学生助手比赛群，Trae助手、流程记录员、WorkBuddy助手；已核 GitHub PR #3、提交 `2614d20` 及其中 `REPRODUCE.md`。2026-11-11 13:00（Asia/Shanghai，UTC+8）。
+
+---
+
+## 2026-11-11 · Trae 称已合入【序号】39 到 41；已核 PR #3 头提交 2614d20
+
+- **安装包（主管大人已核对）**：主管确认 `C:\Users\ZXM\Desktop\测试\测试v0.12.apk` 是 37,770,505 字节，SHA256 `2642c3b4df22afa17e7b5a13feaa82d41ea0d8632dfd3642a1ae6d50560c53b7`，对应当时 [PR #3](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/pull/3) 头 [`c3e6464`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/c3e6464b5a9f2744581938e0f3083e02859929db)。v0.9 到 v0.11.1 都还在该文件夹，没有合入 master。体积和哈希与 Trae 汇报一致。本条把该文件记为主管已核对；真机效果仍待确认。
+- **真机（主管大人，仍待确认）**：请装这个包看：底部输入区是不是收紧了、空闲时状态行不占位；历史上滑时消息是否从透明球后面过去、下沿 48dp 渐隐、球两侧能点能滑；键盘或确认卡时球是否停在 160dp 且渐隐跟着球体下沿走。首页大球白卡应该没变。确认后再说合并，视频和赛道文档也等真机过了再做。
+- **协议（DSH 称，后文以 41 为准）**：【序号】39 写底部收紧与球容器透明、下沿 48dp 渐隐，纳入测试v0.12.apk。【序号】40 写渐变定稿（从球体下沿向上 48dp、全宽线性，页底浅灰；DSH 称实现色为 `#F2F2F7`）及 Trae 的交包记录，原文仍保留「待主管核对」。【序号】41 补上主管已核对体积、哈希和当时的头提交 `c3e6464`，并写明 40 中「待主管核对」以 41 为准；真机确认前不写合并，视频和赛道文档继续等。请 Trae 把附录合进同一条 PR，不必另打文档包。
+- **仓库（已核 GitHub）**：PR #3 仍为 open，尚未合入 master，现有 56 个提交（+11684 / −159，109 个文件）。头提交已更新为 12:59:02（Asia/Shanghai，UTC+8）的 [`2614d20`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/2614d20b61aecd2b731a4390b89990e58df80551)，与 Trae 所称头一致。PR 更新时间为 2026-11-11 12:59:04（Asia/Shanghai，UTC+8）。这是连续三个文档提交的最后一笔，都停在 `c3e6464` 之上，未见应用代码改动，也未见新的安装包提交。
+- **三笔文档提交（已核文件清单与关键措辞，非全文校对）**：[`1650d90`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/1650d9045900de638ec3ed837bde9913bdbb9deb)（`docs: append prompt entries 39, 40, and 41`，只改 `prompt_evolution.md`，+31 / −0）按原文依次接在 38 后面；40 保留「待主管核对」，41 写主管已核对并以本条为准。[`ec0e9f6`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/ec0e9f6c67140194922677d916227febec10aa64) 改了 `docs/assistant/README.md`、`emotion-map.v0.1.md`、`session.v0.1.md`（+18 / −5），写入 56dp 输入区和从球体下沿向上 48dp 渐隐。头提交 `2614d20`（`docs: copy the v0.12 reproduce guide and decision log`）只改了 `docs/assistant/REPRODUCE.md` 和 `docs/assistant/process/DECISION_LOG.md`（+126 / −6）。已核该稿复现指南已把当前调试包改到 `C:\Users\ZXM\Desktop\测试\测试v0.12.apk`，并写入 56dp 输入区和 48dp 渐隐，但正文仍写「主管尚未核对该文件」，头提交仍引为 `c3e6464`、53 个提交。这与主管已核对、以及当前 PR 头已是 `2614d20` 不符。合入的决策日志止于「主管定死 48dp 渐隐；Trae 称已交测试v0.12.apk」，未见「主管已核对测试v0.12.apk」那一条。本条不把复现指南写成已经改成「主管已核对」。
+- **待确认**：真机输入区收紧和渐隐效果仍待确认。确认前不写合并。视频和赛道文档继续等。不要覆盖已交的包。复现指南是否再改成「主管已核对」并改引当前头，本条未见后续提交。
+- **来源**：学生助手比赛群，主管大人、DSH助手、WorkBuddy助手、Trae助手；已核 GitHub PR #3、提交 `1650d90`、`ec0e9f6`、`2614d20`。2026-11-11 13:00（Asia/Shanghai，UTC+8）。
+
+---
+
+## 2026-11-11 · 已核 PR #3 头 42e6051，复现指南已改成主管已核对
+
+- **仓库（已核 GitHub）**：[PR #3](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/pull/3) 仍为 open，尚未合入 `master`，可合并且状态 clean。现有 60 个提交（+11711 / −159，109 个文件）。头提交已更新为 13:01:39（Asia/Shanghai，UTC+8）的 [`42e6051`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/42e60514681ad4f6d3aaba9706e6d56f9657b350)，PR 更新时间为 2026-11-11 13:01:42（Asia/Shanghai，UTC+8）。这是连续四个文档提交的最后一笔：[`c70e13c`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/c70e13c5a32d6ad5c1f3f64699ecb134c6eafb25)（`docs: mark the v0.12 package as checked by the lead`，13:00:51，只改 `REPRODUCE.md` 和 `DECISION_LOG.md`，+12 / −2）、[`0c62b6f`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/0c62b6f66959923b95533ab8f0e0a3f0582079df)（append prompt entry 42）、[`fee736c`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/fee736ceb87e4ffcc68cbeb3cf5917d8756ac587)（copy the assistant readme after the v0.12 doc merge），以及头提交 `42e6051`（copy the decision log after the v0.12 doc merge）。均未改应用代码，也未见新的安装包提交。本条未把【序号】42 正文与 DSH 原稿逐字对完。
+- **REPRODUCE.md（已核当前头正文）**：当前调试包已写成 `C:\Users\ZXM\Desktop\测试\测试v0.12.apk`，并记「主管已核对」（37,770,505 字节，SHA256 `2642c3b4df22afa17e7b5a13feaa82d41ea0d8632dfd3642a1ae6d50560c53b7`，时间 2026-11-11 12:55，哈希与汇报一致），安装包仍对应 [`c3e6464`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/c3e6464b5a9f2744581938e0f3083e02859929db)。红线处同样写「主管已核对」。全文不再出现「尚未核对该文件」。真机输入区收紧和渐隐仍记待确认，确认前不写合并。
+- **范围**：不要覆盖已交的包，也不要合入 `master`。视频和赛道文档仍等真机确认主路径后再做。
+- **来源**：学生助手比赛群，Trae助手、主管大人、DSH助手；已核 GitHub PR #3、提交 `c70e13c` 与当前头 `42e6051` 中的 `REPRODUCE.md`。2026-11-11 13:01（Asia/Shanghai，UTC+8）。
+
+---
+
+## 2026-11-11 · 再核当前头为 42e6051；复现指南已改成主管已核对，【序号】42 已合入
+
+- **拍板（主管大人）**：复现指南里还写着「主管尚未核对该文件」，请改成已核对，体积和哈希不变，真机输入区收紧和渐隐仍记待确认。【序号】42 可以合，但请同时改这一处，不要只补协议条目。不必另打包装，也不要合 master。
+- **Trae 当时口径**：称 `docs/assistant/REPRODUCE.md` 已改成「主管已核对」`测试v0.12.apk`，体积和哈希不变，真机仍记待确认；头提交当时报为 [`c70e13c`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/c70e13c5a32d6ad5c1f3f64699ecb134c6eafb25)，没有改应用代码，也没有合入 master；并称【序号】42 还在往同一条 PR 补，补完再报。
+- **仓库（13:02 再核 GitHub）**：[PR #3](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/pull/3) 仍为 open，尚未合入 master，现有 60 个提交（+11711 / −159，109 个文件）。当前头已不是 `c70e13c`，而是 13:01:39（Asia/Shanghai，UTC+8）的 [`42e6051`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/42e60514681ad4f6d3aaba9706e6d56f9657b350)。PR 更新时间为 2026-11-11 13:01:42（Asia/Shanghai，UTC+8）。`c70e13c` 之后还有三笔文档提交：[`0c62b6f`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/0c62b6f66959923b95533ab8f0e0a3f0582079df)（`docs: append prompt entry 42`，只改 `prompt_evolution.md`，+8 / −0）、[`fee736c`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/fee736ceb87e4ffcc68cbeb3cf5917d8756ac587)（只改 `docs/assistant/README.md`，+1 / −1），以及头提交 `42e6051`（只改 `docs/assistant/process/DECISION_LOG.md`，+9 / −0）。均未见应用代码或新的安装包提交。
+- **c70e13c（已核文件清单与措辞）**：`docs: mark the v0.12 package as checked by the lead`，13:00:51（Asia/Shanghai，UTC+8），只改了 `REPRODUCE.md` 和 `DECISION_LOG.md`（+12 / −2）。已核复现指南两处「主管尚未核对该文件」都改成了「主管已核对」；体积仍是 37,770,505 字节，SHA256 仍是 `2642c3b4df22afa17e7b5a13feaa82d41ea0d8632dfd3642a1ae6d50560c53b7`，打包时间仍是 2026-11-11 12:55，安装包仍对应 [`c3e6464`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/c3e6464b5a9f2744581938e0f3083e02859929db)。
+- **【序号】42（已见原文，非与 DSH 逐字校对）**：已出现在 `0c62b6f`。条目写文档头为 `2614d20`（即 39 到 41 合入时的头），安装包仍对应 `c3e6464`，主管已核对该包体积和哈希；真机输入区收紧和渐隐仍待确认，确认前不写合并。本条不把「42 还在补」写成当前状态。
+- **待确认**：真机效果仍待确认。确认前不写合并。视频和赛道文档继续等。不要覆盖已交的包。
+- **来源**：学生助手比赛群，主管大人、DSH助手、WorkBuddy助手、Trae助手；已核 GitHub PR #3、提交 `c70e13c`、`0c62b6f`、`fee736c`、`42e6051`。2026-11-11 13:02（Asia/Shanghai，UTC+8）。
+
+---
+
+## 2026-11-11 · 用户真机反馈：48dp 渐隐带过短，上方全透明有割裂感（待确认）
+
+- **用户意见（真机，尚未经主管改冻）**：渐变消失的地方多一些，在原本位置往上拉。现在的效果是渐变消失的地方只有一小块，然后上面的又是全透明，有严重的割裂感。本条只记用户提出，不改已冻的「从球体下沿向上 48dp、全宽线性」和球高规则，也不把实现或新包装写成已开始。
+- **范围**：是否加长渐隐带、加到多少 dp，等 UI 补规格、主管再冻后再写入复现指南。球默认约占屏高三分之一和 160dp 硬下限、只改对话页、首页大球白卡不动，本条都不改。不要覆盖已交的 `测试v0.9.apk` 到 `测试v0.12.apk`，也不要合入 `master`。视频和赛道文档仍等真机确认主路径后再做。
+- **来源**：学生助手比赛群，用户。2026-11-11 19:15（Asia/Shanghai，UTC+8）。
+
+---
+
+## 2026-11-11 · 用户反馈渐隐过短、上方全透明有割裂感（待主管确认）
+
+- **文档头（主管大人已对过指南；Trae、DSH 称协议头改为 42e6051）**：主管确认复现指南里 `测试v0.12.apk` 已写成「主管已核对」，体积和哈希不变，真机输入区收紧和渐隐当时仍记待确认；并确认 [`c70e13c`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/c70e13c5a32d6ad5c1f3f64699ecb134c6eafb25) 是这次改正，[PR #3](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/pull/3) 头已到 [`42e6051`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/42e60514681ad4f6d3aaba9706e6d56f9657b350)，仍为 open，没有合 master，安装包仍对应 [`c3e6464`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/c3e6464b5a9f2744581938e0f3083e02859929db)。Trae 称【序号】42 已按原文接在 41 后面，请把日志里的文档头从 `2614d20` 改到 `42e6051`。DSH 称协议里的文档头改为 `42e6051`，【序号】42 和「主管已核对」的复现指南都已在同一条 PR 里；不必为这一行再开提交，下次合文档时带上即可。演进日志和决策日志在 13:02 已把当前头记为 `42e6051`，本条不再把文档头写成 `2614d20`。
+- **仓库（19:15 再核 GitHub）**：PR #3 仍为 open，尚未合入 master，现有 60 个提交（+11711 / −159，109 个文件）。头提交仍为 [`42e6051`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/42e60514681ad4f6d3aaba9706e6d56f9657b350)，PR 更新时间仍为 2026-11-11 13:01:42（Asia/Shanghai，UTC+8），未见新的应用代码或安装包提交。
+- **用户反馈（待主管确认，本条不另定高度）**：用户说「渐变消失的地方多一些，在原本位置往上拉，现在的效果是渐变消失的地方只有一小块，然后上面的又是全透明，有严重的割裂感」。本条按原文记录：希望渐隐带从原位置向上加长，认为当前渐隐只有一小块、上方全透明，割裂感严重。用户未写明是否在真机上看到，也不写清看的是否就是 `测试v0.12.apk`。本条不把真机写成已通过，也不把已冻的「从球体下沿向上 48dp」写成已经作废；新高度等主管确认后再冻。
+- **待确认**：渐隐新高度尚未由主管冻结。输入区收紧等其余真机项也尚未全部确认。确认前不写合并。视频和赛道文档继续等。不要覆盖已交的包。
+- **来源**：学生助手比赛群，用户、主管大人、DSH助手、Trae助手、WorkBuddy助手；已核 GitHub PR #3 头仍为 `42e6051`。2026-11-11 19:15（Asia/Shanghai，UTC+8）。
+
+---
+
+## 2026-11-11 · UI 建议渐隐铺满当前球高（待主管冻结）
+
+- **UI 方案（尚未经主管冻结，不写入复现指南正文）**：48dp 太短，渐隐只盖住下沿一小条，上面又突然全透明、字会重新露出来，所以会割裂。改成渐隐从球体下沿一直拉到球体上沿，按当前球高全宽线性过渡：下沿完全透明，上沿用页底浅灰到完全不透明；从球体上沿到顶栏保持同一浅灰，不要再留一段全透明。压到 160dp 时，这段渐隐仍贴着下沿、铺满当时的球高。两侧仍可点可滑，只是视觉上不再在渐隐上方突然露字。首页大球白卡不动。球默认约占屏高三分之一和 160dp 硬下限先不动。
+- **与已冻表述的差异**：这版会改掉现行「从球体下沿向上 48dp」；「从球体上沿到顶栏保持同一浅灰」也可能改掉「两侧透明可以露字」里上沿以上仍全透明、可露字的部分。本条不把这些改动写成已冻。
+- **交付建议（UI 提出，主管尚未点名）**：UI 请主管冻结后，让 Trae 打成 `C:\Users\ZXM\Desktop\测试\测试v0.13.apk`，不要覆盖 `测试v0.12.apk`，也不要合入 `master`。DSH 也提出另打一包放到同一文件夹、不覆盖 v0.12、不合 master，但未点名文件名。本条不把 `测试v0.13.apk` 写成已定文件名，也不把实现写成已开始。
+- **来源**：学生助手比赛群，用户真机反馈之后，DSH助手、UI设计大师。2026-11-11 19:16（Asia/Shanghai，UTC+8）。
+
+---
+
+## 2026-11-11 · 主管冻结渐隐铺满当前球高，预定测试v0.13.apk；包尚未交付
+
+- **真机（DSH 称，补记前条）**：DSH 确认这是真机看到的割裂：现在渐隐只从球体下沿往上 48dp，这一小段淡出之后，再往上两侧又全透明，字会重新露出来，所以像被切了一刀。本条把 19:15 的用户反馈记为真机看到的这一现象；不把 `测试v0.12.apk` 的其余真机项写成已通过，也不把输入区收紧写成已确认。
+- **拍板（主管大人，已冻，后文以第二遍为准）**：按 UI设计大师这版冻结。48dp 作废，不定死 dp，也不拉到球中部。渐隐从球体下沿拉到球体上沿，按当前球高全宽线性；下沿全透明，上沿用现有页底浅灰到完全不透明；从球体上沿到顶栏保持同一浅灰，不要再留一段全透明。压到 160dp 时仍贴着下沿、铺满当时的球高。两侧仍可点可滑。球高规则（默认约占屏高三分之一、160dp 硬下限）和首页大球白卡不动。不要新颜色、不要横条；球体本身仍不透明。请 DSH 按此写协议，【序号】顺延。
+- **交付（主管大人已点名，尚未见到包）**：@Trae助手 接到同一条 [PR #3](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/pull/3) 上改，自测后打到 `C:\Users\ZXM\Desktop\测试\测试v0.13.apk`，不要覆盖 `测试v0.12.apk`，不要合 master。
+- **仓库（22:16 再核 GitHub）**：PR #3 仍为 open，尚未合入 master，现有 60 个提交（+11711 / −159，109 个文件）。头提交仍为 13:01:39（Asia/Shanghai，UTC+8）的 [`42e6051`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/42e60514681ad4f6d3aaba9706e6d56f9657b350)，PR 更新时间仍为 2026-11-11 13:01:42（Asia/Shanghai，UTC+8）。未见新的应用代码或安装包提交，群里也未见 Trae 交出 `测试v0.13.apk`。本条不把该包写成已交付，也不打开用户桌面核文件。
+- **协议**：DSH 称冻住后写入协议，【序号】顺延。截至本条，群里尚未见到新的序号正文。
+- **待确认**：`测试v0.13.apk` 是否已放到指定路径、体积和哈希，以及新渐隐的真机效果。输入区收紧等其余真机项也尚未全部确认。确认前不写合并。不要覆盖已交的包。
+- **来源**：学生助手比赛群，用户、DSH助手、UI设计大师、主管大人、WorkBuddy助手；已核 GitHub PR #3 头仍为 `42e6051`。2026-11-11 22:16（Asia/Shanghai，UTC+8）。
+
+---
+
+## 2026-11-11 · 主管作废 48dp 渐隐，冻按球高拉满；测试v0.13.apk 尚未交付
+
+- **拍板（主管大人，已冻，覆盖 48dp）**：渐隐高度 48dp 作废，不定死 dp，也不拉到球中部。渐隐从球体下沿拉到球体上沿，按当前球高全宽线性；下沿全透明，上沿用现有页底浅灰到完全不透明；从球体上沿到顶栏保持同一浅灰，不要再留一段全透明。不要新颜色、不要横条；球体本身仍不透明；两侧仍可点可滑，靠近球体下沿仍可透出文字。压到 160dp 时仍贴着下沿、铺满当时的球高，上沿仍接到区域顶。球高规则和首页白卡不动。
+- **实现（主管大人）**：请 Trae 接到 [PR #3](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/pull/3) 上改，自测后打到 `C:\Users\ZXM\Desktop\测试\测试v0.13.apk`，不要覆盖 `测试v0.12.apk`，不要合入 `master`。请 DSH 按此写协议，【序号】顺延。
+- **仓库（22:16 已核 GitHub）**：PR #3 仍为 open，尚未合入 `master`，可合并且状态 clean。当前头仍是 13:01:39（Asia/Shanghai，UTC+8）的 [`42e6051`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/42e60514681ad4f6d3aaba9706e6d56f9657b350)，PR 更新时间仍为 2026-11-11 13:01:42（Asia/Shanghai，UTC+8），未见加长渐隐的应用代码提交。群里也尚未确认 `测试v0.13.apk` 已放到文件夹。本条不把该包写成已交付。
+- **文档**：箱内 `REPRODUCE.md` 已按主管后冻的加长渐隐改掉 48dp，当前调试包仍为已核对的 `测试v0.12.apk`，并写明下一包预定为 `测试v0.13.apk`、尚未交付。请 Trae 把 `/workspace/student-assistant-docs/` 与实现一并合入 PR #3，不要动 `feat/ui-tokens-p0`。
+- **来源**：学生助手比赛群，用户真机反馈，主管大人、UI设计大师、DSH助手；已核 GitHub PR #3 头仍为 `42e6051`。2026-11-11 22:16（Asia/Shanghai，UTC+8）。
+
+---
+
+## 2026-11-11 · DSH 称已写入【序号】43；主管确认桌面仍是测试v0.12.apk；包尚未交付
+
+- **安装包（主管大人已核桌面，本条未打开用户桌面）**：主管确认桌面测试文件夹里最新仍是今天下午的 `C:\Users\ZXM\Desktop\测试\测试v0.12.apk`，[PR #3](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/pull/3) 仍停在 [`42e6051`](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/commit/42e60514681ad4f6d3aaba9706e6d56f9657b350)，没有新的应用代码。`测试v0.13.apk` 还没打出来。
+- **协议（DSH 称已写入，已核箱内稿，尚未见合进 PR）**：DSH 称【序号】43 已写入协议，请 Trae 把这份更新合进同一条 PR，改完自测后打成 `测试v0.13.apk`；做好了会在群里报文件名、大小和哈希。已核箱内 `/workspace/campus-assistant-docs/APPEND_prompt_evolution_v013_fade.md` 及同树 `docs/assistant/README.md` 可见 43 原文：任务名称「真机反馈后加长对话页渐隐；48dp 作废；纳入测试v0.13.apk」。完成情况写协议已写入、安装包尚未交付、真机待确认；主管按 UI 这版冻结，【序号】40 中「从球体下沿向上 48dp」作废，不定死 dp，也不拉到球中部；渐隐从球体下沿拉到上沿，按当前球高全宽线性；下沿全透明，上沿用现有页底浅灰到完全不透明；从球体上沿到顶栏保持同一浅灰，不要再留一段全透明；压到 160dp 时仍贴着下沿、铺满当时的球高，上沿仍接到区域顶；两侧仍可点可滑，靠近下沿仍可透出文字；不要新颜色、不要横档；球默认三分之一和 160dp 硬下限不动，首页大球白卡不动。约定另打 `C:\Users\ZXM\Desktop\测试\测试v0.13.apk`，不要覆盖 `测试v0.12.apk`，也不合 master。DSH 称页底浅灰在本包中仍为既有的 `#F2F2F7`，本条未单独核对该颜色资源，也不把该色号写成主管另冻的数字。箱内稿所列修改文件为 `emotion-map.v0.1.md`、`session.v0.1.md`、`README.md`、`prompt_evolution.md`。本条不把 43 写成已经合进 PR。
+- **进度（Trae 称，尚未交包）**：Trae 称还没做好，正在按已冻规格改同一条 PR：渐隐从球体下沿拉到上沿，上沿到顶栏铺上页灰，不再定死 48dp；改完自测后把 `测试v0.13.apk` 放到测试文件夹，不会覆盖 v0.12，也不合 master。
+- **待确认**：43 是否已合进 PR，以及 `测试v0.13.apk` 的路径、体积和哈希。确认前不写合并。不要覆盖已交的包。
+- **来源**：学生助手比赛群，主管大人、UI设计大师、DSH助手、Trae助手；已核箱内协议稿。2026-11-11 22:17（Asia/Shanghai，UTC+8）。
