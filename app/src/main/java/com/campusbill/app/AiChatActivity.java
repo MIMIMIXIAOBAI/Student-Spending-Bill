@@ -612,7 +612,7 @@ public class AiChatActivity extends AppCompatActivity {
         attitudeGaze.onConditionsChanged();
     }
 
-    /** 48dp 浅灰渐隐的底边贴着球体下沿。球压到 160dp 时下沿上移，渐隐跟着走。 */
+    /** 渐隐从球体下沿拉到上沿。上沿到顶栏用同一块页底浅灰铺实，避免透明缝。 */
     private void placeBallFade() {
         android.view.View panel = binding.emotionBallPanel;
         int width = panel.getWidth();
@@ -620,7 +620,6 @@ public class AiChatActivity extends AppCompatActivity {
         if (width <= 0 || height <= 0) {
             return;
         }
-        float sphereBottom = ChatBallFade.sphereBottomPx(width, height);
         int side = Math.min(width, height);
         android.widget.FrameLayout.LayoutParams ballParams =
                 (android.widget.FrameLayout.LayoutParams) binding.emotionBall.getLayoutParams();
@@ -631,26 +630,29 @@ public class AiChatActivity extends AppCompatActivity {
             ballParams.gravity = android.view.Gravity.CENTER;
             binding.emotionBall.setLayoutParams(ballParams);
         }
-        int fade = dp(ChatBallFade.FADE_DP);
-        int top = panel.getTop() + ChatBallFade.fadeTopPx(sphereBottom, fade);
-        if (top < 0) {
-            top = 0;
-        }
-        android.view.ViewGroup.MarginLayoutParams fadeParams =
-                (android.view.ViewGroup.MarginLayoutParams) binding.ballFade.getLayoutParams();
-        if (fadeParams.height != fade || fadeParams.topMargin != top) {
-            fadeParams.height = fade;
-            fadeParams.width = android.view.ViewGroup.LayoutParams.MATCH_PARENT;
-            fadeParams.topMargin = top;
-            binding.ballFade.setLayoutParams(fadeParams);
-        }
+        ChatBallFade.Shade shade = ChatBallFade.shade(panel.getTop(), width, height);
+        placeShade(binding.ballCap, shade.capTopPx, shade.capHeightPx);
+        placeShade(binding.ballFade, shade.fadeTopPx, shade.fadeHeightPx);
         android.view.ViewGroup.MarginLayoutParams tipParams =
                 (android.view.ViewGroup.MarginLayoutParams) binding.memoryTip.getLayoutParams();
-        int tipTop = panel.getTop() + Math.round(sphereBottom) + dp(8);
+        int tipTop = shade.fadeBottomPx() + dp(8);
         if (tipParams.topMargin != tipTop) {
             tipParams.topMargin = tipTop;
             binding.memoryTip.setLayoutParams(tipParams);
         }
+    }
+
+    private static void placeShade(android.view.View view, int top, int height) {
+        android.view.ViewGroup.MarginLayoutParams params =
+                (android.view.ViewGroup.MarginLayoutParams) view.getLayoutParams();
+        if (params.topMargin == top && params.height == height
+                && params.width == android.view.ViewGroup.LayoutParams.MATCH_PARENT) {
+            return;
+        }
+        params.topMargin = top;
+        params.height = height;
+        params.width = android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+        view.setLayoutParams(params);
     }
 
     private int dp(int value) {

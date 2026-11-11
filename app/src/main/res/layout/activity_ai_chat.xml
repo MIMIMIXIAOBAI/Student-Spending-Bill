@@ -124,9 +124,18 @@
             android:paddingBottom="8dp" />
 
         <View
+            android:id="@+id/ballCap"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:background="@color/bg_page"
+            android:clickable="false"
+            android:focusable="false"
+            android:importantForAccessibility="no" />
+
+        <View
             android:id="@+id/ballFade"
             android:layout_width="match_parent"
-            android:layout_height="48dp"
+            android:layout_height="0dp"
             android:clickable="false"
             android:focusable="false"
             android:importantForAccessibility="no" />
