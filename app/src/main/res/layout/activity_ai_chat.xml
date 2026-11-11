@@ -146,7 +146,7 @@
         android:clipToPadding="false"
         android:overScrollMode="never"
         android:paddingStart="@dimen/page_padding"
-        android:paddingTop="16dp"
+        android:paddingTop="8dp"
         android:paddingEnd="@dimen/page_padding"
         android:paddingBottom="8dp" />
 
@@ -232,14 +232,16 @@
         android:background="@drawable/bg_glass_ai"
         android:elevation="0dp"
         android:orientation="vertical"
-        android:paddingStart="12dp"
-        android:paddingTop="10dp"
-        android:paddingEnd="12dp"
-        android:paddingBottom="20dp">
+        android:paddingStart="16dp"
+        android:paddingTop="0dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="0dp">
 
         <HorizontalScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp"
             android:scrollbars="none">
 
             <LinearLayout
@@ -322,17 +324,22 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="end"
+            android:includeFontPadding="false"
+            android:maxLines="1"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp"
             android:textColor="@color/text_secondary"
-            android:textSize="12sp" />
+            android:textSize="12sp"
+            android:visibility="gone" />
 
-        <!-- 四档状态固定在输入栏正上方。出错时右侧只有「重试」。 -->
+        <!-- 只在思考、调用工具、等待确认、出错时出现，空闲不占高。 -->
         <LinearLayout
+            android:id="@+id/statusRow"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_height="32dp"
             android:gravity="center_vertical"
-            android:minHeight="28dp"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:visibility="gone">
 
             <TextView
                 android:id="@+id/tvAssistantStatus"
@@ -347,7 +354,7 @@
             <TextView
                 android:id="@+id/btnStatusRetry"
                 android:layout_width="wrap_content"
-                android:layout_height="28dp"
+                android:layout_height="32dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:clickable="true"
                 android:focusable="true"
@@ -364,9 +371,10 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
             android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp">
 
             <EditText
                 android:id="@+id/etMessage"
@@ -374,14 +382,19 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:background="@drawable/bg_input"
+                android:gravity="center_vertical"
                 android:hint="@string/chat_input_hint"
-                android:inputType="textMultiLine"
+                android:inputType="textMultiLine|textCapSentences"
+                android:maxHeight="96dp"
                 android:maxLines="3"
-                android:minHeight="44dp"
-                android:paddingStart="14dp"
-                android:paddingTop="10dp"
-                android:paddingEnd="14dp"
-                android:paddingBottom="10dp"
+                android:minHeight="40dp"
+                android:minLines="1"
+                android:overScrollMode="ifContentScrolls"
+                android:paddingStart="12dp"
+                android:paddingTop="0dp"
+                android:paddingEnd="12dp"
+                android:paddingBottom="0dp"
+                android:scrollbars="vertical"
                 android:textColor="@color/text_primary"
                 android:textColorHint="@color/text_hint"
                 android:textSize="@dimen/text_body" />
@@ -389,7 +402,7 @@
             <TextView
                 android:id="@+id/btnSend"
                 android:layout_width="wrap_content"
-                android:layout_height="44dp"
+                android:layout_height="40dp"
                 android:layout_marginStart="8dp"
                 android:background="@drawable/bg_button_primary"
                 android:clickable="true"

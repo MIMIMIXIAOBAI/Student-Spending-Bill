@@ -43,6 +43,7 @@ import com.campusbill.app.chat.session.MemoryHandoff;
 import com.campusbill.app.chat.session.ModelWindows;
 import com.campusbill.app.chat.session.TokenEstimate;
 import com.campusbill.app.ui.ChatBallMetrics;
+import com.campusbill.app.ui.ChatInputChrome;
 import com.campusbill.app.chat.ai.assistant.AssistantIntentPlanner;
 import com.campusbill.app.chat.ai.assistant.AssistantStatus;
 import com.campusbill.app.chat.ai.assistant.FailureClassifier;
@@ -147,9 +148,7 @@ public class AiChatActivity extends AppCompatActivity {
         refreshQueryMonth();
 
         adapter = new ChatAdapter(messages);
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-        layoutManager.setStackFromEnd(true);
-        binding.rvMessages.setLayoutManager(layoutManager);
+        binding.rvMessages.setLayoutManager(new LinearLayoutManager(this));
         binding.rvMessages.setAdapter(adapter);
 
         binding.btnBack.setOnClickListener(v -> finish());
@@ -162,9 +161,8 @@ public class AiChatActivity extends AppCompatActivity {
         assistantHost = new AssistantHost(this, YearMonth.parse(queryMonth), new AssistantHost.Surface() {
             @Override
             public void onStatus(String statusText, boolean confirmVisible, String emotionId) {
-                binding.tvAssistantStatus.setText(statusText);
                 boolean errorLine = isErrorLine(statusText);
-                binding.btnStatusRetry.setVisibility(errorLine ? View.VISIBLE : View.GONE);
+                applyStatusRow(statusText, errorLine);
                 retryKeyProbe = false;
                 if (!confirmVisible) {
                     confirmBody = null;
@@ -785,8 +783,7 @@ public class AiChatActivity extends AppCompatActivity {
 
     private void probeDeepSeekKey(String apiKey, boolean fromStatusLine) {
         if (fromStatusLine) {
-            binding.tvAssistantStatus.setText(AssistantStatus.THINKING.label);
-            binding.btnStatusRetry.setVisibility(View.GONE);
+            applyStatusRow(AssistantStatus.THINKING.label, false);
         }
         new Thread(() -> {
             try {
@@ -801,8 +798,7 @@ public class AiChatActivity extends AppCompatActivity {
                     if (isErrorLine(binding.tvAssistantStatus.getText().toString())
                             || AssistantStatus.THINKING.label.contentEquals(
                             binding.tvAssistantStatus.getText())) {
-                        binding.tvAssistantStatus.setText("");
-                        binding.btnStatusRetry.setVisibility(View.GONE);
+                        applyStatusRow("", false);
                     }
                     Toast.makeText(this, R.string.deepseek_ok, Toast.LENGTH_SHORT).show();
                 });
@@ -819,9 +815,15 @@ public class AiChatActivity extends AppCompatActivity {
         }, "deepseek-key-probe").start();
     }
 
+    private void applyStatusRow(CharSequence text, boolean retry) {
+        boolean show = ChatInputChrome.reserveStatus(text == null ? "" : text.toString());
+        binding.tvAssistantStatus.setText(show ? text : "");
+        binding.btnStatusRetry.setVisibility(show && retry ? View.VISIBLE : View.GONE);
+        binding.statusRow.setVisibility(show ? View.VISIBLE : View.GONE);
+    }
+
     private void showErrorLine(String line) {
-        binding.tvAssistantStatus.setText(line);
-        binding.btnStatusRetry.setVisibility(View.VISIBLE);
+        applyStatusRow(line, true);
         confirmBody = null;
         applyConfirmCard(false);
     }
@@ -863,8 +865,7 @@ public class AiChatActivity extends AppCompatActivity {
                             retryKeyProbe = false;
                             tvResult.setText(R.string.deepseek_ok);
                             if (isErrorLine(binding.tvAssistantStatus.getText().toString())) {
-                                binding.tvAssistantStatus.setText("");
-                                binding.btnStatusRetry.setVisibility(View.GONE);
+                                applyStatusRow("", false);
                             }
                             Toast.makeText(this, R.string.deepseek_ok, Toast.LENGTH_SHORT).show();
                             dialog.dismiss();
@@ -898,6 +899,15 @@ public class AiChatActivity extends AppCompatActivity {
                 binding.rvMessages.scrollToPosition(Math.max(0, messages.size() - 1)));
     }
 
+    private boolean welcomeOnly(ChatSessionBook.Session session) {
+        if (session == null || session.messages.size() != 1) {
+            return false;
+        }
+        ChatSessionBook.Message message = session.messages.get(0);
+        return message.type == ChatSessionBook.TYPE_AI
+                && getString(R.string.chat_welcome).equals(message.content);
+    }
+
     private void loadSessions() {
         new Thread(() -> {
             ChatSessionBook loaded = ChatSessionRoom.load(this);
@@ -909,8 +919,13 @@ public class AiChatActivity extends AppCompatActivity {
                 sessionBook = loaded;
                 ChatSessionBook.Session session = sessionBook.restore(saved);
                 sessionReady = true;
-                if (session.messages.isEmpty()) {
-                    addMessage(ChatMessage.TYPE_AI, getString(R.string.chat_welcome));
+                if (session.messages.isEmpty() || welcomeOnly(session)) {
+                    if (welcomeOnly(session)) {
+                        session.messages.clear();
+                    }
+                    messages.clear();
+                    adapter.notifyDataSetChanged();
+                    pushScene("idle");
                 } else {
                     showStoredSession(session, false);
                 }
@@ -950,9 +965,6 @@ public class AiChatActivity extends AppCompatActivity {
     private void openFreshSession(boolean fromUser) {
         sessionBook.open(fromUser);
         showStoredSession(sessionBook.current(), true);
-        if (sessionBook.current().messages.isEmpty() && !sessionBook.current().showMemoryTip) {
-            addMessage(ChatMessage.TYPE_AI, getString(R.string.chat_welcome));
-        }
         lastPromptTokens = 0;
         lastCompletionTokens = 0;
         showContextPercent();
@@ -988,11 +1000,14 @@ public class AiChatActivity extends AppCompatActivity {
     private void showContextPercent() {
         int occupied = lastPromptTokens + lastCompletionTokens;
         int percent = ContextUsage.percent(occupied, contextWindow());
-        if (occupied <= 0) {
+        String label = occupied <= 0 ? "" : getString(R.string.chat_context_percent, percent);
+        if (!ChatInputChrome.reserveContext(label)) {
             binding.tvContextUsage.setText("");
+            binding.tvContextUsage.setVisibility(View.GONE);
             return;
         }
-        binding.tvContextUsage.setText(getString(R.string.chat_context_percent, percent));
+        binding.tvContextUsage.setVisibility(View.VISIBLE);
+        binding.tvContextUsage.setText(label);
         int color = R.color.text_secondary;
         if (ContextUsage.level(percent) == ContextUsage.Level.FULL) {
             color = R.color.color_warning;
@@ -1043,8 +1058,7 @@ public class AiChatActivity extends AppCompatActivity {
         long source = sessionBook.currentId();
         if (switchAfter) {
             handoffRetry = false;
-            binding.tvAssistantStatus.setText(AssistantStatus.THINKING.label);
-            binding.btnStatusRetry.setVisibility(View.GONE);
+            applyStatusRow(AssistantStatus.THINKING.label, false);
             pushScene("thinking");
         }
         DeepSeekStreamClient client = new DeepSeekStreamClient(this);
@@ -1069,7 +1083,7 @@ public class AiChatActivity extends AppCompatActivity {
                     sessionBook.remember(points, source);
                     handoffRetry = false;
                     if (switchAfter) {
-                        binding.tvAssistantStatus.setText("");
+                        applyStatusRow("", false);
                         openFreshSession(true);
                         if (sendAfter != null && !sendAfter.isEmpty()) {
                             sendMessage(sendAfter);
@@ -1092,7 +1106,6 @@ public class AiChatActivity extends AppCompatActivity {
         pendingAfterHandoff = sendAfter == null ? "" : sendAfter;
         handoffRetry = true;
         showErrorLine(AssistantStatus.ERROR.label);
-        binding.btnStatusRetry.setVisibility(View.VISIBLE);
         pushScene("concerned");
     }
 
