@@ -211,6 +211,8 @@ adb devices
 - 状态行可见 **思考 → 调用工具 → 思考**（工具返回后二次生成）；不出现 **等待确认**；无确认卡。
 - 回复含 **`查询结果：¥40.00，共 2 笔（2026-11-09 至 2026-11-15）。`**（日期随录制周；金额/笔数随预置数据）。
 - 最终可见文本不出现 `<think>` 标签或原始工具参数 JSON。
+- 对话页底部可见 `上下文用量 2%`（`tvContextUsage`，以实测为准）；过程页 JSONL 四步：思考 → `tool_call query_spend` → `tool_result total=40.0 count=2` → 回复。
+- 本镜头对应 **§4 链 1**（目标 / 原始 Prompt / AI 修改建议 / 实际修复与验证 / 证据 五字段）。
 
 > 代码依据：`AssistantController.java:132`（预判 needsLedger）、`:262-265`（ReplyGate）、`:279-290`（模型漏调工具时 planner 补 `query_spend`）、`:301-343`（执行工具并 `showOnly(query.summary())`）；`SpendQuery.java:17-39`（summary 文案）、`:58-142`（本周/食堂筛选）。
 
@@ -237,6 +239,7 @@ adb devices
 - 确认卡五字段齐全；标题含“确认”，按钮为“确认记下”。
 - 确认后回读句前缀 **`已写入并回读：`**；日期/分类/商户/金额与卡片一致；含记录 id（`AssistantController.java:523-531`）。
 - 首页预算剩余 **¥1254.00**，“与上月消费对比”较 S4 再少 18（屏幕实际值）。
+- 本镜头对应 **§4 链 2**；分类按确认卡实际值（`食堂` 或 `餐饮`）判定，回读以卡片字段为准。
 
 > 说明：卡片字段由模型返回的 `propose_add_bill` 参数决定；上面的示例与 `AssistantIntentPlanner.java:233-256` 的兜底参数一致（今天 / 18 / 午餐 / 餐饮）。若模型把分类写成“食堂”，以卡片实际字段为准，首页预算剩余仍是 1254，不影响回读判定。
 
@@ -498,7 +501,7 @@ adb devices
 | `.../BillDraft.java` | 30-62、91-110 | 草稿校验、卡片、回读比较 |
 | `.../AssistantProcessActivity.java` | 37-61、63-95 | 过程页读取与格式化 |
 | `.../AssistantStatus.java` | 8-12 | 四档枚举 |
-| `app/src/main/res/values/strings.xml` | 121-123、137、141-144、148-153 | 按钮、占位、芯片、Key 向导文案 |
+| `app/src/main/res/values/strings.xml` | 122-124、138、142-145、149-156 | 确认按钮、思考占位、四芯片、Key 向导文案（910041e 实测） |
 | `app/src/main/java/com/campusbill/app/MainActivity.java` | 112-126、152、160-165、349-379、598-621 | 预算输入、手动记账入口、返回刷新、大球轻点、预算面板 |
 | `app/src/main/java/com/campusbill/app/AddBillActivity.java` | 151-192 | 保存与 Toast |
 | `app/src/test/java/com/campusbill/app/chat/ai/assistant/AssistantCoreTest.java` | 29、157、197、214、287、327、342、359、376、392、434、462、472 | 查询/记账/四档/过程页单测 |
@@ -508,7 +511,7 @@ adb devices
 
 ## 9. 附：口播总字数与节奏
 
-- 全片口播约 1450–1600 字，按 3.5–4 字/秒约 380–440 秒；与 420 秒画面留出停顿。
+- 全片口播约 1450–1600 字，按 3.5–4 字/秒约 380–440 秒；与 420 秒画面留出停顿。成片旁白用 Microsoft Huihui（zh-CN）TTS 合成，逐段以本文件各镜「口播」段为准。
 - 三段必须原样保留的句子：
   1. “涉及账单，先查本机账本，再回答。”
   2. “确认之前不写库，确认之后回读。”
