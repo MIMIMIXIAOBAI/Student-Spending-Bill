@@ -8,7 +8,7 @@
 | 作品 | 中央学生助手（CampusBill）——离线优先的校园账单 App + DeepSeek 对话助手 |
 | 仓库 | Student-Spending-Bill |
 | 分支 | feat/assistant-competition |
-| 代码基线 | HEAD 910041eda1e70afe846bd3492167025d7fe8f667（该提交只改演示脚本，代码树与 966f41c 相同） |
+| 代码基线 | 代码树 `966f41c`（评审口径即 HEAD 966f41c）；仓库当前 HEAD `1de6d52`（`910041e`、`b2a2437`、`1de6d52` 三个提交均只改文档，代码树不变） |
 | 文档版本 | v1.0（2026-11-12） |
 | 对应赛题要求 | 硬性要求④：技术文档 PDF，不超过 30 页；重点为意图控制策略、架构设计与可复现性论证 |
 | 生成方式 | 本册由 `docs/assistant/tech-doc/render.ps1` 从本 Markdown 生成 PDF，页数可自校验 |
@@ -50,7 +50,7 @@
 
 | 事实 | 值 | 来源 |
 | --- | --- | --- |
-| 代码基线 | HEAD `b2a24376c96035940f8c2684419f139db26b6d36`（代码树同 `966f41c`；`910041e` 仅改 S6 算术，`b2a2437` 仅改 DEMO-SCRIPT 锚点与交叉引用） | `git rev-parse HEAD`；源码零改动 |
+| 代码基线 | 代码树 `966f41c`（评审口径）；仓库 HEAD `1de6d52c0d6dbdf6a81286c3b9dde33185110559`（`910041e` 改 S6 算术、`b2a2437` 改 DEMO-SCRIPT 锚点、`1de6d52` 新增本册三件套，均未改源码） | `git rev-parse HEAD`；源码零改动 |
 | 单元测试 | 8 个测试类、51 个测试，0 失败 / 0 错误 / 0 跳过；XML 时间戳 2026-11-12T05:52:11.497Z–05:52:11.634Z（本地 13:52:11） | 解析 `app/build/test-results/testDebugUnitTest/*.xml` |
 | Debug APK | `app/build/outputs/apk/debug/app-debug.apk`，26,702,585 字节 | `Get-Item` 长度；`Get-FileHash` |
 | APK SHA-256 | `B5A4B94991897FCCFB08C6FCF652F5FC0651615909DACE4C9AAD053E29B6CFC6` | 同上 |
@@ -438,7 +438,7 @@ git rev-parse HEAD
 git status --porcelain
 ```
 
-本册只新增三个文件（Markdown、PDF、渲染脚本），不会修改任何既有源码或文档；git status 的差集见 §6.2 的「新增文件」一栏。
+本册在提交 `1de6d52` 中只新增三个文件（Markdown、PDF、渲染脚本），未修改任何既有源码或文档；差集见 §6.2 的「本册提交」一栏。
 
 ## 5.3 演示数据与可核对数字
 
@@ -513,7 +513,7 @@ powershell -ExecutionPolicy Bypass -File docs\assistant\tech-doc\render.ps1
 
 ## 6.1 代码锚点总表
 
-下表是本册引用过的全部代码锚点（文件:行号），按主题排序。行号以 HEAD `910041e` 为准（代码树同 `966f41c`）；若后续提交改动，行号会漂移，但类型与方法名不变，仍可用 `grep` 定位。
+下表是本册引用过的全部代码锚点（文件:行号），按主题排序。行号以代码树 `966f41c` 为准（评审口径；其后 `910041e`、`b2a2437`、`1de6d52` 均未改源码，行号不变）；若后续提交改动，行号会漂移，但类型与方法名不变，仍可用 `grep` 定位。
 
 | 编号 | 锚点 | 说明 | 章节 |
 | --- | --- | --- | --- |
@@ -598,7 +598,7 @@ powershell -ExecutionPolicy Bypass -File docs\assistant\tech-doc\render.ps1
 
 | 证据 | 取得命令 | 结果 |
 | --- | --- | --- |
-| 提交基线 | `git rev-parse HEAD` | `910041eda1e70afe846bd3492167025d7fe8f667`（代码树同 `966f41c`） |
+| 提交基线 | `git rev-parse HEAD` | `1de6d52c0d6dbdf6a81286c3b9dde33185110559`（代码树同 `966f41c`；`910041e`、`b2a2437` 仅改文档） |
 | 单元测试类数 | 解析 XML（§5.2 脚本） | 8 |
 | 单元测试用例 | 同上 | 51（AiReplyTest 6、BillAnalysisUtilsTest 2、AssistantCoreTest 26、SessionRulesTest 5、AttitudeGazeMathTest 2、ChatBallFadeTest 3、ChatBallMetricsTest 4、ChatInputChromeTest 3） |
 | 失败/错误/跳过 | 同上 | 0 / 0 / 0 |
@@ -606,9 +606,9 @@ powershell -ExecutionPolicy Bypass -File docs\assistant\tech-doc\render.ps1
 | APK 字节 | `(Get-Item app-debug.apk).Length` | 26,702,585 |
 | APK 摘要 | `Get-FileHash -Algorithm SHA256` | `B5A4B94991897FCCFB08C6FCF652F5FC0651615909DACE4C9AAD053E29B6CFC6` |
 | 助手包规模 | 脚本统计 | 30 文件 / 2,391 行 |
-| 本册新增文件 | `git status --porcelain docs/assistant` | `?? docs/assistant/TECHNICAL-DOC.md`、`?? docs/assistant/TECHNICAL-DOC.pdf`、`?? docs/assistant/tech-doc/render.ps1` |
+| 本册提交 | `git show --stat 1de6d52` | 3 files changed：`TECHNICAL-DOC.md`、`TECHNICAL-DOC.pdf`、`tech-doc/render.ps1` |
 
-「新增文件」一栏的写法是刻意的：本册只新增这三个文件，不修改任何既有文件。评审可以用这三个路径与 `git status` 对照，确认文档没有夹带代码改动。
+这一栏的写法是刻意的：提交 `1de6d52` 只新增这三个文件，未修改任何既有文件。评审可以用 `git show --stat 1de6d52` 与这三个路径对照，确认文档没有夹带代码改动。
 
 ## 6.3 协议文档清单
 
