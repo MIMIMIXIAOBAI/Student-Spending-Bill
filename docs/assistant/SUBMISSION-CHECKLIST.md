@@ -22,8 +22,15 @@
 
 | 要求 | 做法 | 状态 |
 |---|---|---|
-| 演示视频 5–8 分钟，MP4 1080p | 除功能演示外，必须包含至少 2 分钟「AI 协同过程复现展示」（输入某段 Prompt 生成核心模块，或引导修复顽固 Bug） | 待录制；建议覆盖演示主线 + 一次真实排错 |
-| 技术文档 PDF，不超过 30 页 | 重点：意图控制策略（上下文与 Prompt 设计）、架构设计（AI 生成代码的架构及如何约束）、可复现性论证 | 待写。工程与 Prompt 稳定后再成稿；可引用 `docs/assistant/` 中已入库的系统提示词、工具 schema、`think-protocol`、本目录留痕，不改写旧文案 |
+| 演示视频 5–8 分钟，MP4 1080p | 除功能演示外，必须包含至少 2 分钟「AI 协同过程复现展示」（输入某段 Prompt 生成核心模块，或引导修复顽固 Bug） | **已录制（2026-11-12）**：1080×1920 竖屏 1080p，H.264 High / yuv420p / 25fps，AAC 44.1kHz；时长 **5:49.89**，16,422,369 B，SHA-256 `B7C39F4F…854A1A`；**AI 连续区间 03:03–05:38 = 155 s**（≥120 s）。母版 `E:\AI\_ssb_verify\demo.mp4`；交赛副本 `提交材料\演示视频.mp4`（同哈希，未入库，16.4 MB 需确认是否提交或附链接） |
+| 技术文档 PDF，不超过 30 页 | 重点：意图控制策略（上下文与 Prompt 设计）、架构设计（AI 生成代码的架构及如何约束）、可复现性论证 | **已成稿（2026-11-12）**：`docs/assistant/TECHNICAL-DOC.pdf`，25 页，由 `docs/assistant/tech-doc/render.ps1` 从 `TECHNICAL-DOC.md` 渲染；含系统提示词、工具 schema、`think-protocol`、Prompt 链与可复现性章节 |
+
+## 2.4 交赛前待办（2026-11-12 实测状态）
+
+1. **视频入库方式**：`提交材料\演示视频.mp4`（16,422,369 B，与母版同 SHA-256）目前是未跟踪文件；需决定提交进仓库、走 Release 附件，还是仅提供下载链接。仓库无 LFS，16.4 MB 在 GitHub 单文件限制内。
+2. **对话导出 / Prompt 链归档**：`docs/assistant/process/sessions/` 只有 `.gitkeep`，3 条主线的对话导出尚未按 `templates/session-index.md` 归档（Prompt 正文本身已随代码、`docs/assistant/` 与 git log 入库）。
+3. **PDF 复核**：`TECHNICAL-DOC.pdf` 由 `tech-doc/render.ps1` 生成，改动 `TECHNICAL-DOC.md` 后必须重渲；交赛前复核页数 ≤30、目录与正文页码一致。
+4. **工作树清理**：当前有 15 个 CRLF/换行基线脏文件与 2 个删除项（`~$制作过程.docx`、`基础提示词.txt`），提交前确认哪些是噪音、哪些该还原。
 
 ## 建议时间顺序
 
