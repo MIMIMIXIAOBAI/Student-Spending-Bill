@@ -5,7 +5,7 @@
 - 包名：`com.campusbill.app`
 - 开发语言：**纯 Java**（无任何 Kotlin 代码）
 - UI 实现：XML 布局 + ViewBinding，竖屏手机适配；视觉为「苹果式骨架 × Y2K 材质点缀」（校园蓝主 CTA #2F6FED，粉/薄荷/柠檬仅作点缀；全 App 统一近纸页底，内容卡近白奶油，玻璃仅用于顶栏/浮层）
-- 进度：P0–P3 视觉刷新已合入分支 feat/ui-tokens-p0（Token/页底、主页+图表、表单/日历/导入、AI 对话/History）
+- 进度：助手主线（中央学生助手 / AI 对话 / 过程页）在分支 `feat/assistant-competition`，构建与复现见 [docs/assistant/REPRODUCE.md](docs/assistant/REPRODUCE.md)；P0–P3 视觉刷新在 `feat/ui-tokens-p0`
 - 最低系统：Android 10（API 29），targetSdk 36
 
 ## 功能一览
