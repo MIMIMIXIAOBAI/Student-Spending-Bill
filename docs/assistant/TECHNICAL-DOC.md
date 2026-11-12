@@ -56,12 +56,12 @@
 
 ## 1.3 本册引用的事实基线
 
-下表是本轮（2026-11-12 13:52 前后）亲自复算的基线；「来源」列写的是取得该数字的动作，不是文档转述。
+下表汇总 2026-11-12 的构建实测与 2026-11-13 的复跑结果；「来源」列写的是取得该数字的动作，不是文档转述。
 
 | 事实 | 值 | 来源 |
 | --- | --- | --- |
 | 代码基线 | 代码树 `966f41c`（与合并后 master 一致）；文档链 `910041e`（S6 算术）、`b2a2437`（DEMO-SCRIPT 锚点）、`1de6d52`（本册三件套）、`af3f922`（本册口径重渲）均未改源码，代码树与行号不变 | `git rev-parse HEAD`；源码零改动 |
-| 单元测试 | 8 个测试类、51 个测试，0 失败 / 0 错误 / 0 跳过；XML 时间戳 2026-11-12T05:52:11.497Z–05:52:11.634Z（本地 13:52:11） | 解析 `app/build/test-results/testDebugUnitTest/*.xml` |
+| 单元测试 | 8 个测试类、51 个测试，0 失败 / 0 错误 / 0 跳过；本次复跑 XML 时间戳 2026-11-12T17:38:22.608Z–17:38:22.778Z（本地 2026-11-13 01:38:22） | 解析 `app/build/test-results/testDebugUnitTest/*.xml` |
 | Debug APK | `app/build/outputs/apk/debug/app-debug.apk`，26,702,585 字节 | `Get-Item` 长度；`Get-FileHash` |
 | APK SHA-256 | `B5A4B94991897FCCFB08C6FCF652F5FC0651615909DACE4C9AAD053E29B6CFC6` | 同上 |
 | 代码规模 | 助手包 30 个 Java 文件 / 2,391 行；全工程 92 个文件 / 11,707 行 | 脚本统计（§6.2 可复跑） |
@@ -433,7 +433,7 @@ PY
 .\gradlew.bat :app:assembleDebug
 ```
 
-产物 `app/build/outputs/apk/debug/app-debug.apk`，本轮 26,702,585 字节，SHA-256 见 §1.3。注意 `assemble` 会先触发 `syncAssistantDocs`（`app/build.gradle:34-42`），所以 assets 里的协议文档与 docs 源一致是构建保证，不是手工同步的结果。
+产物 `app/build/outputs/apk/debug/app-debug.apk`，构建记录为 26,702,585 字节，SHA-256 见 §1.3。注意 `assemble` 会先触发 `syncAssistantDocs`（`app/build.gradle:34-42`），所以 assets 里的协议文档与 docs 源一致是构建保证，不是手工同步的结果。
 
 APK 字节与 SHA-256 **依赖 Gradle 运行的 JDK**：上表数字在 `JAVA_HOME=jdk-21.0.12.1` 下成立；用 Android Studio 自带 JBR 25.0.3 构建同一提交，得到 26,702,517 字节 / `0A0085B0922E73E06675720D4B51A2AB85650ED2F10CF8956B89E09C642327B7`，差异只在 DEX 布局（classes3/4/5/7/9），其余 654 个 zip entry 相同，51 个单测均通过。核对记录值时须先确认 JDK，否则会误判为不可复现。
 
@@ -443,14 +443,14 @@ APK 字节与 SHA-256 **依赖 Gradle 运行的 JDK**：上表数字在 `JAVA_HO
 %LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe install -r app\build\outputs\apk\debug\app-debug.apk
 ```
 
-**（4）确认基线没有被本册改动污染：**
+**（4）确认代码基线与工作区状态：**
 
 ```
 git rev-parse HEAD
 git status --porcelain
 ```
 
-本册在提交 `1de6d52` 中只新增三个文件（Markdown、PDF、渲染脚本），未修改任何既有源码或文档；差集见 §6.2 的「本册提交」一栏。
+首次落库提交 `1de6d52` 只新增三个文件（Markdown、PDF、渲染脚本）；本次 v1.1 仅更新报告链并重生成 PDF，不修改业务源码。评审可结合 `git show --stat 1de6d52` 与当前 `git status` 区分历史提交和工作区改动，证据见 §6.2。
 
 ## 5.3 演示数据与可核对数字
 
@@ -615,13 +615,13 @@ powershell -ExecutionPolicy Bypass -File docs\assistant\tech-doc\render.ps1
 | 单元测试类数 | 解析 XML（§5.2 脚本） | 8 |
 | 单元测试用例 | 同上 | 51（AiReplyTest 6、BillAnalysisUtilsTest 2、AssistantCoreTest 26、SessionRulesTest 5、AttitudeGazeMathTest 2、ChatBallFadeTest 3、ChatBallMetricsTest 4、ChatInputChromeTest 3） |
 | 失败/错误/跳过 | 同上 | 0 / 0 / 0 |
-| 测试时间 | 同上（`timestamp` 属性） | 2026-11-12T05:52:11.497Z–05:52:11.634Z |
+| 测试时间 | 同上（`timestamp` 属性） | 本次复跑为 2026-11-12T17:38:22.608Z–17:38:22.778Z（本地 2026-11-13 01:38:22） |
 | APK 字节 | `(Get-Item app-debug.apk).Length` | 26,702,585 |
 | APK 摘要 | `Get-FileHash -Algorithm SHA256` | `B5A4B94991897FCCFB08C6FCF652F5FC0651615909DACE4C9AAD053E29B6CFC6` |
 | 助手包规模 | 脚本统计 | 30 文件 / 2,391 行 |
 | 本册提交 | `git show --stat 1de6d52` | 3 files changed：`TECHNICAL-DOC.md`、`TECHNICAL-DOC.pdf`、`tech-doc/render.ps1` |
 
-这一栏的写法是刻意的：提交 `1de6d52` 只新增这三个文件，未修改任何既有文件。评审可以用 `git show --stat 1de6d52` 与这三个路径对照，确认文档没有夹带代码改动。
+这一栏区分两类证据：`git show --stat 1de6d52` 可复核首次落库只新增这三个文件；v1.1 的报告更新则应以当前工作区差集核对。两种情况下都不把报告改动解释为业务源码改动。
 
 ## 6.3 协议文档清单
 
@@ -682,9 +682,9 @@ powershell -ExecutionPolicy Bypass -File docs\assistant\tech-doc\render.ps1
 
 诚实列出来，不藏着：
 
-1. **`AiChatActivity.java:73` 的类注释还写着「全程不联网、不收集隐私数据」。** 这句话在引入 DeepSeek 助手后已经不成立：联网只发生在显式对话路径，但注释没跟着改。代码行为以 §3.1、§4.3 为准，注释属于待修项。之所以不改，是因为本轮任务限定「只新增三个文件」，改源码会破坏交付边界；下一轮应把它改成「默认离线，仅对话路径联网」。
-2. **`FailureClassifier.java:9-19` 的 `body.contains("quota")` 出现两次。** 属于冗余判断，不影响结果（第二次永假），但读起来像笔误。同样因为不改既有文件而保留，记录在此供后续清理。
-3. **演示数字与设备实测的落差。** `DEMO-SCRIPT.md` 的 210/1290/1272/1254 是脚本口径；本轮已在模拟器 emulator-5554 真机重放并按帧核对（§5.3、§7.2）：录制终态 6 笔 / ¥246 / 剩余 ¥1254，脚本口径与实测一致。两者不再有「未重放」的等级差。
+1. **`AiChatActivity.java:73` 的类注释还写着「全程不联网、不收集隐私数据」。** 这句话在引入 DeepSeek 助手后已经不成立：联网只发生在显式对话路径，但注释没跟着改。代码行为以 §3.1、§4.3 为准，注释属于待修项。本次报告任务不修改业务源码，因此保留该待修项；下一轮应把它改成「默认离线，仅对话路径联网」。
+2. **`FailureClassifier.java:9-19` 的 `body.contains("quota")` 出现两次。** 属于冗余判断，不影响结果（第二次永假），但读起来像笔误。同样因为本次不修改业务源码而保留，记录在此供后续清理。
+3. **演示数字与设备实测的落差。** `DEMO-SCRIPT.md` 的 210/1290/1272/1254 是脚本口径；本轮已在模拟器 emulator-5554 重放并按帧核对（§5.3、§7.2）：录制终态 6 笔 / ¥246 / 剩余 ¥1254，脚本口径与实测一致。两者不再有「未重放」的等级差。
 
 这三条的共同点是：都不影响「能不能跑」，只影响「读起来是否完全一致」。把它们写在最前面，是为了让评审不必替作者发现。
 
