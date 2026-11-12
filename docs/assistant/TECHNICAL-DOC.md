@@ -8,7 +8,7 @@
 | 作品 | 中央学生助手（CampusBill）——离线优先的校园账单 App + DeepSeek 对话助手 |
 | 仓库 | Student-Spending-Bill |
 | 分支 | feat/assistant-competition |
-| 代码基线 | 代码树 `966f41c`（评审口径即 HEAD 966f41c）；仓库当前 HEAD `1de6d52`（`910041e`、`b2a2437`、`1de6d52` 三个提交均只改文档，代码树不变） |
+| 代码基线 | 代码树 `966f41c`（评审口径即 HEAD 966f41c）；文档链 `910041e`、`b2a2437`、`1de6d52`、`af3f922` 均只改文档，代码树不变；仓库 HEAD 随文档提交前移，一律按代码树核对 |
 | 文档版本 | v1.0（2026-11-12） |
 | 对应赛题要求 | 硬性要求④：技术文档 PDF，不超过 30 页；重点为意图控制策略、架构设计与可复现性论证 |
 | 生成方式 | 本册由 `docs/assistant/tech-doc/render.ps1` 从本 Markdown 生成 PDF，页数可自校验 |
@@ -50,7 +50,7 @@
 
 | 事实 | 值 | 来源 |
 | --- | --- | --- |
-| 代码基线 | 代码树 `966f41c`（评审口径）；仓库 HEAD `1de6d52c0d6dbdf6a81286c3b9dde33185110559`（`910041e` 改 S6 算术、`b2a2437` 改 DEMO-SCRIPT 锚点、`1de6d52` 新增本册三件套，均未改源码） | `git rev-parse HEAD`；源码零改动 |
+| 代码基线 | 代码树 `966f41c`（评审口径）；文档链 `910041e`（S6 算术）、`b2a2437`（DEMO-SCRIPT 锚点）、`1de6d52`（本册三件套）、`af3f922`（本册口径重渲）均未改源码，代码树与行号不变 | `git rev-parse HEAD`；源码零改动 |
 | 单元测试 | 8 个测试类、51 个测试，0 失败 / 0 错误 / 0 跳过；XML 时间戳 2026-11-12T05:52:11.497Z–05:52:11.634Z（本地 13:52:11） | 解析 `app/build/test-results/testDebugUnitTest/*.xml` |
 | Debug APK | `app/build/outputs/apk/debug/app-debug.apk`，26,702,585 字节 | `Get-Item` 长度；`Get-FileHash` |
 | APK SHA-256 | `B5A4B94991897FCCFB08C6FCF652F5FC0651615909DACE4C9AAD053E29B6CFC6` | 同上 |
