@@ -28,9 +28,9 @@
 ## 2.4 交赛前待办（2026-11-12 实测状态）
 
 1. ~~视频入库方式~~（已定，2026-11-12）：**不入库**。`提交材料\演示视频.mp4`（16,422,369 B，与母版同 SHA-256）保持未跟踪，随交赛以附件/外链交付；仓库无 LFS，不把 16.4 MB 二进制写进历史。
-2. **对话导出 / Prompt 链归档**：`docs/assistant/process/sessions/` 只有 `.gitkeep`，3 条主线的对话导出尚未按 `templates/session-index.md` 归档（Prompt 正文本身已随代码、`docs/assistant/` 与 git log 入库）。
-3. **PDF 复核**：`TECHNICAL-DOC.pdf` 由 `tech-doc/render.ps1` 生成，改动 `TECHNICAL-DOC.md` 后必须重渲；交赛前复核页数 ≤30、目录与正文页码一致。
-4. **工作树清理**：当前有 15 个 CRLF/换行基线脏文件与 2 个删除项（`~$制作过程.docx`、`基础提示词.txt`），提交前确认哪些是噪音、哪些该还原。
+2. **对话导出 / Prompt 链归档**（2026-11-12 复核）：比赛要求的「≥3 条完整 Prompt 链」以 `DEMO-SCRIPT.md` §4 交付——每条含目标 / 原始 Prompt / AI 修改建议 / 实际修复与验证 / 证据五字段，原始 Prompt 按 `process/DECISION_LOG.md:895`、`:903`、`:912`、`:921` 等归档行号可核；`process/sessions/` 保留模板与 `.gitkeep`，不重复转写会话原文（原始对话以 DSH 会话归档为准，工具不支持批量导出）。
+3. ~~PDF 复核~~（2026-11-12 完成）：`a476aae` 用已提交的 `tech-doc/render.ps1` 重渲，25 页 / 7,048,058 B / text_sha `B5CF118C…3B6EF2`，目录 46 条、页脚「第 N 页 · 共 25 页」24 页；此后改动 `TECHNICAL-DOC.md` 必须重渲再核。
+4. ~~工作树清理~~（2026-11-12 完成）：`git checkout-index -f -a` 归位 CRLF/EOL 基线，恢复 2 个删除项（`~$制作过程.docx`、`基础提示词.txt`）；现 `git status --porcelain` 仅 `?? .cache/` 与 `?? 提交材料/`，0 modified、0 deleted（`.cache/` 为本地模型缓存，`提交材料/` 内视频按 §2.4-1 约定不入库）。
 
 ## 建议时间顺序
 
