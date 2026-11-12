@@ -1,6 +1,6 @@
 # 学生消费账单 APP（智能消费账单）
 
-一款面向学生群体的 Android 本地记账应用：手动记账、多方式导入、图表化消费分析、预算管理与 AI 消费建议。所有账单数据仅存储在本机 Room 数据库，不上传任何服务器。
+一款面向学生群体的 Android 本地记账应用：手动记账、多方式导入、图表化消费分析、预算管理与 AI 消费建议。账单默认只存在本机 Room；只有用户主动发起联网问答时，才会把当月收支汇总、预算、Top5 分类与商户、最近 15 条账单发给 DeepSeek（旧版 AI 页由 `BillContextBuilder` 组装）；其余情况不联网、不上传。`allowBackup=false`，卸载或换机即丢账本。
 
 - 包名：`com.campusbill.app`
 - 开发语言：**纯 Java**（无任何 Kotlin 代码）
@@ -18,7 +18,7 @@
 | 图表分析 | 每日消费折线图、分类消费柱状图（均可横向滑动）、分类占比饼图、消费时间轴（横线长度映射金额，点击节点看详情） |
 | 月份切换 | 顶部弹窗仅列出数据库已有账单月份，切换后全页面数据联动刷新 |
 | 商户排行 | 当月商户消费金额降序，前三名放大突出 |
-| AI 消费助手 | 本地规则引擎离线回答账单类问题（总支出/预算剩余/分类构成/省钱建议）；可选在应用内配置 API KEY，普通对话联网请求 OpenAI 兼容接口 |
+| AI 消费助手 | 本地规则引擎离线回答账单类问题（总支出/预算剩余/分类构成/省钱建议）；可选在应用内配置 API KEY，普通对话联网请求 OpenAI 兼容接口；只有用户主动发起联网问答时，才会把当月收支汇总、预算、Top5 分类与商户、最近 15 条账单发给 DeepSeek，其余情况不联网 |
 | 账单导入 | 粘贴导入（仅点击时读取一次剪贴板）、CSV 导入（OpenCSV）、PDF/XLSX 导入（SAF + PDFBox），自动识别支付宝/微信账单格式，导入结果按批次管理 |
 
 ## 合规与隐私设计
@@ -26,8 +26,8 @@
 1. 剪贴板仅在用户点击「粘贴导入」按钮时读取一次，无后台监听、无启动读取
 2. 文件导入全部通过 SAF 系统文件选择器，**不申请** `MANAGE_EXTERNAL_STORAGE` 及任何存储权限
 3. 无爬虫、无障碍抓取、自动拉取微信/支付宝账单的任何逻辑
-4. 账单原始数据仅存本机 Room 数据库；唯一的 `INTERNET` 权限仅服务于 AI 对话模块（用户自主配置 KEY 后才会联网）
-5. 全部 9 个 Activity 锁定竖屏
+4. 账单默认只存在本机 Room；只有用户主动发起联网问答时，才会把当月收支汇总、预算、Top5 分类与商户、最近 15 条账单发给 DeepSeek（旧版 AI 页由 `BillContextBuilder` 组装）；其余情况不联网、不上传；`allowBackup=false`，卸载或换机即丢账本
+5. 全部 10 个 Activity 锁定竖屏
 
 ## 环境配置
 
@@ -62,7 +62,7 @@ Model      : gpt-4o-mini                # 模型名
 
 | 依赖 | 版本 | 用途 |
 |---|---|---|
-| androidx.appcompat | 1.7.0 | 基础兼容组件 |
+| androidx.appcompat | 1.7.1 | 基础兼容组件 |
 | androidx.constraintlayout | 2.2.1 | 布局 |
 | androidx.recyclerview | 1.3.2 | 列表（对话、排行、历史、日历账单） |
 | androidx.room:room-runtime / room-compiler | 2.6.1 | Room 本地数据库（annotationProcessor） |
@@ -96,7 +96,7 @@ Model      : gpt-4o-mini                # 模型名
 3. **查日历**：主界面「消费日历」→ 点日期看当日收支与账单列表 → 每条账单可编辑/删除
 4. **设预算**：主界面预算输入框填写当月预算，超支后面板自动变为红白渐变警示
 5. **切月份**：图表区右上角「切换月份」，仅显示已有账单的月份
-6. **AI 助手**：主界面顶部「AI 消费建议」面板进入；账单类问题本地离线作答，配置 API KEY 后普通对话联网
+6. **AI 助手**：主界面顶部「AI 消费建议」面板进入；账单类问题本地离线作答；配置 API KEY 后普通对话联网，只有用户主动发起联网问答时才会把当月收支汇总、预算、Top5 分类与商户、最近 15 条账单发给 DeepSeek，其余情况不联网
 7. **导入账单**：主界面底部「导入账单」→ 粘贴 / CSV / PDF·XLSX 三种方式；导入记录在「历史」页可按批次删除
 
 ## 项目结构
@@ -125,7 +125,7 @@ app/src/main/java/com/campusbill/app/
 
 ## 测试
 
-- 单元测试：`AiReplyTest`（本地 AI 规则引擎回复）
+- 单元测试：7 个测试类 / 49 个 `@Test`（`AiReplyTest`、`AssistantCoreTest`、`SessionRulesTest`、`AttitudeGazeMathTest`、`ChatBallFadeTest`、`ChatBallMetricsTest`、`ChatInputChromeTest`）；`.\gradlew.bat testDebugUnitTest` 在 `ae6d216` 快照实测 49 通过 / 0 失败（T5 最新分支 HEAD `c7bafea` 含 T6 新增 `BillAnalysisUtilsTest`，共 8 类 50 项）
 - 已在 Android 17（API 37）模拟器完成全流程实机验证：181 条账单数据下增删改查、导入、月份切换、全部页面跳转与数据联动刷新均正常
 
 ## 中央学生助手（比赛层）
@@ -136,8 +136,8 @@ app/src/main/java/com/campusbill/app/
 
 - [docs/assistant/REPRODUCE.md](docs/assistant/REPRODUCE.md) · 10分钟极速复现指南
 - [docs/assistant/env.example](docs/assistant/env.example) · 环境变量模板（无真实 Key）
-- [docs/assistant/THIRD_PARTY.md](docs/assistant/THIRD_PARTY.md) · 第三方许可（**Emotion Ball 球形造型不可商用**，须保留署名）
+- [docs/assistant/THIRD_PARTY.md](docs/assistant/THIRD_PARTY.md) · 第三方许可（**Emotion Ball 球形造型不可商用**，须保留署名；离线语音为 Vosk Apache-2.0 与中文小模型）
 - [docs/assistant/SUBMISSION-CHECKLIST.md](docs/assistant/SUBMISSION-CHECKLIST.md) · 交赛材料清单
 - [docs/assistant/process/](docs/assistant/process/) · 决策 / Prompt / 工具参数 / 确认记录模板与归档
 
-第一版只演示：查本周花销 → 确认后记一笔并回读 → 过程页留痕；之后可再问一句运势以证明会调度工具。文字状态为「思考 / 调用工具 / 等待确认 / 出错」。
+第一版演示分两段。**离线段（无 Key 也能跑，只用首页快捷芯片）**：点「本月总支出」看当月合计 → 手动记一笔 → 再点同一芯片看金额变化。**联网 AI 段（演示机须预置已测通的 DeepSeek Key 与可用网络）**：查本周花销 → `query_spend` → 确认后记一笔并回读 → 过程页留痕；无 Key 时该链在 `AssistantController` 处直接以「出错（API_KEY）」终止，不得伪造工具调用或金额。文字状态为「思考 / 调用工具 / 等待确认 / 出错」。
