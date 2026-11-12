@@ -1,0 +1,6 @@
+# Reproducible debug APK: the build copies docs/assistant/*.md verbatim into
+# app/src/main/assets/assistant, so those sources must be checked out with LF
+# regardless of core.autocrlf; otherwise the packaged assets, the APK and its
+# recorded SHA-256 differ on Windows clones.
+docs/assistant/** text eol=lf
+app/src/main/assets/** -text
