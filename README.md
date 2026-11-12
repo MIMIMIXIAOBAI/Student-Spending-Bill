@@ -125,7 +125,7 @@ app/src/main/java/com/campusbill/app/
 
 ## 测试
 
-- 单元测试：7 个测试类 / 49 个 `@Test`（`AiReplyTest`、`AssistantCoreTest`、`SessionRulesTest`、`AttitudeGazeMathTest`、`ChatBallFadeTest`、`ChatBallMetricsTest`、`ChatInputChromeTest`）；`.\gradlew.bat testDebugUnitTest` 在 `ae6d216` 快照实测 49 通过 / 0 失败（T5 最新分支 HEAD `c7bafea` 含 T6 新增 `BillAnalysisUtilsTest`，共 8 类 50 项）
+- 单元测试（三档口径）：工作树快照 7 类 49 项（`AiReplyTest`、`AssistantCoreTest`、`SessionRulesTest`、`AttitudeGazeMathTest`、`ChatBallFadeTest`、`ChatBallMetricsTest`、`ChatInputChromeTest`）；干净 `ae6d216` 仅 2 类 25 项（`AiReplyTest` 6 + `AssistantCoreTest` 19）；当前分支 HEAD 实测 8 类 51 项（四态预算修复新增 1 个测试方法），0 失败。复跑：`.\gradlew.bat testDebugUnitTest`
 - 已在 Android 17（API 37）模拟器完成全流程实机验证：181 条账单数据下增删改查、导入、月份切换、全部页面跳转与数据联动刷新均正常
 
 ## 中央学生助手（比赛层）
