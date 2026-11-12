@@ -1,11 +1,12 @@
 # 学生消费账单 APP（智能消费账单）
 
-一款面向学生群体的 Android 本地记账应用：手动记账、多方式导入、图表化消费分析、预算管理与 AI 消费建议。账单默认只存在本机 Room；只有用户主动发起联网问答时，才会把当月收支汇总、预算、Top5 分类与商户、最近 15 条账单发给 DeepSeek（旧版 AI 页由 `BillContextBuilder` 组装）；其余情况不联网、不上传。`allowBackup=false`，卸载或换机即丢账本。
+一款面向学生群体的 Android 本地记账应用：手动记账、多方式导入、图表化消费分析、预算管理与 AI 消费建议。账单默认只存在本机 Room；只有用户主动发起联网问答时，才会把当月收支汇总、预算、Top5 分类与商户、最近 15 条账单发给 DeepSeek（AI 对话页由 `BillContextBuilder` 组装）；其余情况不联网、不上传。`allowBackup=false`，卸载或换机即丢账本。
 
 - 包名：`com.campusbill.app`
 - 开发语言：**纯 Java**（无任何 Kotlin 代码）
 - UI 实现：XML 布局 + ViewBinding，竖屏手机适配；视觉为「苹果式骨架 × Y2K 材质点缀」（校园蓝主 CTA #2F6FED，粉/薄荷/柠檬仅作点缀；全 App 统一近纸页底，内容卡近白奶油，玻璃仅用于顶栏/浮层）
-- 进度：助手主线（中央学生助手 / AI 对话 / 过程页）在分支 `feat/assistant-competition`，构建与复现见 [docs/assistant/REPRODUCE.md](docs/assistant/REPRODUCE.md)；P0–P3 视觉刷新在 `feat/ui-tokens-p0`
+- 进度：助手主线（中央学生助手 / AI 对话 / 过程页）已通过 PR #4 合并进 `master`（merge commit `f48816b`），默认分支即主线；构建与复现见 [docs/assistant/REPRODUCE.md](docs/assistant/REPRODUCE.md)
+- 交赛交付物：演示视频 `提交材料/演示视频.mp4`（5:49.89，1080×1920，AI 段 155 s）、技术文档 [docs/assistant/TECHNICAL-DOC.pdf](docs/assistant/TECHNICAL-DOC.pdf)（25 页）
 - 最低系统：Android 10（API 29），targetSdk 36
 
 ## 功能一览
@@ -18,7 +19,7 @@
 | 图表分析 | 每日消费折线图、分类消费柱状图（均可横向滑动）、分类占比饼图、消费时间轴（横线长度映射金额，点击节点看详情） |
 | 月份切换 | 顶部弹窗仅列出数据库已有账单月份，切换后全页面数据联动刷新 |
 | 商户排行 | 当月商户消费金额降序，前三名放大突出 |
-| AI 消费助手 | 本地规则引擎离线回答账单类问题（总支出/预算剩余/分类构成/省钱建议）；可选在应用内配置 API KEY，普通对话联网请求 OpenAI 兼容接口；只有用户主动发起联网问答时，才会把当月收支汇总、预算、Top5 分类与商户、最近 15 条账单发给 DeepSeek，其余情况不联网 |
+| AI 消费助手 | 悬浮球进入对话页；未配 Key 时 4 个离线芯片（本月总支出/预算剩余/消费分类/省钱建议）由本地规则引擎作答；在应用内配置 API KEY 后走真实模型，可调用 `query_spend`、`add_bill` 等工具查账/记账（记账弹确认卡，确认才落库），过程页展示思考与工具调用；只有用户主动联网提问时，才把当月收支汇总、预算、Top5 分类与商户、最近 15 条账单发给 DeepSeek，其余情况不联网 |
 | 账单导入 | 粘贴导入（仅点击时读取一次剪贴板）、CSV 导入（OpenCSV）、PDF/XLSX 导入（SAF + PDFBox），自动识别支付宝/微信账单格式，导入结果按批次管理 |
 
 ## 合规与隐私设计
@@ -26,15 +27,15 @@
 1. 剪贴板仅在用户点击「粘贴导入」按钮时读取一次，无后台监听、无启动读取
 2. 文件导入全部通过 SAF 系统文件选择器，**不申请** `MANAGE_EXTERNAL_STORAGE` 及任何存储权限
 3. 无爬虫、无障碍抓取、自动拉取微信/支付宝账单的任何逻辑
-4. 账单默认只存在本机 Room；只有用户主动发起联网问答时，才会把当月收支汇总、预算、Top5 分类与商户、最近 15 条账单发给 DeepSeek（旧版 AI 页由 `BillContextBuilder` 组装）；其余情况不联网、不上传；`allowBackup=false`，卸载或换机即丢账本
+4. 账单默认只存在本机 Room；只有用户主动发起联网问答时，才会把当月收支汇总、预算、Top5 分类与商户、最近 15 条账单发给 DeepSeek（AI 对话页由 `BillContextBuilder` 组装）；其余情况不联网、不上传；`allowBackup=false`，卸载或换机即丢账本
 5. 全部 10 个 Activity 锁定竖屏
 
 ## 环境配置
 
 | 项 | 要求 |
 |---|---|
-| Android Studio | Narwhal 或更新版本（内含 JDK 17） |
-| JDK | 17（Gradle 与源码编译均使用 Java 17） |
+| Android Studio | Narwhal 或更新版本（内置 JBR 25 可直接构建） |
+| JDK | 构建用 Android Studio 内置 JBR 25 即可；要核对手册记录的 APK 哈希须用 **JDK 21.0.12.1**（不同 JDK 的 DEX 字节不同，见 TECHNICAL-DOC §5.1–5.2） |
 | Android SDK | Platform **API 37**（compileSdk 37）+ Build-Tools；建议同时安装 API 29+ 模拟器系统镜像 |
 | Gradle | 使用项目自带 Wrapper（**Gradle 9.6.0**，无需单独安装） |
 | 模拟器 | Medium Phone，API 29 及以上，1080×2400；建议 AVD Graphics 设为 **Hardware**（Software 软件渲染会明显卡顿） |
