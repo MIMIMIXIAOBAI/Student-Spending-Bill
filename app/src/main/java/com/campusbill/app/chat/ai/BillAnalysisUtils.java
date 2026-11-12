@@ -124,6 +124,24 @@ public final class BillAnalysisUtils {
         return budget > 0;
     }
 
+    /** 首页预算面板状态：未设置 / 正常 / 超支 */
+    public static final int BUDGET_UNSET = 0;
+    public static final int BUDGET_OK = 1;
+    public static final int BUDGET_OVER = 2;
+
+    /** 只按“是否设置预算”和“剩余是否为负”判态，空账本不再单独拦截 */
+    public static int budgetState(double budget, double monthExpense) {
+        if (!hasBudget(budget)) {
+            return BUDGET_UNSET;
+        }
+        return budgetRemaining(budget, monthExpense) >= 0 ? BUDGET_OK : BUDGET_OVER;
+    }
+
+    /** 预算剩余，允许为负（超支） */
+    public static double budgetRemaining(double budget, double monthExpense) {
+        return budget - monthExpense;
+    }
+
     /** 保存月度预算到本机 */
     public static void saveBudget(Context context, double budget) {
         prefs(context).edit().putFloat(KEY_BUDGET, (float) budget).apply();

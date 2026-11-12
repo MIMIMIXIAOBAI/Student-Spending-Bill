@@ -598,34 +598,26 @@ public class MainActivity extends AppCompatActivity {
    private void updateBudgetPanel() {
       double budget = this.parseAmount(this.binding.etBudget.getText().toString());
       this.binding.tvTotalBudget.setText(this.getString(string.currency_format, new Object[]{this.formatAmount(budget)}));
-      if (this.emptyState) {
-         this.binding.panelBudget.setBackgroundResource(drawable.bg_budget_ok);
-         this.binding.tvRemainLabel.setText(string.label_remaining);
-         this.binding.tvRemainLabel.setTextColor(this.getColor(color.text_secondary));
-         this.binding.tvRemainValue.setTextColor(this.getColor(color.color_primary));
-         this.binding.tvRemainValue.setText(string.main_entry_empty);
-      } else if (!BillAnalysisUtils.hasBudget(budget)) {
+      int budgetState = BillAnalysisUtils.budgetState(budget, this.monthExpense);
+      double remaining = BillAnalysisUtils.budgetRemaining(budget, this.monthExpense);
+      if (budgetState == BillAnalysisUtils.BUDGET_UNSET) {
          this.binding.panelBudget.setBackgroundResource(drawable.bg_budget_ok);
          this.binding.tvRemainLabel.setText(string.label_remaining);
          this.binding.tvRemainLabel.setTextColor(this.getColor(color.text_secondary));
          this.binding.tvRemainValue.setTextColor(this.getColor(color.color_primary));
          this.binding.tvRemainValue.setText(string.label_budget_unset);
+      } else if (budgetState == BillAnalysisUtils.BUDGET_OVER) {
+         this.binding.panelBudget.setBackgroundResource(drawable.bg_budget_over);
+         this.binding.tvRemainLabel.setText(string.label_remaining);
+         this.binding.tvRemainLabel.setTextColor(this.getColor(color.color_warning));
+         this.binding.tvRemainValue.setTextColor(this.getColor(color.color_warning));
+         this.binding.tvRemainValue.setText(this.getString(string.label_over) + " " + this.getString(string.currency_format, new Object[]{this.formatAmount(-remaining)}));
       } else {
-         double remaining = budget - this.monthExpense;
-         if (remaining >= (double)0.0F) {
-            this.binding.panelBudget.setBackgroundResource(drawable.bg_budget_ok);
-            this.binding.tvRemainLabel.setText(string.label_remaining);
-            this.binding.tvRemainLabel.setTextColor(this.getColor(color.text_secondary));
-            this.binding.tvRemainValue.setTextColor(this.getColor(color.color_primary));
-            this.binding.tvRemainValue.setText(this.getString(string.currency_format, new Object[]{this.formatAmount(remaining)}));
-         } else {
-            this.binding.panelBudget.setBackgroundResource(drawable.bg_budget_over);
-            this.binding.tvRemainLabel.setText(string.label_remaining);
-            this.binding.tvRemainLabel.setTextColor(this.getColor(color.color_warning));
-            this.binding.tvRemainValue.setTextColor(this.getColor(color.color_warning));
-            this.binding.tvRemainValue.setText(this.getString(string.label_over) + " " + this.getString(string.currency_format, new Object[]{this.formatAmount(-remaining)}));
-         }
-
+         this.binding.panelBudget.setBackgroundResource(drawable.bg_budget_ok);
+         this.binding.tvRemainLabel.setText(string.label_remaining);
+         this.binding.tvRemainLabel.setTextColor(this.getColor(color.text_secondary));
+         this.binding.tvRemainValue.setTextColor(this.getColor(color.color_primary));
+         this.binding.tvRemainValue.setText(this.getString(string.currency_format, new Object[]{this.formatAmount(remaining)}));
       }
    }
 
