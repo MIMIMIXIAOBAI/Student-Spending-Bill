@@ -65,53 +65,34 @@
                 android:textColor="@color/text_secondary"
                 android:textSize="@dimen/text_subtitle" />
 
-            <!-- AI 建议：独立近白奶油卡 -->
-            <LinearLayout
+            <!-- 首页情绪球白卡：左右 16dp（页边距 20dp 再收回 4dp），高 260dp，不超过 300dp。 -->
+            <FrameLayout
                 android:id="@+id/panelAi"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="260dp"
+                android:layout_marginStart="-4dp"
                 android:layout_marginTop="@dimen/space_xl"
+                android:layout_marginEnd="-4dp"
                 android:background="@drawable/bg_card"
-                android:clickable="true"
-                android:elevation="0dp"
-                android:focusable="true"
-                android:foreground="?attr/selectableItemBackground"
-                android:orientation="vertical"
-                android:padding="@dimen/card_padding">
+                android:contentDescription="@string/assistant_emotion_license">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/bg_ai_badge"
-                    android:paddingStart="@dimen/space_sm"
-                    android:paddingTop="3dp"
-                    android:paddingEnd="@dimen/space_sm"
-                    android:paddingBottom="3dp"
-                    android:text="@string/ai_panel_title"
-                    android:textColor="@color/color_primary"
-                    android:textSize="@dimen/text_caption"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/tvAiSummary"
+                <WebView
+                    android:id="@+id/homeEmotionBall"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/space_md"
-                    android:lineSpacingExtra="4dp"
-                    android:text="@string/ai_panel_summary"
-                    android:textColor="@color/text_primary"
-                    android:textSize="@dimen/text_body" />
+                    android:layout_height="match_parent"
+                    android:contentDescription="@string/assistant_emotion_license"
+                    android:focusable="false"
+                    android:importantForAccessibility="no" />
 
-                <TextView
+                <View
+                    android:id="@+id/homeEmotionBallTouch"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/space_md"
-                    android:gravity="end"
-                    android:text="@string/ai_panel_more"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="@dimen/text_caption" />
+                    android:layout_height="match_parent"
+                    android:clickable="true"
+                    android:contentDescription="@string/home_emotion_ball_open"
+                    android:focusable="true" />
 
-            </LinearLayout>
+            </FrameLayout>
 
             <!-- 预算：独立奶油卡，数字更大；状态色靠文案与描边 -->
             <LinearLayout

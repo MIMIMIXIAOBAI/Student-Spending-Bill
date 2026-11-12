@@ -1,0 +1,9 @@
+# Reproducible debug APK: the build copies these five files verbatim from
+# docs/assistant into app/src/main/assets/assistant, so they must be checked
+# out with LF regardless of core.autocrlf; otherwise the packaged assets, the
+# APK and its recorded SHA-256 differ on Windows clones. Scoped to the five
+# sources on purpose: a blanket docs/assistant/** rule would also touch the
+# binary PDF.
+docs/assistant/*.md text eol=lf
+docs/assistant/*.json text eol=lf
+app/src/main/assets/** -text
