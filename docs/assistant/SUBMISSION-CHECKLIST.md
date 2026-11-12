@@ -9,7 +9,7 @@
 | GitHub / Gitee，Public 或向评委开放访问 | 现仓库 [Student-Spending-Bill](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill) 为 Public | 工程 / 主管 |
 | 完整、细粒度 Git 提交历史；禁止「一次 initial commit 堆齐全部功能」；每次提交对应一次与 AI 的核心对话或一个功能模块落地 | 助手层须保持细粒度提交（文档、Prompt、工程分批合入）。历史是否已满足，交赛前由工程侧核对日志 | @Trae助手 |
 | 导出与 AI 的对话历史；工具不支持导出时用截图或录屏 | 新对话按 `docs/assistant/process/` 模板归档；旧对话先保留原文件，不润色 | @流程记录员 收集，@WorkBuddy助手 协助整理目录 |
-| 至少 3 个核心功能迭代的完整 Prompt 链（提问、AI 修改建议、如何引导修复 Bug） | 建议三条主线：① 查本周花销（`query_spend`）② 确认后记一笔并回读（`propose_add_bill`）③ 流式 + 四档文字状态 / 过程页，或运势调度（`daily_fortune`）。链尚未齐备，标为待收集 | 全员；Prompt 正文以 @DSH助手 入库版本为准 |
+| 至少 3 个核心功能迭代的完整 Prompt 链（提问、AI 修改建议、如何引导修复 Bug） | 建议三条主线：① 查本周花销（`query_spend`）② 确认后记一笔并回读（`propose_add_bill`）③ 流式 + 四档文字状态 / 过程页，或运势调度（`daily_fortune`）。3 条链已归档于 `DEMO-SCRIPT.md` §4（2026-11-12 复核，每条含目标 / 原始 Prompt / AI 修改建议 / 实际修复与验证 / 证据五字段） | 全员；Prompt 正文以 @DSH助手 入库版本为准 |
 
 ## 2.2 复现性声明与重现指南（README.md）
 
@@ -29,7 +29,7 @@
 
 1. ~~视频入库方式~~（已定，2026-11-12）：**不入库**。`提交材料\演示视频.mp4`（16,422,369 B，与母版同 SHA-256）保持未跟踪，随交赛以附件/外链交付；仓库无 LFS，不把 16.4 MB 二进制写进历史。
 2. **对话导出 / Prompt 链归档**（2026-11-12 复核）：比赛要求的「≥3 条完整 Prompt 链」以 `DEMO-SCRIPT.md` §4 交付——每条含目标 / 原始 Prompt / AI 修改建议 / 实际修复与验证 / 证据五字段，原始 Prompt 按 `process/DECISION_LOG.md:895`、`:903`、`:912`、`:921` 等归档行号可核；`process/sessions/` 保留模板与 `.gitkeep`，不重复转写会话原文（原始对话以 DSH 会话归档为准，工具不支持批量导出）。
-3. ~~PDF 复核~~（2026-11-12 完成）：`374f0e1` 用已提交的 `tech-doc/render.ps1` 重渲（并补 APK 哈希的 JDK 口径），25 页 / 7,055,638 B / text_sha `1EF84E09…CB64B44`，目录 46 条、页脚「第 N 页 · 共 25 页」24 页；此后改动 `TECHNICAL-DOC.md` 必须重渲再核。
+3. ~~PDF 复核~~（2026-11-12 完成）：`374f0e1` 曾用已提交的 `tech-doc/render.ps1` 重渲为 25 页 / 7,055,638 B / text_sha `1EF84E09…CB64B44`；PR #4 合并 `f48816b` 后按新基线重渲为 25 页 / 7,056,925 B / text_sha `A28D89A8…C0A96C35`（目录 46 条、页脚「第 N 页 · 共 25 页」24 页；binary sha 随 PDF `/ID` 变化，不作校验口径）；此后改动 `TECHNICAL-DOC.md` 必须重渲再核。
 4. ~~工作树清理~~（2026-11-12 完成）：`git checkout-index -f -a` 归位 CRLF/EOL 基线，恢复 2 个删除项（`~$制作过程.docx`、`基础提示词.txt`）；现 `git status --porcelain` 仅 `?? .cache/` 与 `?? 提交材料/`，0 modified、0 deleted（`.cache/` 为本地模型缓存，`提交材料/` 内视频按 §2.4-1 约定不入库）。
 
 ## 建议时间顺序

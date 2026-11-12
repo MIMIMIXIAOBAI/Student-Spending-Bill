@@ -7,8 +7,8 @@
 | --- | --- |
 | 作品 | 中央学生助手（CampusBill）——离线优先的校园账单 App + DeepSeek 对话助手 |
 | 仓库 | Student-Spending-Bill |
-| 分支 | feat/assistant-competition |
-| 代码基线 | 代码树 `966f41c`（评审口径即 HEAD 966f41c）；文档链 `910041e`、`b2a2437`、`1de6d52`、`af3f922` 均只改文档，代码树不变；仓库 HEAD 随文档提交前移，一律按代码树核对 |
+| 分支 | master（PR #4 合并，merge commit f48816b） |
+| 代码基线 | 代码树 `966f41c`（与合并后 master 的代码树一致）；文档链 `910041e`、`b2a2437`、`1de6d52`、`af3f922` 均只改文档，代码树不变；仓库 HEAD 随文档提交前移，一律按代码树核对 |
 | 文档版本 | v1.0（2026-11-12） |
 | 对应赛题要求 | 硬性要求④：技术文档 PDF，不超过 30 页；重点为意图控制策略、架构设计与可复现性论证 |
 | 生成方式 | 本册由 `docs/assistant/tech-doc/render.ps1` 从本 Markdown 生成 PDF，页数可自校验 |
@@ -29,7 +29,7 @@
 
 | 要求 | 承担物 | 本册对应章节 |
 | --- | --- | --- |
-| ① 代码仓库与提交历史 | git 仓库（分支 feat/assistant-competition） | §1.3、§6.2 |
+| ① 代码仓库与提交历史 | git 仓库（master，PR #4 已合并） | §1.3、§6.2 |
 | ② 可复现构建与运行 | `REPRODUCE.md`、Gradle wrapper、固定依赖 | §5.1–§5.3 |
 | ③ 5–8 分钟演示视频 | `DEMO-SCRIPT.md`（分镜与话术） | §5.3（演示数字口径） |
 | ④ 技术文档 ≤30 页 | 本册（Markdown + PDF） | 全册；页数自校验见 §5.4 |
@@ -50,7 +50,7 @@
 
 | 事实 | 值 | 来源 |
 | --- | --- | --- |
-| 代码基线 | 代码树 `966f41c`（评审口径）；文档链 `910041e`（S6 算术）、`b2a2437`（DEMO-SCRIPT 锚点）、`1de6d52`（本册三件套）、`af3f922`（本册口径重渲）均未改源码，代码树与行号不变 | `git rev-parse HEAD`；源码零改动 |
+| 代码基线 | 代码树 `966f41c`（与合并后 master 一致）；文档链 `910041e`（S6 算术）、`b2a2437`（DEMO-SCRIPT 锚点）、`1de6d52`（本册三件套）、`af3f922`（本册口径重渲）均未改源码，代码树与行号不变 | `git rev-parse HEAD`；源码零改动 |
 | 单元测试 | 8 个测试类、51 个测试，0 失败 / 0 错误 / 0 跳过；XML 时间戳 2026-11-12T05:52:11.497Z–05:52:11.634Z（本地 13:52:11） | 解析 `app/build/test-results/testDebugUnitTest/*.xml` |
 | Debug APK | `app/build/outputs/apk/debug/app-debug.apk`，26,702,585 字节 | `Get-Item` 长度；`Get-FileHash` |
 | APK SHA-256 | `B5A4B94991897FCCFB08C6FCF652F5FC0651615909DACE4C9AAD053E29B6CFC6` | 同上 |
@@ -516,7 +516,7 @@ powershell -ExecutionPolicy Bypass -File docs\assistant\tech-doc\render.ps1
 
 ## 6.1 代码锚点总表
 
-下表是本册引用过的全部代码锚点（文件:行号），按主题排序。行号以代码树 `966f41c` 为准（评审口径；其后 `910041e`、`b2a2437`、`1de6d52` 均未改源码，行号不变）；若后续提交改动，行号会漂移，但类型与方法名不变，仍可用 `grep` 定位。
+下表是本册引用过的全部代码锚点（文件:行号），按主题排序。行号以代码树 `966f41c` 为准（与合并后 master 代码树一致；其后 `910041e`、`b2a2437`、`1de6d52`、`af3f922` 均未改源码，行号不变）；若后续提交改动，行号会漂移，但类型与方法名不变，仍可用 `grep` 定位。
 
 | 编号 | 锚点 | 说明 | 章节 |
 | --- | --- | --- | --- |

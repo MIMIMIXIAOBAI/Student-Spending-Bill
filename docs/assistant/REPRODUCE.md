@@ -17,13 +17,13 @@
 | 本机文件 | 根目录创建 `local.properties`，写入 `sdk.dir=...`（该文件已 gitignore） |
 
 ```powershell
-git clone -b feat/assistant-competition https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill.git
+git clone https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill.git
 cd "Student-Spending-Bill"
 # 按 docs/assistant/env.example 写入 local.properties 后：
 .\gradlew.bat assembleDebug installDebug
 ```
 
-> 默认分支 `master` 不含助手主线（中央学生助手、AI 对话、过程页）。必须按上面的 `-b feat/assistant-competition` 检出；本文记录值对应提交 `94becba`，该提交之后只有文档改动，代码树与打包 assets 不变。
+> 默认分支 `master` 即主线：PR #4 已于 2026-11-12 合并（merge commit `f48816b`），无需 `-b`。本文记录值对应代码树 `966f41c`；其后仅有文档与 `.gitattributes` 改动，`app/`、`build.gradle`、`settings.gradle`、`gradle/` 的树哈希与当前 `master` 一致（`git diff --name-only 966f41c HEAD -- app build.gradle settings.gradle gradle` 输出为空）。
 
 或用 Android Studio 打开仓库根目录，Sync 后 Run。不要把 DeepSeek Key 写进任何仓库文件或 `gradle.properties`。
 
@@ -76,7 +76,7 @@ cd "Student-Spending-Bill"
 
 上下文用量用右下角一行次要灰字显示，例如「上下文 62%」，放在消息区右下、状态行和输入栏之上，不是状态也不是卡片。百分比按「当前请求实际占用的上下文 token / 当前模型窗口」计算，不要用条数估。约 80% 起改为提示色，约 95% 起加重。到达约 80% 且本轮回复结束后，只在后台预存要点（消费习惯、已确认账单、偏好等，不是整段原文；不新增工具、不弹确认、不自动切换，也不再走一轮「思考」，避免回复已经结束又出现思考态）。用户点「新建对话」时若已有预存，则带入新对话，顶部用一条可消失的 Grouped 提示说明「已带入上次的关键记忆」，表情 `02`。只有约 95%，或发送前判断本轮请求会超窗，才自动开下一场并带入记忆；若当时还没预存成功，再走「思考」和表情 `30` 抽完后切换。失败则留在当前会话，状态「出错」，右侧「重试」，表情 `34`。旧会话完整留在列表里，可再打开。
 
-球、陀螺仪视线和「当月」跟图表月份同步仍是已冻的产品约定。主管确认月份同步和陀螺仪此前已在同一条 [PR #3](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/pull/3) 里，不必重做。**旧交付记录（历史，不是当前证据）**：`测试v0.11.1.apk`（37,770,505 字节，SHA256 `609ba8883f006898872bab4b7fab02d2cf2c1c297e599f0f869d3fa247822ce7`，2026-11-11 01:48）与 v0.9–v0.11 系列均为历史包；其中「本机单元测试 43 项全部通过」与「当前头 e4dfd1b」已过期，不得再作为本轮复现依据。**当前口径**：工作树快照 7 类 49 项（6+26+5+2+3+4+3）；干净 `ae6d216` 仅 2 类 25 项（`AiReplyTest` 6 + `AssistantCoreTest` 19）；分支 HEAD 实测 8 类 51 项（四态预算修复新增 1 个测试方法），0 失败，复跑命令 `.\gradlew.bat testDebugUnitTest`；识别基线为 `ae6d216`；T5 已提交为 `feat/assistant-competition`（2026-11-12 记录值对应 `94becba`，PR #4 尚未合入 master）；**APK 以最终提交后干净 clone 重建为准**，重建前不得用桌面旧包替代。请装重建包测对话页球约占屏高三分之一、160dp 硬下限、查账与历史对话；旧包只作对照，不要覆盖、不要合并。
+球、陀螺仪视线和「当月」跟图表月份同步仍是已冻的产品约定。主管确认月份同步和陀螺仪此前已在同一条 [PR #3](https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill/pull/3) 里，不必重做。**旧交付记录（历史，不是当前证据）**：`测试v0.11.1.apk`（37,770,505 字节，SHA256 `609ba8883f006898872bab4b7fab02d2cf2c1c297e599f0f869d3fa247822ce7`，2026-11-11 01:48）与 v0.9–v0.11 系列均为历史包；其中「本机单元测试 43 项全部通过」与「当前头 e4dfd1b」已过期，不得再作为本轮复现依据。**当前口径**：工作树快照 7 类 49 项（6+26+5+2+3+4+3）；干净 `ae6d216` 仅 2 类 25 项（`AiReplyTest` 6 + `AssistantCoreTest` 19）；分支 HEAD 实测 8 类 51 项（四态预算修复新增 1 个测试方法），0 失败，复跑命令 `.\gradlew.bat testDebugUnitTest`；识别基线为 `ae6d216`；T5 已提交并随 PR #4 合并进 `master`（merge commit `f48816b`，2026-11-12；代码树同 `966f41c`）；**APK 以最终提交后干净 clone 重建为准**，重建前不得用桌面旧包替代。请装重建包测对话页球约占屏高三分之一、160dp 硬下限、查账与历史对话；旧包只作对照，不要覆盖、不要合并。
 
 1. **查询**（工具 `query_spend`，只读）：对助手说：「这周食堂花了多少？」
    - 必须先调 `query_spend` 再开口；文字状态可见「调用工具」，表情 `32`（查账也可用 `40`），不弹确认卡。

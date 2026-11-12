@@ -410,7 +410,7 @@ adb devices
 | 1 | 公开仓库 + 细粒度提交，禁止一次 initial commit（`:9-11`） | S1 00:03–00:35；S7 00:30–00:55 | GitHub `Public` 标识；`git log --oneline --max-count=8`；构建成功 | 本轮提交已推送；`git log` 能看到按“向导/Keystore、流式与状态、Room 工具与确认卡、留痕”拆分的提交（`DECISION_LOG.md:104`）。若没推送，先补，不在片里口播未发生的事 |
 | 2 | 至少 3 个核心功能完整 Prompt 链（`:12`） | §4 全节；S5、S6、S7 | 三条链分别对应查账、确认记账、流式/四档/过程页；每条有原始 Prompt、AI 修改建议、代码与测试 | 三条链的引用行号在最终提交里仍然成立（本文件按当前工作树核对） |
 | 3 | 5–8 分钟 MP4 1080p，含至少 2 分钟“AI 协同过程复现展示”（`:25`） | §2 全节；§3 时间轴；§10 实拍 | 计划 7:00 / AI 03:30–06:05；**实拍 5:49.89 / AI 03:03–05:38 = 155s**（§10） | 成片实测 155s ≥120s（§10）；不要用静态截图凑 AI 协同 |
-| 4 | 技术文档 PDF ≤30 页，重点意图控制/架构约束/可复现性（`:26`） | S7 00:30–00:55 字卡；§1.3 | 展示 `docs/assistant/` 目录、`REPRODUCE.md`、`SYSTEM_PROMPT`、`intent-control`；不口播未核的页数 | 若 PDF 尚未生成，片中只说“文档在仓库”，**不要宣称“已交 30 页 PDF”**；PDF 生成后把页数写进字卡 |
+| 4 | 技术文档 PDF ≤30 页，重点意图控制/架构约束/可复现性（`:26`） | S7 00:30–00:55 字卡；§1.3 | 展示 `docs/assistant/` 目录、`REPRODUCE.md`、`SYSTEM_PROMPT`、`intent-control`；不口播未核的页数 | PDF 已生成（`docs/assistant/TECHNICAL-DOC.pdf`，25 页 ≤30）；字卡可写“25 页 PDF”，口播不宣称未核的页数 |
 
 补充：复现材料对应 `SUBMISSION-CHECKLIST.md:18-19`（`REPRODUCE.md`、`env.example`），S1 的构建命令即来自 `REPRODUCE.md:19-24`。
 
@@ -461,7 +461,7 @@ adb devices
 - [ ] 过程页最上面没有会混淆的旧记录；本轮记录时间戳可辨认。
 - [ ] 仓库为 Public；本轮提交已推送；`git log` 可见细粒度提交。
 - [ ] 录屏 1080×1920/30fps；通知已关；Key 不会入镜。
-- [ ] 技术文档 PDF 若已生成，页数 ≤30；未生成则按 §5 第 4 条处理。
+- [ ] 技术文档 PDF 已生成：`docs/assistant/TECHNICAL-DOC.pdf` 25 页 ≤30；改动 `TECHNICAL-DOC.md` 后须重渲再核页数。
 
 ### 7.2 实测记录表（录制时填写，禁止事后编）
 
