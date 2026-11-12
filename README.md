@@ -1,144 +1,204 @@
-# 学生消费账单 APP（智能消费账单）
+# 学生消费账单（中央学生助手）
 
-一款面向学生群体的 Android 本地记账应用：手动记账、多方式导入、图表化消费分析、预算管理与 AI 消费建议。账单默认只存在本机 Room；只有用户主动发起联网问答时，才会把当月收支汇总、预算、Top5 分类与商户、最近 15 条账单发给 DeepSeek（AI 对话页由 `BillContextBuilder` 组装）；其余情况不联网、不上传。`allowBackup=false`，卸载或换机即丢账本。
+一款面向学生场景的 Android 记账应用，提供手动记账、账单导入、预算与图表分析，以及接入 DeepSeek 的中央学生助手。普通账本功能在本机运行；联网助手支持流式对话、账单查询、确认后记账和过程留痕。
 
-- 包名：`com.campusbill.app`
-- 开发语言：**纯 Java**（无任何 Kotlin 代码）
-- UI 实现：XML 布局 + ViewBinding，竖屏手机适配；视觉为「苹果式骨架 × Y2K 材质点缀」（校园蓝主 CTA #2F6FED，粉/薄荷/柠檬仅作点缀；全 App 统一近纸页底，内容卡近白奶油，玻璃仅用于顶栏/浮层）
-- 进度：助手主线（中央学生助手 / AI 对话 / 过程页）已通过 PR #4 合并进 `master`（merge commit `f48816b`），默认分支即主线；构建与复现见 [docs/assistant/REPRODUCE.md](docs/assistant/REPRODUCE.md)
-- 交赛交付物：演示视频 `提交材料/演示视频.mp4`（5:49.89，1080×1920，AI 段 155 s）、技术文档 [docs/assistant/TECHNICAL-DOC.pdf](docs/assistant/TECHNICAL-DOC.pdf)（25 页）
-- 最低系统：Android 10（API 29），targetSdk 36
+## 项目概览
+
+| 项目 | 当前配置 |
+|---|---|
+| 应用名称 | 学生消费账单 |
+| 包名 | `com.campusbill.app` |
+| 版本 | `versionCode 1` / `versionName 1.0` |
+| 开发语言 | 纯 Java，源码与目标兼容性均为 Java 17，无 Kotlin 代码 |
+| UI | XML 布局 + ViewBinding；10 个 Activity 均锁定竖屏 |
+| 本地数据 | Room 数据库 `student_bill.db`，保存账单、导入批次、会话、消息与会话记忆 |
+| 图表 | MPAndroidChart + 自定义时间轴和柱状图渲染器 |
+| 网络 | `HttpURLConnection` 连接 DeepSeek，SSE 流式读取回复 |
+| 系统要求 | Android 10（API 29）及以上；`compileSdk 37`、`targetSdk 36` |
 
 ## 功能一览
 
 | 模块 | 功能 |
 |---|---|
-| 手动记账 | 支出/收入切换、分类下拉（随类型切换）、金额/商户/备注、系统日期时间选择器 |
-| 账单管理 | 消费日历按日查看、编辑（自动填充原账单）、删除（二次确认）、历史记录页（支持删除导入批次） |
-| 预算管理 | 当月预算设置持久化；预算剩余 ≥0 蓝白渐变，超支切换红白渐变并显示「超出」 |
-| 图表分析 | 每日消费折线图、分类消费柱状图（均可横向滑动）、分类占比饼图、消费时间轴（横线长度映射金额，点击节点看详情） |
-| 月份切换 | 顶部弹窗仅列出数据库已有账单月份，切换后全页面数据联动刷新 |
-| 商户排行 | 当月商户消费金额降序，前三名放大突出 |
-| AI 消费助手 | 悬浮球进入对话页；未配 Key 时 4 个离线芯片（本月总支出/预算剩余/消费分类/省钱建议）由本地规则引擎作答；在应用内配置 API KEY 后走真实模型，可调用 `query_spend`、`add_bill` 等工具查账/记账（记账弹确认卡，确认才落库），过程页展示思考与工具调用；只有用户主动联网提问时，才把当月收支汇总、预算、Top5 分类与商户、最近 15 条账单发给 DeepSeek，其余情况不联网 |
-| 账单导入 | 粘贴导入（仅点击时读取一次剪贴板）、CSV 导入（OpenCSV）、PDF/XLSX 导入（SAF + PDFBox），自动识别支付宝/微信账单格式，导入结果按批次管理 |
+| 手动记账 | 支出/收入切换，分类联动，记录金额、商户、备注和日期时间 |
+| 账单管理 | 消费日历按日查看；账单编辑与删除；历史记录支持关键词、收支类型和月份筛选，并可按导入批次或全部清空 |
+| 预算管理 | 当月预算持久化，显示剩余金额；超支时切换为红色警示样式 |
+| 图表分析 | 每日支出折线图、分类支出柱状图、分类饼图、收支时间轴和商户消费排行 |
+| 月份联动 | 首页只列出已有账单的月份；选中的月份会持久化，并传递给明细、日历、排行及助手查询 |
+| 账单导入 | 支持粘贴文本、CSV、PDF、XLSX，适配常见微信/支付宝账单字段；导入结果按批次保存和管理 |
+| 中央学生助手 | 本地快捷问答、DeepSeek 流式对话、四类工具调用、确认后写入、状态展示和本机过程记录 |
+| 情绪球交互 | 首页和对话页展示 Emotion Ball，支持触摸视线跟随、手机姿态驱动和助手状态表情 |
+| 历史会话 | 会话与消息保存在 Room，支持新建、切换、重命名和删除；显示上下文占用，并支持记忆交接 |
 
-## 合规与隐私设计
+## 中央学生助手
 
-1. 剪贴板仅在用户点击「粘贴导入」按钮时读取一次，无后台监听、无启动读取
-2. 文件导入全部通过 SAF 系统文件选择器，**不申请** `MANAGE_EXTERNAL_STORAGE` 及任何存储权限
-3. 无爬虫、无障碍抓取、自动拉取微信/支付宝账单的任何逻辑
-4. 账单默认只存在本机 Room；只有用户主动发起联网问答时，才会把当月收支汇总、预算、Top5 分类与商户、最近 15 条账单发给 DeepSeek（AI 对话页由 `BillContextBuilder` 组装）；其余情况不联网、不上传；`allowBackup=false`，卸载或换机即丢账本
-5. 全部 10 个 Activity 锁定竖屏
+### 离线与联网行为
 
-## 环境配置
+- 「本月总支出」「预算剩余」「消费分类」「省钱建议」四个快捷问题由本地规则和 Room 数据作答，无需 API Key。
+- 帮助、商户排行等未被中央助手规划接管的本地意图可离线处理；未匹配且未配置 Key 的普通文本显示本地兜底提示。
+- 查账、AI 记账、运势和日记上下文等中央助手链路需要已测通的 DeepSeek Key；未配置时显示 `API_KEY` 错误，不伪造工具调用或账单结果。
+- 联网回复采用流式输出，文字状态分为「思考 / 调用工具 / 等待确认 / 出错」。
+- 语音输入已取消，当前输入方式为文字，不包含麦克风、系统语音识别或 Vosk 功能。
 
-| 项 | 要求 |
+### 工具与写入约束
+
+| 工具 | 作用 |
 |---|---|
-| Android Studio | Narwhal 或更新版本（内置 JBR 25 可直接构建） |
-| JDK | 构建用 Android Studio 内置 JBR 25 即可；要核对手册记录的 APK 哈希须用 **JDK 21.0.12.1**（不同 JDK 的 DEX 字节不同，见 TECHNICAL-DOC §5.1–5.2） |
-| Android SDK | Platform **API 37**（compileSdk 37）+ Build-Tools；建议同时安装 API 29+ 模拟器系统镜像 |
-| Gradle | 使用项目自带 Wrapper（**Gradle 9.6.0**，无需单独安装） |
-| 模拟器 | Medium Phone，API 29 及以上，1080×2400；建议 AVD Graphics 设为 **Hardware**（Software 软件渲染会明显卡顿） |
-| 真机 | Android 10（API 29）及以上，开启 USB 调试 |
+| `query_spend` | 只读查询本机账本，支持今天、本周、首页选中月份、自定义区间和全部历史，并可按商户或分类筛选 |
+| `propose_add_bill` | 生成待确认账单；只有用户在确认卡中同意后才写入 Room，并回读核对 |
+| `request_diary_context` | 申请引用应用私有目录中的日记文本；确认前不会把正文加入对话 |
+| `daily_fortune` | 生成今日运势、情绪晴雨表或轻量塔罗文案 |
 
-### 环境变量 / 本地配置模板
+涉及账单的回复会先查询真实账本；查询成功前，应用会拦截包含金额或笔数的模型回复。`query_spend` 的合计和分类汇总覆盖全部匹配记录，随请求发送的明细最多 20 条。
 
-项目本身不需要任何系统环境变量（JDK、SDK 由 Android Studio 管理）。首次构建前在项目根目录创建 `local.properties`：
+对话页提供「过程」入口，可查看本机 JSONL 中的 Prompt 版本与摘要、工具参数、状态、思考摘要、确认记录和写入回读结果。
+
+### DeepSeek 配置
+
+首次进入对话页且尚未配置密钥时，会打开 DeepSeek 密钥向导；也可点击右上角「API KEY」重新打开。
+
+1. 粘贴自己的 DeepSeek API Key。
+2. 点击「测通并保存」。应用会发送一次最小请求验证密钥，成功后保存。
+3. 开始联网问答；需要时可在向导中清除密钥。
+
+当前向导只连接 DeepSeek，默认配置为：
+
+```text
+Base URL: https://api.deepseek.com/chat/completions
+Model:    deepseek-chat
+```
+
+密钥不是 Gradle 属性或编译期环境变量，也不需要写入仓库。API Key 使用 Android Keystore 中的 AES/GCM 密钥加密，SharedPreferences 只保存密文和 IV。
+
+## 权限与隐私
+
+1. Manifest 仅申请 `android.permission.INTERNET`，用于密钥测通和联网助手；普通记账、导入、日历和图表功能不发起网络请求。
+2. 剪贴板仅在用户点击「粘贴导入」时读取一次，无后台监听或启动时读取。
+3. CSV、PDF、XLSX 均通过 SAF 系统文件选择器读取，不申请存储权限，不使用爬虫、无障碍服务或自动拉取微信/支付宝账单。
+4. 账单、导入批次、会话和记忆默认保存在本机 Room；`allowBackup=false`，不提供云同步，卸载应用会删除这些本机数据。
+5. 联网助手会向 DeepSeek 发送系统提示词、当前对话内容和生成回复所需的上下文。工具被调用后，相应结果也会进入后续请求，可能包括账单汇总、最多 20 条匹配明细、确认后的账目字段或经用户确认的日记文本；会话记忆提炼同样会发送当前对话文本。
+6. 过程日志保存在应用私有目录 `assistant/process/runtime/`，写入前会脱敏密钥，但仍可能包含账单字段或对话相关内容，不会自动同步到仓库。
+
+## 构建环境
+
+| 项目 | 要求 |
+|---|---|
+| Android Studio | Narwhal 或更新版本，使用与 AGP 9.4.0 兼容的内置 JBR |
+| Java | 源码和目标兼容性为 Java 17 |
+| Android SDK | Platform API 37 与相应 Build-Tools |
+| Gradle | 使用项目 Wrapper，版本 9.6.0，无需单独安装 |
+| 运行设备 | Android 10（API 29）及以上的模拟器或真机 |
+
+首次在本机通过命令行构建前，在项目根目录创建 `local.properties`：
 
 ```properties
-## local.properties 模板（该文件不入库，仅本机有效）
-## Android SDK 路径，按实际安装位置修改
 sdk.dir=C:\\Users\\<你的用户名>\\AppData\\Local\\Android\\Sdk
 ```
 
-AI 远程对话（可选）为**应用内运行时配置**，非编译期环境变量：进入「AI 消费助手」→ 右上角「API KEY」，填写：
-
-```text
-API KEY    : sk-xxxxxxxxxxxxxxxx        # 你的模型服务密钥，仅存本机 SharedPreferences
-Base URL   : https://api.example.com/v1/chat/completions   # OpenAI 兼容接口地址
-Model      : gpt-4o-mini                # 模型名
-```
-
-## 依赖清单
-
-| 依赖 | 版本 | 用途 |
-|---|---|---|
-| androidx.appcompat | 1.7.1 | 基础兼容组件 |
-| androidx.constraintlayout | 2.2.1 | 布局 |
-| androidx.recyclerview | 1.3.2 | 列表（对话、排行、历史、日历账单） |
-| androidx.room:room-runtime / room-compiler | 2.6.1 | Room 本地数据库（annotationProcessor） |
-| com.opencsv:opencsv | 5.9 | CSV 账单解析 |
-| com.tom-roush:pdfbox-android | 2.0.27.0 | PDF 账单文本提取 |
-| com.github.PhilJay:MPAndroidChart | v3.1.0 | 折线/柱状/饼图绘制（需 jitpack 仓库） |
-| junit | 4.13.2 | 单元测试（testImplementation） |
-
-仓库：`google()`、`mavenCentral()`、`https://jitpack.io`（已在 settings.gradle 配置，含对本机全局镜像脚本的兼容处理）。
+`local.properties` 已被 `.gitignore` 排除。也可以直接在 Android Studio 中配置 SDK，然后打开项目根目录并等待 Gradle Sync 完成。
 
 ## 构建与运行
 
+Windows PowerShell：
+
 ```powershell
-# Windows（项目根目录）
-.\gradlew.bat assembleDebug          # 构建 debug 包 → app\build\outputs\apk\debug\app-debug.apk
-.\gradlew.bat installDebug           # 构建并安装到已连接设备/模拟器
-.\gradlew.bat testDebugUnitTest      # 运行单元测试
+.\gradlew.bat assembleDebug
+.\gradlew.bat installDebug
+.\gradlew.bat testDebugUnitTest
 ```
+
+macOS / Linux：
 
 ```bash
-# macOS / Linux
-./gradlew assembleDebug installDebug testDebugUnitTest
+./gradlew assembleDebug
+./gradlew installDebug
+./gradlew testDebugUnitTest
 ```
 
-也可直接用 Android Studio 打开项目根目录，等待 Gradle Sync 完成后点击 Run。
+- `assembleDebug`：生成 `app/build/outputs/apk/debug/app-debug.apk`。
+- `installDebug`：安装到已连接并启用调试的设备或模拟器。
+- `testDebugUnitTest`：运行本地 JVM 单元测试。
+- 也可在 Android Studio 中点击 **Run** 构建并运行。
 
 ## 使用说明
 
-1. **记一笔**：主界面底部「手动记一笔」→ 选择支出/收入 → 填金额、分类、商户、日期时间 → 保存，主界面全部统计自动刷新
-2. **看图表**：主界面下滑查看每日消费折线与分类柱状图（图表内可左右拖动）；点击「查看消费明细」进入饼图 + 时间轴页
-3. **查日历**：主界面「消费日历」→ 点日期看当日收支与账单列表 → 每条账单可编辑/删除
-4. **设预算**：主界面预算输入框填写当月预算，超支后面板自动变为红白渐变警示
-5. **切月份**：图表区右上角「切换月份」，仅显示已有账单的月份
-6. **AI 助手**：主界面顶部「AI 消费建议」面板进入；账单类问题本地离线作答；配置 API KEY 后普通对话联网，只有用户主动发起联网问答时才会把当月收支汇总、预算、Top5 分类与商户、最近 15 条账单发给 DeepSeek，其余情况不联网
-7. **导入账单**：主界面底部「导入账单」→ 粘贴 / CSV / PDF·XLSX 三种方式；导入记录在「历史」页可按批次删除
+1. **录入账单**：点击「记一笔」手动录入，或进入「导入账单」选择粘贴、CSV、PDF/XLSX 导入。
+2. **设置预算**：在首页预算输入框填写金额，剩余与超支状态会随账单变化自动更新。
+3. **查看分析**：在首页切换月份并查看折线图、柱状图；进入收支明细、商户排行或消费日历查看更多数据。
+4. **管理历史**：在「历史」页搜索、筛选、编辑或删除账单，也可清除某个导入批次。
+5. **使用助手**：轻点首页情绪球进入对话。四个快捷问题可离线使用；联网工具链先完成 DeepSeek 密钥测通。
+6. **确认 AI 记账**：检查确认卡中的金额、分类和日期，确认后才写入；点击「过程」核对工具参数与回读结果。
+
+## 主要依赖
+
+| 依赖 | 版本 | 用途 |
+|---|---|---|
+| AndroidX AppCompat | 1.7.1 | 基础兼容组件 |
+| AndroidX ConstraintLayout | 2.2.1 | 布局 |
+| AndroidX RecyclerView | 1.3.2 | 账单、会话和排行列表 |
+| AndroidX Room Runtime / Compiler | 2.6.1 | 本地数据库与注解处理 |
+| OpenCSV | 5.9 | CSV 解析，支持 UTF-8 / GBK 检测 |
+| PDFBox Android (`com.tom-roush`) | 2.0.27.0 | PDF 文本提取 |
+| MPAndroidChart | v3.1.0 | 折线图、柱状图和饼图 |
+| JUnit | 4.13.2 | 单元测试 |
+| `org.json:json` | 20240303 | JVM 测试中的 JSON 支持 |
+
+XLSX 由项目内的 ZIP + XML 解析器处理，不依赖 Apache POI。依赖仓库为 `google()`、`mavenCentral()` 和 JitPack。
 
 ## 项目结构
 
+```text
+app/
+├── build.gradle                         # Android 配置、依赖与助手文档同步任务
+└── src/
+    ├── main/
+    │   ├── AndroidManifest.xml          # 权限、Application 与 10 个 Activity
+    │   ├── assets/
+    │   │   ├── assistant/               # Prompt、工具 schema、意图与情绪协议
+    │   │   └── emotion-ball/            # 本地 Emotion Ball WebView 资源与许可
+    │   ├── java/com/campusbill/app/
+    │   │   ├── MainActivity.java        # 首页、预算、图表、月份与情绪球
+    │   │   ├── *Activity.java           # 记账、编辑、日历、历史、导入、明细、排行、对话与过程页
+    │   │   ├── data/                    # Room 实体、DAO、数据库与账本访问
+    │   │   ├── imports/                 # 粘贴、CSV、PDF、XLSX 解析
+    │   │   ├── chart/                   # 图表渲染与自定义时间轴
+    │   │   ├── chat/ai/                 # 本地意图、DeepSeek 配置与流式客户端
+    │   │   ├── chat/ai/assistant/       # 助手控制、工具、确认、日记与过程日志
+    │   │   ├── chat/session/            # 会话持久化、上下文用量与记忆交接
+    │   │   └── ui/                      # 情绪球视线、布局和底部导航辅助
+    │   └── res/                         # XML 布局、样式、图标与文案
+    └── test/                            # JVM 单元测试
+docs/
+├── assistant/                           # 复现指南、演示、技术文档、协议与第三方许可
+└── PROJECT-INVENTORY.md                 # 项目全量识别报告
+prompt_evolution.md                      # Prompt 与需求演进记录
+Promat历史/                              # 历史提示词归档
 ```
-app/src/main/java/com/campusbill/app/
-├── MainActivity.java            # 主界面（预算/图表/入口聚合，onResume 自动刷新）
-├── AddBillActivity.java         # 记一笔        ├── EditBillActivity.java   # 编辑账单
-├── CalendarActivity.java        # 消费日历      ├── HistoryActivity.java    # 历史记录/导入批次
-├── ImportActivity.java          # 三种导入      ├── AiChatActivity.java     # AI 对话
-├── IncomeDetailActivity.java    # 收支明细（饼图+时间轴）
-├── MerchantRankActivity.java    # 商户排行
-├── data/                        # Room：BillEntity / BillDao / AppDatabase / DBHelper（单线程池+主线程回调）
-├── chart/                       # MPAndroidChart 封装、IncomeTimelineView 自定义时间轴
-├── chat/ai/                     # 本地规则引擎、AiRemoteClient（HttpURLConnection，仅 AI 页联网）
-└── parser/                      # 粘贴文本 / CSV / PDF / XLSX 解析与批次入库
-```
 
-## 界面预览
-
-| 主界面 | 消费明细 | 消费日历 | AI 助手 |
-|---|---|---|---|
-| ![main](screenshots/01_main_top.png) | ![detail](screenshots/03_expense_detail.png) | ![calendar](screenshots/04_calendar.png) | ![ai](screenshots/09_ai_chat.png) |
-
-更多截图见 [screenshots/](screenshots/) 目录。
+构建前，`syncAssistantDocs` 会把 `docs/assistant` 中的五份协议文件同步到 `app/src/main/assets/assistant`。
 
 ## 测试
 
-- 单元测试（三档口径）：工作树快照 7 类 49 项（`AiReplyTest`、`AssistantCoreTest`、`SessionRulesTest`、`AttitudeGazeMathTest`、`ChatBallFadeTest`、`ChatBallMetricsTest`、`ChatInputChromeTest`）；干净 `ae6d216` 仅 2 类 25 项（`AiReplyTest` 6 + `AssistantCoreTest` 19）；当前分支 HEAD 实测 8 类 51 项（四态预算修复新增 1 个测试方法），0 失败。复跑：`.\gradlew.bat testDebugUnitTest`
-- 已在 Android 17（API 37）模拟器完成全流程实机验证：181 条账单数据下增删改查、导入、月份切换、全部页面跳转与数据联动刷新均正常
+当前测试源码包含 **8 个测试类、51 个 `@Test`**，覆盖本地回复、助手核心规则、预算状态、会话规则、姿态视线计算、情绪球尺寸与淡出、输入区布局等。
 
-## 中央学生助手（比赛层）
+```powershell
+.\gradlew.bat testDebugUnitTest
+```
 
-本仓库在原有本地记账 App 上增加「中央学生助手」层，供比赛演示：同一工程、同一 Room 账本，不另开 App。密钥仅存本机 Keystore，不进仓库。
+完整复现、真机检查和演示流程见 [10 分钟极速复现指南](docs/assistant/REPRODUCE.md)。
 
-评委请按「10分钟极速复现指南」操作（含环境、依赖、变量模板、演示话术与过程页核对）：
+## 相关文档
 
-- [docs/assistant/REPRODUCE.md](docs/assistant/REPRODUCE.md) · 10分钟极速复现指南
-- [docs/assistant/env.example](docs/assistant/env.example) · 环境变量模板（无真实 Key）
-- [docs/assistant/THIRD_PARTY.md](docs/assistant/THIRD_PARTY.md) · 第三方许可（**Emotion Ball 球形造型不可商用**，须保留署名；离线语音为 Vosk Apache-2.0 与中文小模型）
-- [docs/assistant/SUBMISSION-CHECKLIST.md](docs/assistant/SUBMISSION-CHECKLIST.md) · 交赛材料清单
-- [docs/assistant/process/](docs/assistant/process/) · 决策 / Prompt / 工具参数 / 确认记录模板与归档
+- [项目全量识别报告](docs/PROJECT-INVENTORY.md)
+- [中央学生助手复现指南](docs/assistant/REPRODUCE.md)
+- [演示脚本](docs/assistant/DEMO-SCRIPT.md)
+- [技术文档（Markdown）](docs/assistant/TECHNICAL-DOC.md) / [技术文档（PDF）](docs/assistant/TECHNICAL-DOC.pdf)
+- [交赛材料清单](docs/assistant/SUBMISSION-CHECKLIST.md)
+- [助手 Prompt 与协议说明](docs/assistant/README.md)
+- [第三方许可与来源](docs/assistant/THIRD_PARTY.md)
 
-第一版演示分两段。**离线段（无 Key 也能跑，只用首页快捷芯片）**：点「本月总支出」看当月合计 → 手动记一笔 → 再点同一芯片看金额变化。**联网 AI 段（演示机须预置已测通的 DeepSeek Key 与可用网络）**：查本周花销 → `query_spend` → 确认后记一笔并回读 → 过程页留痕；无 Key 时该链在 `AssistantController` 处直接以「出错（API_KEY）」终止，不得伪造工具调用或金额。文字状态为「思考 / 调用工具 / 等待确认 / 出错」。
+## 第三方说明
+
+Emotion Ball 来源于 [sam70361/aora-bot](https://github.com/sam70361/aora-bot) 的 `emotion-ball` 分支，当前 vendored 资源对应 commit `f793bb445ebad66a1a19bae75b4c27b306d2f95e`，位于 `app/src/main/assets/emotion-ball/`。
+
+**该球形角色的造型、配色与特效仅用于学习和本比赛演示，不包含商业授权，也不提供商业授权。** 如需商用，必须移除该视觉或更换为自有/已获授权的形象。详细许可和其余依赖说明见 [THIRD_PARTY.md](docs/assistant/THIRD_PARTY.md)。
