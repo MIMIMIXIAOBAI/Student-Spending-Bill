@@ -16,6 +16,7 @@ import com.campusbill.app.CalendarActivity;
 import com.campusbill.app.HistoryActivity;
 import com.campusbill.app.MainActivity;
 import com.campusbill.app.R;
+import com.campusbill.app.data.SelectedMonthStore;
 
 public final class BottomTabHelper {
     private static final String EXTRA_MONTH = "extra_month";
@@ -64,10 +65,7 @@ public final class BottomTabHelper {
                 | Intent.FLAG_ACTIVITY_SINGLE_TOP
                 | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         if (target == Tab.CALENDAR || target == Tab.AI) {
-            String month = activity.getIntent().getStringExtra(EXTRA_MONTH);
-            if (month != null && !month.trim().isEmpty()) {
-                intent.putExtra(EXTRA_MONTH, month.trim());
-            }
+            intent.putExtra(EXTRA_MONTH, SelectedMonthStore.get(activity).toString());
         }
         activity.startActivity(intent);
         activity.overridePendingTransition(R.anim.tab_fade_in, R.anim.tab_fade_out);
