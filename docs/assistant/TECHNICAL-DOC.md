@@ -473,7 +473,7 @@ powershell -ExecutionPolicy Bypass -File docs\assistant\tech-doc\render.ps1
 5. 再打印第二版，用 pypdf 复核「回填后页数没有变化」，再盖页脚（`第 N 页 · 共 M 页`）。
 6. 用 pypdf 读页数、字节数、SHA-256，打印一行 JSON 统计；若页数不在 24–30，脚本以非零退出。
 
-需要说明可复现的粒度：PDF 的二进制 SHA-256 每次都会变（Edge 打印会在文件里写入创建时间与随机 `/ID`），字节数也会随字体子集与写入元数据小幅波动（本机多次完整渲染的字节数在 7.12–7.18 MB 之间波动，页数固定为 25 页），稳定的是**页数与全文文本指纹**。脚本末尾除 SHA-256 外还会打印一行 `text_sha`，它是对全文抽取文本算的哈希；要和本册核对，请比页数与 `text_sha`，而不是比二进制哈希。
+需要说明可复现的粒度：PDF 的二进制 SHA-256 每次都会变（Edge 打印会在文件里写入创建时间与随机 `/ID`），字节数也会随字体子集与写入元数据小幅波动（本机多次完整渲染的字节数在 7.0–7.2 MB 之间波动（随字体子集与打印元数据变化），页数固定为 25 页），稳定的是**页数与全文文本指纹**。脚本末尾除 SHA-256 外还会打印一行 `text_sha`，它是对全文抽取文本算的哈希；要和本册核对，请比页数与 `text_sha`，而不是比二进制哈希。
 
 版式设定：A4，正文按 10.5pt 排版（行高 1.62），左右页边距 18.5mm、上 18.6mm、下 20mm，正文四边实测均 ≥18mm；表格 8.85pt、代码 8.25pt 以容纳列宽。由于表格中含 64 字符 SHA-256 等不可断长串，Chromium 打印会按页面宽度等比适配（实测比例 0.881），PDF 内实测字号为正文 9.25pt、表格 7.84pt、代码 7.8pt；这是为同时满足「≤30 页」而做的取舍，四边距与页码位置不受影响（页码在页脚区，距底 8mm）。
 
@@ -598,7 +598,7 @@ powershell -ExecutionPolicy Bypass -File docs\assistant\tech-doc\render.ps1
 
 | 证据 | 取得命令 | 结果 |
 | --- | --- | --- |
-| 提交基线 | `git rev-parse HEAD` | `1de6d52c0d6dbdf6a81286c3b9dde33185110559`（代码树同 `966f41c`；`910041e`、`b2a2437` 仅改文档） |
+| 首次提交基线（三件套首次落库） | `git show -s --format=%H 1de6d52` | `1de6d52c0d6dbdf6a81286c3b9dde33185110559`（代码树同 `966f41c`；其后 `9e695a2`、`85a1ded` 等仅改文档，代码树与行号不变，当前 HEAD 以仓库为准） |
 | 单元测试类数 | 解析 XML（§5.2 脚本） | 8 |
 | 单元测试用例 | 同上 | 51（AiReplyTest 6、BillAnalysisUtilsTest 2、AssistantCoreTest 26、SessionRulesTest 5、AttitudeGazeMathTest 2、ChatBallFadeTest 3、ChatBallMetricsTest 4、ChatInputChromeTest 3） |
 | 失败/错误/跳过 | 同上 | 0 / 0 / 0 |
