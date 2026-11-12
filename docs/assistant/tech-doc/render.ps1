@@ -288,7 +288,7 @@ def convert(md_text):
 
 def page_html(body):
     return ('<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">'
-            '<title>中央学生助手技术文档</title><style>' + CSS + '</style></head><body>'
+            '<title>学生消费账单 App 项目技术分析报告</title><style>' + CSS + '</style></head><body>'
             + body + '</body></html>')
 
 def norm(s):
@@ -378,14 +378,14 @@ def cmd_stamp(pdf_in, pdf_out, raw1):
             page.insert_text((x, page.rect.height - 24), text,
                              fontname='helv', fontsize=8.5, color=(0.42, 0.42, 0.42))
     doc.set_metadata({
-        'title': '中央学生助手（CampusBill）技术文档',
+        'title': '学生消费账单 App（CampusBill）项目技术分析报告',
         'author': 'CampusBill',
         'subject': '意图控制、架构约束与可复现性论证',
         'keywords': 'CampusBill, DeepSeek, intent control, reproducibility',
         'creator': 'docs/assistant/tech-doc/render.ps1',
         'producer': 'render.ps1 (Edge --headless --print-to-pdf)',
-        'creationDate': "D:20261112000000+08'00'",
-        'modDate': "D:20261112000000+08'00'",
+        'creationDate': "D:20261113000000+08'00'",
+        'modDate': "D:20261113000000+08'00'",
     })
     doc.save(pdf_out, garbage=4, deflate=True)
     doc.close()
