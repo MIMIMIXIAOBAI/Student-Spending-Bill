@@ -382,7 +382,7 @@ DeepSeek 的 HTTP 结果被收成三类，不允许出现第四类（`FailureCla
 | 项 | 值 | 取得方式 |
 | --- | --- | --- |
 | 操作系统 | Windows 11 家庭版 中文版，NT 10.0.26200 | `[System.Environment]::OSVersion.VersionString` |
-| JDK | 21.0.12.1 LTS（2026-08-18） | `java -version` |
+| JDK | 21.0.12.1 LTS（2026-08-18）；`JAVA_HOME` 必须指向它，APK 记录值才成立 | `java -version` |
 | 构建工具 | Gradle wrapper 9.6.0（`gradle-9.6.0-bin.zip`，networkTimeout 10000） | `gradle/wrapper/gradle-wrapper.properties` |
 | Android SDK | `C:\Users\ZXM\AppData\Local\Android\Sdk` | `local.properties` 的 `sdk.dir` |
 | adb | 不在 PATH，需用 `%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe` | `adb version` 报「无法识别」 |
@@ -424,6 +424,8 @@ PY
 ```
 
 产物 `app/build/outputs/apk/debug/app-debug.apk`，本轮 26,702,585 字节，SHA-256 见 §1.3。注意 `assemble` 会先触发 `syncAssistantDocs`（`app/build.gradle:34-42`），所以 assets 里的协议文档与 docs 源一致是构建保证，不是手工同步的结果。
+
+APK 字节与 SHA-256 **依赖 Gradle 运行的 JDK**：上表数字在 `JAVA_HOME=jdk-21.0.12.1` 下成立；用 Android Studio 自带 JBR 25.0.3 构建同一提交，得到 26,702,517 字节 / `0A0085B0922E73E06675720D4B51A2AB85650ED2F10CF8956B89E09C642327B7`，差异只在 DEX 布局（classes3/4/5/7/9），其余 654 个 zip entry 相同，51 个单测均通过。核对记录值时须先确认 JDK，否则会误判为不可复现。
 
 **（3）安装到设备（可选）：**
 
@@ -501,6 +503,7 @@ powershell -ExecutionPolicy Bypass -File docs\assistant\tech-doc\render.ps1
 | --- | --- | --- | --- |
 | `gradlew` 报 SDK location not found | `local.properties` 缺 `sdk.dir` | 读 `local.properties`；Android Studio 首次打开会自动生成 | §5.1、`REPRODUCE.md` §1 |
 | 单测数量不是 51 | Gradle 复用了旧结果 | `gradlew testDebugUnitTest --rerun-tasks`，再看 XML 的 `timestamp` | §5.2、§6.2 |
+| APK 摘要与记录值不一致 | Gradle 运行在 JBR 25 而非 JDK 21.0.12.1 | `java -version`；JBR 25 预期 26,702,517 B / `0A0085B0…`，DEX 布局不同 | §5.1、§5.2 |
 | 无 Key 时对话一直「思考」不结束 | 走的是旧构建，或未进入控制器的本地分支 | 状态应停在「出错」；对照 `AssistantController.java:138-141` | §4.5 |
 | 问本月总支出，回复只有一句「我看看」 | 句子不在关键词表，planner 未命中 | 换成快捷芯片原句「本月总支出」再试 | §3.3 |
 | 说「记一笔」却不弹确认卡 | 金额缺失或小于 0.01 | 回复应是「还缺金额，我没有写入。」；对照 `AssistantController.java:359-367` | §4.2 |

@@ -11,7 +11,7 @@
 
 | 项 | 要求 |
 |---|---|
-| Android Studio | Narwhal 或更新（内含 JDK 17） |
+| Android Studio | Narwhal 或更新（内置 JBR 25 可直接构建；核对 APK 哈希须用 JDK 21.0.12.1，见 §8） |
 | SDK | Platform API 37 + Build-Tools；模拟器建议 API 29+、Graphics = Hardware |
 | Gradle | 使用仓库自带 Wrapper（无需单独安装） |
 | 本机文件 | 根目录创建 `local.properties`，写入 `sdk.dir=...`（该文件已 gitignore） |
@@ -130,6 +130,7 @@ cd "Student-Spending-Bill"
 ## 8. 自检清单
 
 - [ ] `assembleDebug` / `installDebug` 通过
+- [ ] APK 哈希核对前确认 `JAVA_HOME` 为 JDK 21.0.12.1：该口径下 26,702,585 B / `B5A4B949…B6CFC6`；JBR 25.0.3 构建为 26,702,517 B / `0A0085B0…`，仅 DEX 布局不同、功能等价
 - [ ] Key 向导测通，仓库内搜不到 Key
 - [ ] 「本周食堂」查询先走 `query_spend`，状态为「调用工具」、表情 `32` 或 `40`，不弹确认卡；流式回复里的数字来自本轮工具结果
 - [ ] 未指定时间或问历史/整体习惯/消费建议时走 `period=all`，合计和分类汇总完整，覆盖导入和手记的全部记录，与记账页同一本账
