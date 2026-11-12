@@ -26,7 +26,7 @@ public final class EmotionHooks {
     public static EmotionHooks load(String emotionMapMarkdown) {
         String thinking = "30";
         String tool = "32";
-        String awaiting = "35";
+        String awaiting = "03";
         String error = "34";
         if (emotionMapMarkdown != null) {
             Matcher matcher = HOOK.matcher(emotionMapMarkdown);
@@ -71,15 +71,38 @@ public final class EmotionHooks {
         }
     }
 
-    /** 结果态，不新增文字状态。 */
+    /**
+     * 只返回 aora-bot 两位 id。未知名字回 02，避免把英文状态名交给 setEmotion。
+     * listening=35 等待输入，thinking=30 思考中，streaming=39 输出回复，
+     * pleased=33 任务完成，number=19 满意，query_tool=40 检索资料，idle=02。
+     * 等待确认走 {@link #idFor} 的 03，不复用 35。
+     */
     public String idForScene(String scene) {
+        if ("listening".equals(scene)) {
+            return "35";
+        }
+        if ("thinking".equals(scene)) {
+            return thinking;
+        }
+        if ("streaming".equals(scene)) {
+            return "39";
+        }
+        if ("tool".equals(scene)) {
+            return tool;
+        }
+        if ("query_tool".equals(scene)) {
+            return "40";
+        }
         if ("pleased".equals(scene)) {
+            return "33";
+        }
+        if ("number".equals(scene)) {
             return "19";
         }
         if ("light".equals(scene)) {
             return "10";
         }
-        if ("concerned".equals(scene)) {
+        if ("concerned".equals(scene) || "error".equals(scene)) {
             return error;
         }
         return "02";

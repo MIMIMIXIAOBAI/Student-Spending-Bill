@@ -5,6 +5,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -46,12 +47,17 @@ public final class AssistantController {
         void onTranscript(String text);
 
         void onConfirmCard(String title, String body);
+
+        default void onUsage(int promptTokens, int completionTokens) {
+        }
     }
 
     private static final int MAX_ROUNDS = 4;
     private static final ZoneId SHANGHAI = ZoneId.of("Asia/Shanghai");
 
     private final LocalDate today;
+    private volatile YearMonth chartMonth;
+    private volatile String injectedMemory = "";
     private final BooleanSupplier hasKey;
     private final BillLedger ledger;
     private final String diaryText;
@@ -67,6 +73,9 @@ public final class AssistantController {
     private int rounds;
     private boolean plannerAllowed = true;
     private String transcript = "";
+    private String turnText = "";
+    private boolean needsLedger;
+    private boolean ledgerQueried;
     private ToolCall pending;
     private BillDraft pendingBill;
     private String pendingDiaryPurpose;
@@ -74,6 +83,7 @@ public final class AssistantController {
     public AssistantController(LocalDate today, BooleanSupplier hasKey, BillLedger ledger, String diaryText,
                                Docs docs, Streamer streamer, Consumer<String> log, Ui ui) {
         this.today = today;
+        this.chartMonth = YearMonth.from(today);
         this.hasKey = hasKey;
         this.ledger = ledger;
         this.diaryText = diaryText == null ? "" : diaryText;
@@ -82,6 +92,24 @@ public final class AssistantController {
         this.log = log == null ? line -> { } : log;
         this.ui = ui;
         this.emotions = EmotionHooks.load(docs.emotionMap());
+    }
+
+    /** 首页图表选中的月份。「今天」「这周」仍用构造时的日历日。 */
+    public void setInjectedMemory(String memory) {
+        injectedMemory = memory == null ? "" : memory.trim();
+    }
+
+    public void restoreTurns(List<ChatTurn> turns) {
+        messages.clear();
+        if (turns != null) {
+            messages.addAll(turns);
+        }
+    }
+
+    public void setChartMonth(YearMonth month) {
+        if (month != null) {
+            chartMonth = month;
+        }
     }
 
     public void start(String userText) {
@@ -100,6 +128,9 @@ public final class AssistantController {
         pendingBill = null;
         pendingDiaryPurpose = null;
         transcript = "";
+        turnText = userText == null ? "" : userText;
+        needsLedger = AssistantIntentPlanner.needsSpendQuery(turnText);
+        ledgerQueried = false;
         messages.add(ChatTurn.user(userText));
         log.accept(ProcessEvents.prompt(now(), docs.version(),
                 SystemPromptBody.sha256(docs.systemPromptBody())));
@@ -227,9 +258,16 @@ public final class AssistantController {
                 @Override
                 public void onContent(String chunk) {
                     live.append(chunk);
-                    ui.onTranscript(transcript.isEmpty() ? live.toString() : transcript + "\n" + live);
+                    String visible = transcript.isEmpty() ? live.toString() : transcript + "\n" + live;
+                    if (ReplyGate.withhold(needsLedger, ledgerQueried, visible)) {
+                        return;
+                    }
+                    ui.onTranscript(visible);
                 }
             });
+            if (result.promptTokens > 0 || result.completionTokens > 0) {
+                ui.onUsage(result.promptTokens, result.completionTokens);
+            }
             if (!result.think.isEmpty()) {
                 log.accept(ProcessEvents.think(now(), result.think));
             }
@@ -240,7 +278,7 @@ public final class AssistantController {
             }
             if (plannerAllowed) {
                 plannerAllowed = false;
-                List<ToolCall> planned = AssistantIntentPlanner.plan(userText, today);
+                List<ToolCall> planned = AssistantIntentPlanner.plan(userText, today, chartMonth);
                 if (!planned.isEmpty()) {
                     JSONArray names = new JSONArray();
                     for (ToolCall call : planned) {
@@ -279,13 +317,20 @@ public final class AssistantController {
             String result = execute(call);
             messages.add(ChatTurn.tool(call.id, result));
             if ("query_spend".equals(call.name)) {
-                SpendQuery.Result query = SpendQuery.run(ledger.all(), parseArgs(call.arguments), today);
-                log.accept(ProcessEvents.toolResult(now(), call.name,
-                        "total=" + query.total + " count=" + query.count));
-                if (replaceVisible || transcript.isEmpty()) {
-                    showOnly(query.summary());
+                if (querySucceeded(result)) {
+                    ledgerQueried = true;
+                    SpendQuery.Result query = SpendQuery.run(
+                            ledger.all(), spendArgs(call.arguments), today, chartMonth);
+                    log.accept(ProcessEvents.toolResult(now(), call.name,
+                            "total=" + query.total + " count=" + query.count));
+                    if (replaceVisible || transcript.isEmpty()) {
+                        showOnly(query.summary());
+                    } else {
+                        show(query.summary());
+                    }
                 } else {
-                    show(query.summary());
+                    log.accept(ProcessEvents.toolResult(now(), call.name, "error"));
+                    show("这次没有查成账本。");
                 }
             } else if ("daily_fortune".equals(call.name)) {
                 log.accept(ProcessEvents.toolResult(now(), call.name, "style"));
@@ -330,7 +375,7 @@ public final class AssistantController {
 
     private String execute(ToolCall call) throws JSONException {
         if ("query_spend".equals(call.name)) {
-            return SpendQuery.run(ledger.all(), parseArgs(call.arguments), today).json;
+            return SpendQuery.run(ledger.all(), spendArgs(call.arguments), today, chartMonth).json;
         }
         if ("daily_fortune".equals(call.name)) {
             String style = parseArgs(call.arguments).optString("style", "fortune");
@@ -375,6 +420,9 @@ public final class AssistantController {
         if (text == null || text.isEmpty()) {
             return;
         }
+        if (ReplyGate.withhold(needsLedger, ledgerQueried, text)) {
+            return;
+        }
         if (!transcript.isEmpty() && transcript.contains(text)) {
             return;
         }
@@ -383,13 +431,39 @@ public final class AssistantController {
     }
 
     private void showOnly(String text) {
+        if (ReplyGate.withhold(needsLedger, ledgerQueried, text)) {
+            return;
+        }
         transcript = text == null ? "" : text;
         ui.onTranscript(transcript);
+    }
+
+    /** 用户没点名时间时，把模型写成 this_week 的查账改成全部账本。 */
+    private JSONObject spendArgs(String arguments) throws JSONException {
+        JSONObject args = parseArgs(arguments);
+        if (AssistantIntentPlanner.wantsEntireLedger(turnText)) {
+            args.put("period", "all");
+            args.remove("start_date");
+            args.remove("end_date");
+        }
+        return args;
+    }
+
+    private static boolean querySucceeded(String json) {
+        try {
+            return !new JSONObject(json).has("error");
+        } catch (JSONException e) {
+            return false;
+        }
     }
 
     private List<ChatTurn> withSystem() {
         List<ChatTurn> all = new ArrayList<>();
         all.add(ChatTurn.system(docs.systemPromptBody()));
+        if (injectedMemory != null && !injectedMemory.isEmpty()) {
+            all.add(ChatTurn.system("上一会话要点：\n" + injectedMemory
+                    + "\n只使用其中已经写出的事实，不要假装记得没有写入的内容。日记仍须先请求确认。"));
+        }
         all.addAll(messages);
         return all;
     }

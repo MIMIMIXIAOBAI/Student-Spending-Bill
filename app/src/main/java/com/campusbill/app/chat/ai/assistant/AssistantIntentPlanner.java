@@ -21,15 +21,25 @@ public final class AssistantIntentPlanner {
     private AssistantIntentPlanner() {
     }
 
+    private static final Pattern NAMED_YEAR_MONTH =
+            Pattern.compile("(\\d{4})[-/.年](\\d{1,2})");
+    private static final Pattern NAMED_MONTH =
+            Pattern.compile("(?<!\\d)(\\d{1,2})月");
+
     public static List<ToolCall> plan(String text, LocalDate today) {
+        return plan(text, today, YearMonth.from(today));
+    }
+
+    public static List<ToolCall> plan(String text, LocalDate today, YearMonth chartMonth) {
         try {
-            return planChecked(text, today);
+            return planChecked(text, today, chartMonth == null ? YearMonth.from(today) : chartMonth);
         } catch (JSONException e) {
             return new ArrayList<>();
         }
     }
 
-    private static List<ToolCall> planChecked(String text, LocalDate today) throws JSONException {
+    private static List<ToolCall> planChecked(String text, LocalDate today, YearMonth chartMonth)
+            throws JSONException {
         List<ToolCall> calls = new ArrayList<>();
         if (text == null || text.trim().isEmpty()) {
             return calls;
@@ -38,7 +48,8 @@ public final class AssistantIntentPlanner {
         boolean query = isQuery(input);
         boolean bill = isBill(input);
         if (query) {
-            calls.add(new ToolCall("call_plan_query", "query_spend", queryArgs(input, today)));
+            calls.add(new ToolCall("call_plan_query", "query_spend",
+                    queryArgs(input, today, chartMonth)));
         }
         if (bill) {
             calls.add(new ToolCall("call_plan_bill", "propose_add_bill", billArgs(input, today)));
@@ -56,18 +67,117 @@ public final class AssistantIntentPlanner {
         return calls;
     }
 
-    private static boolean isQuery(String text) {
-        if (text.contains("本月总支出") || text.contains("预算")) {
+    /** 这类问题本轮必须先成功查账，金额才可以出现在回复里。 */
+    public static boolean needsSpendQuery(String text) {
+        if (text == null || text.trim().isEmpty()) {
             return false;
         }
-        boolean week = text.contains("这周") || text.contains("本周")
+        return isQuery(text.trim());
+    }
+
+    /**
+     * 用户没有点名时间，或是在问历史、整体习惯、消费建议时，查全部账本。
+     * 点了这周、今天、当月或具体月份时，沿用那个区间。
+     */
+    public static boolean wantsEntireLedger(String text) {
+        if (text == null || text.trim().isEmpty()) {
+            return false;
+        }
+        return !hasExplicitWindow(text.trim());
+    }
+
+    private static boolean isQuery(String text) {
+        if (isOfflineShortcut(text) || isHowTo(text)) {
+            return false;
+        }
+        if (isFortune(text) && !mentionsSpend(text) && !mentionsLedger(text)) {
+            return false;
+        }
+        if (mentionsLedger(text) || importedLedger(text)) {
+            return true;
+        }
+        if (text.contains("历史") && (mentionsSpend(text) || text.contains("账"))) {
+            return true;
+        }
+        if (text.contains("习惯") && (mentionsSpend(text) || text.contains("账")
+                || text.contains("整体"))) {
+            return true;
+        }
+        if (text.contains("建议") && (mentionsSpend(text) || text.contains("账"))) {
+            return true;
+        }
+        boolean spend = mentionsSpend(text);
+        return (isWeek(text) && spend) || (isToday(text) && spend) || (text.contains("食堂") && spend)
+                || ((isSelectedMonthWords(text) || namedMonth(text) != null) && spend)
+                || spend;
+    }
+
+    /** 首页快捷句继续走本地账本，不改成必须联网的 query_spend。 */
+    private static boolean isOfflineShortcut(String text) {
+        return text.contains("本月总支出") || text.contains("预算")
+                || "省钱建议".equals(text) || "消费分类".equals(text);
+    }
+
+    private static boolean isHowTo(String text) {
+        return text.contains("怎么导入") || text.contains("如何导入")
+                || text.contains("怎么记账") || text.contains("如何记账");
+    }
+
+    private static boolean mentionsSpend(String text) {
+        return text.contains("花") || text.contains("支出") || text.contains("消费")
+                || text.contains("开支") || text.contains("多少");
+    }
+
+    private static boolean mentionsLedger(String text) {
+        return text.contains("账单") || text.contains("账本") || text.contains("流水");
+    }
+
+    private static boolean importedLedger(String text) {
+        return text.contains("导入") && (text.contains("账") || text.contains("花")
+                || text.contains("支出") || text.contains("消费") || text.contains("记录")
+                || text.contains("历史"));
+    }
+
+    private static boolean isWeek(String text) {
+        return text.contains("这周") || text.contains("本周")
                 || text.contains("这个星期") || text.contains("本星期");
-        boolean today = text.contains("今天") || text.contains("今日");
-        boolean canteen = text.contains("食堂");
-        boolean spend = text.contains("花") || text.contains("支出")
-                || text.contains("消费") || text.contains("多少");
-        return (week && spend) || (today && spend && !text.contains("运势") && !text.contains("塔罗")
-                && !text.contains("晴雨")) || (canteen && spend);
+    }
+
+    private static boolean isToday(String text) {
+        return text.contains("今天") || text.contains("今日");
+    }
+
+    private static boolean hasExplicitWindow(String text) {
+        return isWeek(text) || isToday(text) || isSelectedMonthWords(text)
+                || namedMonth(text) != null;
+    }
+
+    private static boolean isSelectedMonthWords(String text) {
+        return text.contains("当月") || text.contains("本月") || text.contains("这个月");
+    }
+
+    static YearMonth namedMonth(String text, YearMonth chartMonth, LocalDate today) {
+        Matcher full = NAMED_YEAR_MONTH.matcher(text);
+        if (full.find()) {
+            int year = Integer.parseInt(full.group(1));
+            int month = Integer.parseInt(full.group(2));
+            if (month >= 1 && month <= 12) {
+                return YearMonth.of(year, month);
+            }
+        }
+        Matcher bare = NAMED_MONTH.matcher(text);
+        if (bare.find()) {
+            int month = Integer.parseInt(bare.group(1));
+            if (month >= 1 && month <= 12) {
+                int year = chartMonth != null ? chartMonth.getYear() : today.getYear();
+                return YearMonth.of(year, month);
+            }
+        }
+        return null;
+    }
+
+    private static YearMonth namedMonth(String text) {
+        return namedMonth(text, null, LocalDate.now());
     }
 
     private static boolean isBill(String text) {
@@ -95,22 +205,22 @@ public final class AssistantIntentPlanner {
         return "fortune";
     }
 
-    private static String queryArgs(String text, LocalDate today) throws JSONException {
+    private static String queryArgs(String text, LocalDate today, YearMonth chartMonth)
+            throws JSONException {
         JSONObject args = new JSONObject();
-        boolean week = text.contains("这周") || text.contains("本周")
-                || text.contains("这个星期") || text.contains("本星期");
-        boolean todayWord = text.contains("今天") || text.contains("今日");
-        if (week) {
+        YearMonth named = namedMonth(text, chartMonth, today);
+        if (isWeek(text)) {
             args.put("period", "this_week");
-        } else if (todayWord) {
+        } else if (isToday(text) && !isSelectedMonthWords(text) && named == null) {
             args.put("period", "today");
-        } else if (text.contains("本月") || text.contains("这个月")) {
-            YearMonth month = YearMonth.from(today);
+        } else if (named != null) {
             args.put("period", "custom");
-            args.put("start_date", month.atDay(1).toString());
-            args.put("end_date", month.atEndOfMonth().toString());
+            args.put("start_date", named.atDay(1).toString());
+            args.put("end_date", named.atEndOfMonth().toString());
+        } else if (isSelectedMonthWords(text)) {
+            args.put("period", "chart_month");
         } else {
-            args.put("period", "this_week");
+            args.put("period", "all");
         }
         args.put("type", "expense");
         if (text.contains("食堂")) {

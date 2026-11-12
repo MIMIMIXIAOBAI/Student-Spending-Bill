@@ -8,6 +8,7 @@ import com.campusbill.app.chat.ai.AiConfig;
 import com.campusbill.app.chat.ai.DeepSeekStreamClient;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -21,6 +22,9 @@ public final class AssistantHost {
         void onTranscript(String text);
 
         void onConfirmCard(String title, String body);
+
+        default void onUsage(int promptTokens, int completionTokens) {
+        }
     }
 
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -29,6 +33,10 @@ public final class AssistantHost {
     private final AssistantController controller;
 
     public AssistantHost(Context context, Surface surface) {
+        this(context, YearMonth.now(), surface);
+    }
+
+    public AssistantHost(Context context, YearMonth chartMonth, Surface surface) {
         AssistantController.Docs documents;
         try {
             documents = AssistantDocuments.load(context);
@@ -62,7 +70,25 @@ public final class AssistantHost {
                     public void onConfirmCard(String title, String body) {
                         main.post(() -> surface.onConfirmCard(title, body));
                     }
+
+                    @Override
+                    public void onUsage(int promptTokens, int completionTokens) {
+                        main.post(() -> surface.onUsage(promptTokens, completionTokens));
+                    }
                 });
+        controller.setChartMonth(chartMonth);
+    }
+
+    public void setChartMonth(YearMonth month) {
+        controller.setChartMonth(month);
+    }
+
+    public void setInjectedMemory(String memory) {
+        controller.setInjectedMemory(memory);
+    }
+
+    public void restoreTurns(java.util.List<ChatTurn> turns) {
+        controller.restoreTurns(turns);
     }
 
     public boolean startOrIgnore(String text, Runnable onIgnored) {

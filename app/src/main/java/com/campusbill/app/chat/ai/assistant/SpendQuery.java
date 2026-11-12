@@ -5,6 +5,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -29,6 +30,9 @@ public final class SpendQuery {
         }
 
         public String summary() {
+            if (count == 0) {
+                return "没有匹配的账单。";
+            }
             return String.format(Locale.US, "查询结果：¥%.2f，共 %d 笔（%s 至 %s）。",
                     total, count, periodStart, periodEnd);
         }
@@ -38,22 +42,32 @@ public final class SpendQuery {
     }
 
     public static Result run(List<LedgerBill> bills, JSONObject args, LocalDate today) {
+        return run(bills, args, today, YearMonth.from(today));
+    }
+
+    public static Result run(List<LedgerBill> bills, JSONObject args, LocalDate today,
+                             YearMonth chartMonth) {
         try {
-            return runChecked(bills, args, today);
+            return runChecked(bills, args, today,
+                    chartMonth == null ? YearMonth.from(today) : chartMonth);
         } catch (JSONException e) {
             return new Result(0, 0, "", "", "{\"error\":\"json\"}");
         }
     }
 
-    private static Result runChecked(List<LedgerBill> bills, JSONObject args, LocalDate today)
-            throws JSONException {
+    private static Result runChecked(List<LedgerBill> bills, JSONObject args, LocalDate today,
+                                     YearMonth chartMonth) throws JSONException {
         JSONObject query = args == null ? new JSONObject() : args;
         String period = query.optString("period", "this_week");
-        LocalDate start;
-        LocalDate end;
+        boolean entire = "all".equals(period);
+        LocalDate start = null;
+        LocalDate end = null;
         if ("today".equals(period)) {
             start = today;
             end = today;
+        } else if ("chart_month".equals(period) || "this_month".equals(period)) {
+            start = chartMonth.atDay(1);
+            end = chartMonth.atEndOfMonth();
         } else if ("custom".equals(period)) {
             try {
                 start = LocalDate.parse(query.getString("start_date"));
@@ -61,7 +75,7 @@ public final class SpendQuery {
             } catch (Exception e) {
                 return error("custom 需要 start_date 与 end_date");
             }
-        } else {
+        } else if (!entire) {
             WeekRange week = WeekRange.of(today);
             start = week.start;
             end = week.end;
@@ -73,7 +87,7 @@ public final class SpendQuery {
         List<LedgerBill> matched = new ArrayList<>();
         if (bills != null) {
             for (LedgerBill bill : bills) {
-                if (bill == null || !inRange(bill.date, start, end) || !typeMatches(bill, type)) {
+                if (bill == null || !inRange(bill.date, start, end, entire) || !typeMatches(bill, type)) {
                     continue;
                 }
                 if (textMatches(bill, merchantKw, categoryKw)) {
@@ -89,11 +103,26 @@ public final class SpendQuery {
             cents += Math.round(bill.amount * 100.0);
         }
         double total = cents / 100.0;
+        String periodStart = start == null ? "" : start.toString();
+        String periodEnd = end == null ? "" : end.toString();
+        if (entire) {
+            periodStart = "";
+            periodEnd = "";
+            for (LedgerBill bill : matched) {
+                String date = bill.date;
+                if (periodStart.isEmpty() || date.compareTo(periodStart) < 0) {
+                    periodStart = date;
+                }
+                if (periodEnd.isEmpty() || date.compareTo(periodEnd) > 0) {
+                    periodEnd = date;
+                }
+            }
+        }
         JSONObject root = new JSONObject();
         root.put("total", total);
         root.put("count", matched.size());
-        root.put("period_start", start.toString());
-        root.put("period_end", end.toString());
+        root.put("period_start", periodStart);
+        root.put("period_end", periodEnd);
         root.put("by_category", group(matched, true));
         root.put("by_merchant", group(matched, false));
         JSONArray items = new JSONArray();
@@ -109,7 +138,7 @@ public final class SpendQuery {
                     .put("remark", safe(bill.remark)));
         }
         root.put("items", items);
-        return new Result(total, matched.size(), start.toString(), end.toString(), root.toString());
+        return new Result(total, matched.size(), periodStart, periodEnd, root.toString());
     }
 
     private static Result error(String message) throws JSONException {
@@ -117,9 +146,12 @@ public final class SpendQuery {
         return new Result(0, 0, "", "", json);
     }
 
-    private static boolean inRange(String date, LocalDate start, LocalDate end) {
+    private static boolean inRange(String date, LocalDate start, LocalDate end, boolean entire) {
         try {
             LocalDate value = LocalDate.parse(date);
+            if (entire) {
+                return true;
+            }
             return !value.isBefore(start) && !value.isAfter(end);
         } catch (Exception e) {
             return false;

@@ -6,6 +6,7 @@ import com.campusbill.app.data.BillEntity;
 import com.campusbill.app.data.CategoryAmount;
 import com.campusbill.app.data.DBHelper;
 import com.campusbill.app.data.MerchantAmount;
+import com.campusbill.app.data.SelectedMonthStore;
 
 import java.time.YearMonth;
 import java.util.List;
@@ -36,15 +37,21 @@ public final class BillContextBuilder {
      * 数据为空时返回「暂无账单记录」的说明，保证远程请求不被阻塞。
      */
     public static void build(Context context, Callback callback) {
-        String month = YearMonth.now().toString();
+        build(context, SelectedMonthStore.get(context).toString(), callback);
+    }
+
+    public static void build(Context context, String month, Callback callback) {
+        final String selected = month == null || month.trim().isEmpty()
+                ? SelectedMonthStore.get(context).toString()
+                : month.trim();
         DBHelper db = DBHelper.getInstance(context);
 
-        db.sumAmountByMonthAndType(month, BillEntity.TYPE_EXPENSE,
+        db.sumAmountByMonthAndType(selected, BillEntity.TYPE_EXPENSE,
                 new DBHelper.DataCallback<Double>() {
                     @Override
                     public void onSuccess(Double expense) {
                         double totalExpense = expense == null ? 0 : expense;
-                        fetchIncome(context, db, month, totalExpense, callback);
+                        fetchIncome(context, db, selected, totalExpense, callback);
                     }
 
                     @Override
@@ -131,9 +138,11 @@ public final class BillContextBuilder {
                                    double budget, List<CategoryAmount> categories,
                                    List<MerchantAmount> merchants, List<BillEntity> bills) {
         StringBuilder sb = new StringBuilder();
-        sb.append("以下是用户").append(month).append("的真实账单数据，请基于它回答：\n");
-        sb.append(String.format(Locale.CHINA, "本月总支出：%.2f 元；总收入：%.2f 元。\n",
-                totalExpense, totalIncome));
+        sb.append("以下是用户选定月份 ").append(month).append(" 的真实账单数据，请基于它回答。\n");
+        sb.append("当用户说「当月」「本月」「这个月」时，都是指 ")
+                .append(month).append("，不是手机日历上的当前月。\n");
+        sb.append(String.format(Locale.CHINA, "%s 总支出：%.2f 元；总收入：%.2f 元。\n",
+                month, totalExpense, totalIncome));
         if (budget > 0) {
             double remain = budget - totalExpense;
             sb.append(String.format(Locale.CHINA, "本月预算：%.2f 元，剩余：%.2f 元%s。\n",
