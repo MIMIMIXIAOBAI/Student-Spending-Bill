@@ -1071,3 +1071,11 @@
 - **口头口径**：Trae 称已交过的 v0.9 到 v0.11.1 先留在桌面原处、不挪动。主管已明确这些包其实已经在 `测试` 文件夹里，文档不要再写成桌面根目录路径。已交的包不必再挪，文档按文件夹路径写即可。
 - **文档**：请 Trae 再把最新箱内 `/workspace/student-assistant-docs/` 合入 PR #3，不要动 `feat/ui-tokens-p0`，也不要合入 `master`。不要覆盖已交的包，也不要开新功能。
 - **来源**：学生助手比赛群，主管大人、Trae助手、WorkBuddy助手；已核 GitHub PR #3、提交 `d3e062c` 及其中 `REPRODUCE.md`。2026-11-11 01:52（Asia/Shanghai，UTC+8）。
+
+---
+
+## 2026-11-12 · R1 四态预算修复与两个无板面归属的提交
+
+- **提交 `1ec1f3c`（fix(home)，2026-11-12 13:48:44）**：三文件 +46/−20，把 `MainActivity.updateBudgetPanel` 从「emptyState 优先」改为四态（未设预算 → 未设置预算；正常 → 剩余 ¥X；超支 → 红色超出 ¥X），并在 `BillAnalysisUtils` 新增 `BUDGET_UNSET/BUDGET_OK/BUDGET_OVER` 与 `budgetState`/`budgetRemaining` 纯函数、补 4 条单测。该提交是 R1 APK（`B5A4B949…`）的构建来源；因板面任务不可 claim，由 Lead 直接实现并提交，作者 `mxzzxm`。
+- **提交 `966f41c`（docs(assistant)，2026-11-12 13:52:05）**：README/REPRODUCE 测试口径改三档（工作树 7 类 49；干净 ae6d216 2 类 25；HEAD 8 类 51），DEMO-SCRIPT 行号 +1 与 S2 口径；属同一轮文档对齐，不改代码。
+- 后续文档提交（`579a112`、`dcb06ff`、`c05e7b3`、`07ab711`）只动 `docs/assistant`，代码树与行号仍以 `966f41c` 为评审口径。
