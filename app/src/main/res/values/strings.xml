@@ -15,6 +15,7 @@
     <string name="budget_hint">请输入本月预算</string>
     <string name="label_total_budget">总预算</string>
     <string name="label_remaining">预算剩余</string>
+    <string name="label_budget_unset">未设置预算</string>
     <string name="label_over">超出</string>
     <string name="currency_format">¥%1$s</string>
 
@@ -96,7 +97,7 @@
     <string name="edit_save_success">修改成功</string>
     <string name="edit_save_failed">保存失败，请重试</string>
     <string name="edit_load_failed">账单不存在或已被删除</string>
-    <string name="edit_privacy_tip">账单数据仅存本机，不会上传到任何服务器</string>
+    <string name="edit_privacy_tip">账单默认只存在本机；只有你主动发起联网问答时，才会把当月收支汇总、预算、Top5 分类与商户、最近 15 条账单发给 DeepSeek，其余情况不联网。</string>
     <string name="add_bill_title">记一笔</string>
     <string name="add_bill_save_success">保存成功</string>
 
@@ -108,12 +109,26 @@
     <string name="chat_back">‹</string>
     <string name="chat_input_hint">说说你的消费困惑…</string>
     <string name="chat_send">发送</string>
-    <string name="chat_welcome">你好，我是中央学生助手。\n查本周花销、确认后记账，都在这个对话里完成。DeepSeek 密钥只进本机 Keystore。\n下面的快捷问题仍在本机计算。</string>
+    <string name="chat_new">新建对话</string>
+    <string name="chat_history">历史</string>
+    <string name="chat_context_percent">上下文 %1$d%%</string>
+    <string name="chat_memory_tip">已带入上次的关键记忆</string>
+    <string name="chat_rename">重命名</string>
+    <string name="chat_delete">删除</string>
+    <string name="chat_delete_confirm">删除这条对话？</string>
+    <string name="chat_rename_title">重命名对话</string>
+    <string name="chat_untitled">新对话</string>
+    <string name="chat_welcome">你好，我是中央学生助手。\n查本周花销、确认后记账，都在这个对话里完成。DeepSeek 密钥只进本机 Keystore。\n只有你主动发起联网问答时，才会把当月收支汇总发给 DeepSeek。\n下面的快捷问题仍在本机计算。</string>
     <string name="assistant_confirm_ok">确认记下</string>
     <string name="assistant_confirm_diary">允许引用</string>
     <string name="assistant_confirm_cancel">取消</string>
     <string name="assistant_busy">请先确认或取消当前这一步</string>
     <string name="assistant_retry">重试</string>
+    <string name="assistant_hold_talk">按住说话</string>
+    <string name="assistant_hold_release">松开结束</string>
+    <string name="assistant_voice_fail">未识别到内容</string>
+    <string name="assistant_voice_mic">无麦克风权限</string>
+    <string name="assistant_voice_none">引擎不可用</string>
     <string name="assistant_process_entry">过程</string>
     <string name="assistant_process_title">过程记录</string>
     <string name="assistant_process_hint">这里是本机留痕：Prompt 版本、工具参数、确认和回读。密钥不会出现在这些记录里。</string>
@@ -132,7 +147,7 @@
     <!-- API KEY 设置 -->
     <string name="api_key_entry">密钥</string>
     <string name="deepseek_wizard_title">DeepSeek 密钥</string>
-    <string name="deepseek_wizard_hint">只连接 DeepSeek。密钥测通后写入本机 Android Keystore，不会进仓库，也不会出现在过程记录里。</string>
+    <string name="deepseek_wizard_hint">只连接 DeepSeek。密钥测通后写入本机 Android Keystore，不会进仓库，也不会出现在过程记录里。问答外发范围见隐私说明。</string>
     <string name="deepseek_key_hint">粘贴 DeepSeek API Key</string>
     <string name="deepseek_test_save">测通并保存</string>
     <string name="deepseek_testing">正在测通…</string>
@@ -196,7 +211,7 @@
     <string name="import_parsing">正在读取并解析文件…</string>
     <string name="import_paste">粘贴导入</string>
     <string name="import_pdf_xlsx">导入 PDF / XLSX</string>
-    <string name="import_privacy_tip">账单数据仅存本机，不会上传到任何服务器</string>
+    <string name="import_privacy_tip">账单默认只存在本机；只有你主动发起联网问答时，才会把当月收支汇总、预算、Top5 分类与商户、最近 15 条账单发给 DeepSeek，其余情况不联网。</string>
     <string name="import_read_failed">文件读取失败，请重试</string>
     <string name="import_result_format">导入完成：成功 %1$d 条，失败 %2$d 条</string>
     <string name="import_result_title">导入结果</string>

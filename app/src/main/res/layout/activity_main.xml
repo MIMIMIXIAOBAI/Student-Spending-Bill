@@ -65,12 +65,14 @@
                 android:textColor="@color/text_secondary"
                 android:textSize="@dimen/text_subtitle" />
 
-            <!-- 首页情绪球：替换原「AI消费建议」卡，宽度与其它首页卡对齐。 -->
+            <!-- 首页情绪球白卡：左右 16dp（页边距 20dp 再收回 4dp），高 260dp，不超过 300dp。 -->
             <FrameLayout
                 android:id="@+id/panelAi"
                 android:layout_width="match_parent"
-                android:layout_height="160dp"
+                android:layout_height="260dp"
+                android:layout_marginStart="-4dp"
                 android:layout_marginTop="@dimen/space_xl"
+                android:layout_marginEnd="-4dp"
                 android:background="@drawable/bg_card"
                 android:contentDescription="@string/assistant_emotion_license">
 

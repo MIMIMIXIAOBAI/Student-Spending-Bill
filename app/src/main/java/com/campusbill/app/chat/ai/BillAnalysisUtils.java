@@ -119,6 +119,11 @@ public final class BillAnalysisUtils {
         return prefs(context).getFloat(KEY_BUDGET, 0f);
     }
 
+    /** 是否已设置月度预算；预算 <= 0 视为未设置，首页走中性展示而不是超支 */
+    public static boolean hasBudget(double budget) {
+        return budget > 0;
+    }
+
     /** 保存月度预算到本机 */
     public static void saveBudget(Context context, double budget) {
         prefs(context).edit().putFloat(KEY_BUDGET, (float) budget).apply();
