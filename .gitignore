@@ -12,6 +12,7 @@ captures/
 *.jks
 *.keystore
 secrets.properties
+keystore.properties
 
 # 过程留痕：本机原始日志（可能含明细或调试信息）
 docs/assistant/process/runtime/

@@ -10,7 +10,7 @@
 |---|---|
 | 应用名称 | 学生消费账单 |
 | 包名 | `com.campusbill.app` |
-| 版本 | `versionCode 1` / `versionName 1.0` |
+| 版本 | `versionCode 2` / `versionName 2.0` |
 | 开发语言 | 纯 Java，源码与目标兼容性均为 Java 17，无 Kotlin 代码 |
 | UI | XML 布局 + ViewBinding；10 个 Activity 均锁定竖屏 |
 | 本地数据 | Room 数据库 `student_bill.db`，保存账单、导入批次、会话、消息与会话记忆 |
