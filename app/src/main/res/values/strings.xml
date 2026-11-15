@@ -214,6 +214,7 @@
     <string name="import_privacy_tip">账单默认只存在本机；只有你主动发起联网问答时，才会把当月收支汇总、预算、Top5 分类与商户、最近 15 条账单发给 DeepSeek，其余情况不联网。</string>
     <string name="import_read_failed">文件读取失败，请重试</string>
     <string name="import_result_format">导入完成：成功 %1$d 条，失败 %2$d 条</string>
+    <string name="import_result_format_dedup">导入完成：成功 %1$d 条，跳过重复 %2$d 条，失败 %3$d 条</string>
     <string name="import_result_title">导入结果</string>
     <string name="import_title">导入账单</string>
     <string name="main_empty_hint">暂无账单数据，请先导入账单</string>

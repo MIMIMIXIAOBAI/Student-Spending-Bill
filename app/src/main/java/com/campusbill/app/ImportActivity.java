@@ -17,6 +17,7 @@ import com.campusbill.app.R.string;
 import com.campusbill.app.data.BillEntity;
 import com.campusbill.app.data.CategoryClassifier;
 import com.campusbill.app.data.DBHelper;
+import com.campusbill.app.data.ImportBatchResult;
 import com.campusbill.app.databinding.ActivityImportBinding;
 import com.campusbill.app.ui.PressScaleHelper;
 import com.campusbill.app.imports.BillCsvParser;
@@ -133,7 +134,7 @@ public class ImportActivity extends AppCompatActivity {
                   ImportResult result = (new BillCsvParser()).parse(in);
                   this.runOnUiThread(() -> {
                      if (result.bills.isEmpty()) {
-                        this.showResult(0, result.failed);
+                        this.showResult(0, 0, result.failed);
                      } else {
                         this.saveBills(result, name, "CSV");
                      }
@@ -218,10 +219,11 @@ public class ImportActivity extends AppCompatActivity {
       for (BillEntity bill : result.bills) {
          bill.category = CategoryClassifier.classify(bill.type, bill.category, bill.merchant, bill.remark);
       }
-      DBHelper.getInstance(this).insertBatch(batchName, source, result.bills, new DBHelper.DataCallback<Integer>() {
-         public void onSuccess(Integer rows) {
-            int success = rows == null ? 0 : rows;
-            ImportActivity.this.showResult(success, result.failed);
+      DBHelper.getInstance(this).insertBatch(batchName, source, result.bills, new DBHelper.DataCallback<ImportBatchResult>() {
+         public void onSuccess(ImportBatchResult res) {
+            int success = res == null ? 0 : res.inserted;
+            int skipped = res == null ? 0 : res.skipped;
+            ImportActivity.this.showResult(success, skipped, result.failed);
          }
 
          public void onError(Exception e) {
@@ -230,8 +232,8 @@ public class ImportActivity extends AppCompatActivity {
       });
    }
 
-   private void showResult(int success, int failed) {
-      (new AlertDialog.Builder(this)).setTitle(string.import_result_title).setMessage(this.getString(string.import_result_format, new Object[]{success, failed})).setPositiveButton(string.btn_close, (DialogInterface.OnClickListener)null).show();
+   private void showResult(int success, int skipped, int failed) {
+      (new AlertDialog.Builder(this)).setTitle(string.import_result_title).setMessage(this.getString(string.import_result_format_dedup, new Object[]{success, skipped, failed})).setPositiveButton(string.btn_close, (DialogInterface.OnClickListener)null).show();
    }
 
    private void showDocFailed() {

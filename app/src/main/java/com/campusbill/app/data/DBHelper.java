@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Looper;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -44,19 +45,40 @@ public class DBHelper {
       this.execute(() -> this.billDao.insertAll(bills).size(), callback);
    }
 
-   public void insertBatch(String name, String source, List<BillEntity> bills, DataCallback<Integer> callback) {
-      this.execute(() -> (Integer)this.database.runInTransaction(() -> {
+   public void insertBatch(String name, String source, List<BillEntity> bills, DataCallback<ImportBatchResult> callback) {
+      this.execute(() -> this.database.runInTransaction(() -> {
+            List<BillEntity> toInsert = new ArrayList();
+            int skipped = 0;
+
+            for(BillEntity bill : bills) {
+               if (this.billDao.countSameBill(bill.date, bill.time, bill.amount, bill.merchant, bill.type) > 0) {
+                  skipped++;
+               } else {
+                  toInsert.add(bill);
+               }
+            }
+
+            ImportBatchResult out = new ImportBatchResult();
+            out.skipped = skipped;
+            if (toInsert.isEmpty()) {
+               out.inserted = 0;
+               out.batchId = -1L;
+               return out;
+            }
+
             ImportBatchEntity batch = new ImportBatchEntity();
             batch.name = name;
             batch.source = source;
             batch.createTime = System.currentTimeMillis();
             long batchId = this.billDao.insertBatch(batch);
 
-            for(BillEntity bill : bills) {
+            for(BillEntity bill : toInsert) {
                bill.batchId = batchId;
             }
 
-            return this.billDao.insertAll(bills).size();
+            out.inserted = this.billDao.insertAll(toInsert).size();
+            out.batchId = batchId;
+            return out;
          }), callback);
    }
 

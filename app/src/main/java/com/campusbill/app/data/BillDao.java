@@ -49,6 +49,9 @@ public interface BillDao {
    @Query("SELECT COUNT(*) FROM bills")
    int countAll();
 
+   @Query("SELECT COUNT(*) FROM bills WHERE date = :date AND IFNULL(time,'') = IFNULL(:time,'') AND amount = :amount AND IFNULL(merchant,'') = IFNULL(:merchant,'') AND type = :type")
+   int countSameBill(String date, String time, double amount, String merchant, int type);
+
    @Query("SELECT DISTINCT substr(date, 1, 7) AS month FROM bills ORDER BY month DESC")
    List<String> getBillMonths();
 
