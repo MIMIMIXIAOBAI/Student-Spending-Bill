@@ -2,6 +2,8 @@
 
 一款面向学生场景的 Android 记账应用，提供手动记账、账单导入、预算与图表分析，以及接入 DeepSeek 的中央学生助手。普通账本功能在本机运行；联网助手支持流式对话、账单查询、确认后记账和过程留痕。
 
+快速搭建与验证请直接查看 [10 分钟极速复现指南](#10-分钟极速复现指南)。
+
 ## 项目概览
 
 | 项目 | 当前配置 |
@@ -29,6 +31,18 @@
 | 中央学生助手 | 本地快捷问答、DeepSeek 流式对话、四类工具调用、确认后写入、状态展示和本机过程记录 |
 | 情绪球交互 | 首页和对话页展示 Emotion Ball，支持触摸视线跟随、手机姿态驱动和助手状态表情 |
 | 历史会话 | 会话与消息保存在 Room，支持新建、切换、重命名和删除；显示上下文占用，并支持记忆交接 |
+
+## 界面预览
+
+以下截图使用演示数据，展示当前版本的主要页面。
+
+| 首页与预算 | 中央学生助手 | 手动记一笔 |
+|---|---|---|
+| <img src="App截图/主界面.png" alt="首页、情绪球、预算与支出图表" width="260"> | <img src="App截图/AI助手.png" alt="中央学生助手离线预算问答" width="260"> | <img src="App截图/手动记一笔.png" alt="手动记账页面" width="260"> |
+
+| 消费明细 | 消费日历 | 历史记录 |
+|---|---|---|
+| <img src="App截图/消费明细.png" alt="分类饼图与消费时间轴" width="260"> | <img src="App截图/消费日历.png" alt="按日期查看账单" width="260"> | <img src="App截图/历史记录.png" alt="历史账单搜索与管理" width="260"> |
 
 ## 中央学生助手
 
@@ -79,57 +93,101 @@ Model:    deepseek-chat
 5. 联网助手会向 DeepSeek 发送系统提示词、当前对话内容和生成回复所需的上下文。工具被调用后，相应结果也会进入后续请求，可能包括账单汇总、最多 20 条匹配明细、确认后的账目字段或经用户确认的日记文本；会话记忆提炼同样会发送当前对话文本。
 6. 过程日志保存在应用私有目录 `assistant/process/runtime/`，写入前会脱敏密钥，但仍可能包含账单字段或对话相关内容，不会自动同步到仓库。
 
-## 构建环境
+## 10 分钟极速复现指南
+
+目标：在已安装 Android Studio、SDK，并已有可用模拟器或真机的前提下，从克隆仓库到安装运行、完成离线与联网主线验证。首次安装 Android Studio、下载 SDK 或创建模拟器不计入该目标；完整真机验收见 [复现与演示文档](docs/assistant/REPRODUCE.md)。
+
+### 1. 环境配置
 
 | 项目 | 要求 |
 |---|---|
+| 操作系统 | Windows、macOS 或 Linux，以下命令分别给出 PowerShell 与 Bash 示例 |
 | Android Studio | Narwhal 或更新版本，使用与 AGP 9.4.0 兼容的内置 JBR |
-| Java | 源码和目标兼容性为 Java 17 |
-| Android SDK | Platform API 37 与相应 Build-Tools |
-| Gradle | 使用项目 Wrapper，版本 9.6.0，无需单独安装 |
-| 运行设备 | Android 10（API 29）及以上的模拟器或真机 |
+| Java | 源码和目标兼容性为 Java 17；命令行构建时让 `JAVA_HOME` 指向兼容 JDK/JBR |
+| Android SDK | Platform API 37、对应 Build-Tools、Platform-Tools；模拟器还需安装 Android Emulator |
+| Gradle | 使用仓库 Wrapper，版本 9.6.0，无需单独安装 |
+| 运行设备 | Android 10（API 29）及以上的模拟器或真机，真机需开启开发者选项与 USB 调试 |
+| 网络 | 首次 Gradle Sync 需下载依赖；普通账本功能可离线使用，联网助手需可访问 DeepSeek |
 
-首次在本机通过命令行构建前，在项目根目录创建 `local.properties`：
+在 Android Studio 的 **SDK Manager** 中确认：
 
-```properties
-sdk.dir=C:\\Users\\<你的用户名>\\AppData\\Local\\Android\\Sdk
+- **SDK Platforms**：安装 Android API 37。
+- **SDK Tools**：安装 Android SDK Build-Tools、Android SDK Platform-Tools；使用模拟器时安装 Android Emulator。
+- 打开 **Device Manager** 创建 API 29+ 设备，或连接已启用调试的真机。
+
+### 2. 获取源码
+
+```bash
+git clone https://github.com/MIMIMIXIAOBAI/Student-Spending-Bill.git
+cd Student-Spending-Bill
 ```
 
-`local.properties` 已被 `.gitignore` 排除。也可以直接在 Android Studio 中配置 SDK，然后打开项目根目录并等待 Gradle Sync 完成。
+也可以直接用 Android Studio 打开已有仓库根目录，等待 Gradle Sync 后点击 **Run**，无需执行下面的命令行步骤。
 
-## 构建与运行
+### 3. 本机配置与环境变量模板
+
+#### 方式 A：配置 `local.properties`（推荐）
+
+在仓库根目录新建 `local.properties`，按实际 SDK 路径选择一行填写：
+
+```properties
+# Windows
+sdk.dir=C:\\Users\\<你的用户名>\\AppData\\Local\\Android\\Sdk
+
+# macOS
+# sdk.dir=/Users/<你的用户名>/Library/Android/sdk
+
+# Linux
+# sdk.dir=/home/<你的用户名>/Android/Sdk
+```
+
+该文件已被 `.gitignore` 排除，不要提交本机路径。
+
+#### 方式 B：使用临时环境变量
+
+也可不创建 `local.properties`，在当前终端设置 SDK 环境变量。以下配置只对当前终端生效。
 
 Windows PowerShell：
 
 ```powershell
-.\gradlew.bat assembleDebug
-.\gradlew.bat installDebug
-.\gradlew.bat testDebugUnitTest
+$env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"
+$env:ANDROID_HOME = "$env:LOCALAPPDATA\Android\Sdk"
+$env:ANDROID_SDK_ROOT = $env:ANDROID_HOME
+$env:Path = "$env:JAVA_HOME\bin;$env:ANDROID_HOME\platform-tools;$env:Path"
 ```
 
-macOS / Linux：
+macOS / Linux Bash：
 
 ```bash
-./gradlew assembleDebug
-./gradlew installDebug
-./gradlew testDebugUnitTest
+# macOS 示例
+export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
+export ANDROID_HOME="$HOME/Library/Android/sdk"
+
+# Linux 可改用以下路径
+# export JAVA_HOME="$HOME/android-studio/jbr"
+# export ANDROID_HOME="$HOME/Android/Sdk"
+
+export ANDROID_SDK_ROOT="$ANDROID_HOME"
+export PATH="$JAVA_HOME/bin:$ANDROID_HOME/platform-tools:$PATH"
 ```
 
-- `assembleDebug`：生成 `app/build/outputs/apk/debug/app-debug.apk`。
-- `installDebug`：安装到已连接并启用调试的设备或模拟器。
-- `testDebugUnitTest`：运行本地 JVM 单元测试。
-- 也可在 Android Studio 中点击 **Run** 构建并运行。
+`local.properties` 与 `ANDROID_HOME` 选择一种 SDK 配置方式即可，`JAVA_HOME` 仍应指向兼容 JDK/JBR。可另行参考 [env.example](docs/assistant/env.example)。
 
-## 使用说明
+**DeepSeek 配置不属于构建环境变量。** 项目不会从 `DEEPSEEK_API_KEY`、`gradle.properties` 或 `local.properties` 读取密钥，也无需创建密钥文件。构建和离线功能不需要 Key；联网验证时，在应用内「DeepSeek 密钥向导」粘贴并测通，由 Android Keystore 加密保存。不要把真实 Key 写入仓库、终端模板或提交记录。
 
-1. **录入账单**：点击「记一笔」手动录入，或进入「导入账单」选择粘贴、CSV、PDF/XLSX 导入。
-2. **设置预算**：在首页预算输入框填写金额，剩余与超支状态会随账单变化自动更新。
-3. **查看分析**：在首页切换月份并查看折线图、柱状图；进入收支明细、商户排行或消费日历查看更多数据。
-4. **管理历史**：在「历史」页搜索、筛选、编辑或删除账单，也可清除某个导入批次。
-5. **使用助手**：轻点首页情绪球进入对话。四个快捷问题可离线使用；联网工具链先完成 DeepSeek 密钥测通。
-6. **确认 AI 记账**：检查确认卡中的金额、分类和日期，确认后才写入；点击「过程」核对工具参数与回读结果。
+### 4. 依赖清单
 
-## 主要依赖
+构建工具和 Android 配置：
+
+| 组件 | 版本 / 配置 |
+|---|---|
+| Android Gradle Plugin | 9.4.0 |
+| Gradle Wrapper | 9.6.0 |
+| Java Source / Target Compatibility | 17 |
+| `compileSdk` / `targetSdk` / `minSdk` | 37 / 36 / 29 |
+| AndroidX ViewBinding | 已启用 |
+
+应用与测试依赖以 `app/build.gradle` 为准：
 
 | 依赖 | 版本 | 用途 |
 |---|---|---|
@@ -143,7 +201,56 @@ macOS / Linux：
 | JUnit | 4.13.2 | 单元测试 |
 | `org.json:json` | 20240303 | JVM 测试中的 JSON 支持 |
 
-XLSX 由项目内的 ZIP + XML 解析器处理，不依赖 Apache POI。依赖仓库为 `google()`、`mavenCentral()` 和 JitPack。
+所有依赖均由 Gradle 从 `google()`、`mavenCentral()` 和 JitPack 自动下载，不需要手动放置 JAR/AAR。XLSX 由项目内的 ZIP + XML 解析器处理，不依赖 Apache POI；项目也不需要 Node.js、npm、Python、Vosk 模型或独立后端服务。
+
+### 5. 构建、安装与测试
+
+先确认设备已被识别：
+
+```bash
+adb devices
+```
+
+Windows PowerShell：
+
+```powershell
+.\gradlew.bat --version
+.\gradlew.bat assembleDebug
+.\gradlew.bat installDebug
+.\gradlew.bat testDebugUnitTest
+```
+
+macOS / Linux：
+
+```bash
+./gradlew --version
+./gradlew assembleDebug
+./gradlew installDebug
+./gradlew testDebugUnitTest
+```
+
+预期结果：
+
+- Gradle Wrapper 自动准备 Gradle 9.6.0，并完成助手协议文件同步。
+- APK 输出到 `app/build/outputs/apk/debug/app-debug.apk`。
+- `installDebug` 在已连接设备上安装并显示「学生消费账单」。
+- `testDebugUnitTest` 执行本地 JVM 单元测试，报告位于 `app/build/reports/tests/testDebugUnitTest/`。
+
+### 6. 启动验证
+
+1. **离线账本**：无需 Key，点击「记一笔」新增一条今日午餐账单，返回首页确认账单、预算和图表更新。
+2. **离线助手**：进入对话页，依次点击「本月总支出」「预算剩余」「消费分类」「省钱建议」，确认无网络也能基于本机账本回答。
+3. **联网助手（可选）**：在「API KEY」向导中测通自己的 DeepSeek Key，询问「这周食堂花了多少？」，确认出现工具调用状态和真实查账回复。
+4. **确认后写入**：输入「再记一笔今天午餐 18 元」，检查确认卡；只有点击确认后才写入，打开「过程」核对工具参数与回读结果。
+
+## 使用说明
+
+1. **录入账单**：点击「记一笔」手动录入，或进入「导入账单」选择粘贴、CSV、PDF/XLSX 导入。
+2. **设置预算**：在首页预算输入框填写金额，剩余与超支状态会随账单变化自动更新。
+3. **查看分析**：在首页切换月份并查看折线图、柱状图；进入收支明细、商户排行或消费日历查看更多数据。
+4. **管理历史**：在「历史」页搜索、筛选、编辑或删除账单，也可清除某个导入批次。
+5. **使用助手**：轻点首页情绪球进入对话。四个快捷问题可离线使用；联网工具链先完成 DeepSeek 密钥测通。
+6. **确认 AI 记账**：检查确认卡中的金额、分类和日期，确认后才写入；点击「过程」核对工具参数与回读结果。
 
 ## 项目结构
 
@@ -171,8 +278,9 @@ app/
 docs/
 ├── assistant/                           # 复现指南、演示、技术文档、协议与第三方许可
 └── PROJECT-INVENTORY.md                 # 项目全量识别报告
+App截图/                                 # 当前版本主要页面截图（演示数据）
 prompt_evolution.md                      # Prompt 与需求演进记录
-Promat历史/                              # 历史提示词归档
+Promat历史/                              # 按工具分类的历史对话、Prompt、决策与协议归档
 ```
 
 构建前，`syncAssistantDocs` 会把 `docs/assistant` 中的五份协议文件同步到 `app/src/main/assets/assistant`。
@@ -199,6 +307,6 @@ Promat历史/                              # 历史提示词归档
 
 ## 第三方说明
 
-Emotion Ball 来源于 [sam70361/aora-bot](https://github.com/sam70361/aora-bot) 的 `emotion-ball` 分支，当前 vendored 资源对应 commit `f793bb445ebad66a1a19bae75b4c27b306d2f95e`，位于 `app/src/main/assets/emotion-ball/`。
+Emotion Ball 来源于开源项目 [sam70361/aora-bot](https://github.com/sam70361/aora-bot) 的 `emotion-ball` 分支，当前 vendored 资源对应 commit `f793bb445ebad66a1a19bae75b4c27b306d2f95e`，位于 `app/src/main/assets/emotion-ball/`。
 
 **该球形角色的造型、配色与特效仅用于学习和本比赛演示，不包含商业授权，也不提供商业授权。** 如需商用，必须移除该视觉或更换为自有/已获授权的形象。详细许可和其余依赖说明见 [THIRD_PARTY.md](docs/assistant/THIRD_PARTY.md)。
