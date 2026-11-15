@@ -78,7 +78,7 @@ li { margin: 2px 0; }
 table { width: 100%; border-collapse: collapse; margin: 6px 0 10px; font-size: 8.85pt; line-height: 1.45;
         page-break-inside: auto; break-after: avoid; page-break-after: avoid; }
 thead { display: table-header-group; }
-tr { page-break-inside: avoid; }
+tr { page-break-inside: avoid; break-inside: avoid; }
 th, td { border: 1px solid #c6d3e0; padding: 3px 5px; vertical-align: top; text-align: left; }
 th { background: #eaf1f8; color: #10243b; font-weight: 600; }
 table.nw1 th:first-child, table.nw1 td:first-child { white-space: nowrap; }
