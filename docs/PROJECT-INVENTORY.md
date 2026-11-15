@@ -88,7 +88,7 @@ E:\AI\Student-Spending-Bill-pr3\
 ├── app\                        # 唯一 Gradle 模块
 ├── docs\                       # 助手协议、过程留痕、UI 刷新设计与计划
 ├── gradle\                     # wrapper
-├── Promat历史\                 # 早期 UI 刷新 Prompt 归档
+├── Promat历史\                 # 历史对话、Prompt、决策与协议归档（按助手分类）
 ├── screenshots\                # 10 张界面截图
 └── 模拟账单\                   # 微信支付账单样例（PDF + XLSX）
 ```
@@ -182,7 +182,7 @@ app\
 | `app/` | 目录 | 唯一 Gradle 模块，含全部源码、资源、assets 与单元测试。 |
 | `docs/` | 目录 | 比赛层「中央学生助手」的协议文档（`assistant/`）、过程留痕（`assistant/process/`）、2026-11-04 UI 系统化升级的设计与计划归档（`superpowers/`）。 |
 | `gradle/` | 目录 | Gradle Wrapper：`gradle-wrapper.jar`（48,462 B）+ `gradle-wrapper.properties`（锁定 9.6.0）。 |
-| `Promat历史/` | 目录 | 早期 UI 刷新提示词归档，当前仅 `ui-refresh-2026-11-04/P1_trae_prompt.md`。 |
+| `Promat历史/` | 目录 | 历史材料归档，按 `01_Trae`、`02_Grok bot`、`03_Deepseek Harness` 分类，文件名含顺序号与修改时间。 |
 | `screenshots/` | 目录 | 10 张界面截图（主界面上下半屏、消费明细、日历、收入详情、记一笔、导入、商户排行、AI 对话、历史），README 与制作过程文档引用，不做运行期读取。 |
 | `模拟账单/` | 目录 | 导入功能的真实样例数据：微信支付账单流水 PDF（482,522 B）与 XLSX（22,289 B），仅供测试/演示。 |
 | `.gitignore` | 配置 | 忽略 `*.iml`、`.gradle/`、`local.properties`、`.idea/`、`.DS_Store`、`build/`、`captures/`、`.externalNativeBuild/`、`.cxx/`、`*.jks`、`*.keystore`、`secrets.properties`、`docs/assistant/process/runtime/`（后者为设备原始 JSONL 过程日志，可能含明细）。 |
@@ -522,7 +522,7 @@ app\
 
 | 路径 | 职责 |
 |---|---|
-| `Promat历史/ui-refresh-2026-11-04/P1_trae_prompt.md`（215 B） | 早期 UI 刷新第一期（首页 + 图表重排）交给 Trae 的提示词归档：「Apple 骨架 × Y2K 点缀、主色 #2F6FED；activity_main 拆 AI/预算，图表近白，主 CTA 蓝」。与 `docs/superpowers/specs` 属同一视觉演进的先后两版口径。 |
+| `Promat历史/01_Trae/04_20261104_004506__P1_trae_prompt.md`（215 B） | 早期 UI 刷新第一期（首页 + 图表重排）交给 Trae 的提示词归档：「Apple 骨架 × Y2K 点缀、主色 #2F6FED；activity_main 拆 AI/预算，图表近白，主 CTA 蓝」。与 `docs/superpowers/specs` 属同一视觉演进的先后两版口径。 |
 | `screenshots/*.png`（10 张） | `01_main_top`、`02_main_bottom`、`03_expense_detail`、`04_calendar`、`05_income_detail`、`06_add_bill`、`07_import`、`08_merchant_rank`、`09_ai_chat`、`10_history`；README 与制作过程文档的图 1–图 10 引用源。 |
 | `模拟账单/`（2 个文件） | 真实微信支付账单导出：`微信支付账单流水(20260724-20261024).pdf` 482,522 B 与 `..._20261024152455.xlsx` 22,289 B，用于验证 `BillPdfParser` / `BillXlsxParser`。 |
 
