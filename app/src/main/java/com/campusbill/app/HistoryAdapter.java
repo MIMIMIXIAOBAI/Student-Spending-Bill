@@ -61,7 +61,9 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
       holder.binding.tvBatchName.setText(batch.name);
       holder.binding.tvBatchCount.setText(holder.itemView.getContext().getString(string.history_batch_count, new Object[]{batch.count}));
       holder.binding.tvBatchMeta.setText(batch.meta);
+      holder.binding.tvExpand.setText(batch.expanded ? string.history_batch_collapse : string.history_batch_expand);
       holder.binding.btnClearBatch.setOnClickListener((v) -> this.listener.onClearBatch(batch));
+      holder.binding.batchHeader.setOnClickListener((v) -> this.listener.onToggleBatch(batch));
    }
 
    private void bindBill(BillHolder holder, BillEntity bill) {
@@ -93,6 +95,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
       public String name;
       public String meta;
       public int count;
+      public boolean expanded;
    }
 
    public static class Item {
@@ -121,6 +124,8 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
    public interface Listener {
       void onClearBatch(Batch batch);
+
+      void onToggleBatch(Batch batch);
 
       void onEdit(BillEntity bill);
 

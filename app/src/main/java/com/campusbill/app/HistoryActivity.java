@@ -47,6 +47,7 @@ public class HistoryActivity extends AppCompatActivity {
    private String monthFilter;
    private int totalBills;
    private boolean resumedOnce;
+   private final Set<Long> expandedBatches = new HashSet();
 
    protected void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
@@ -57,6 +58,10 @@ public class HistoryActivity extends AppCompatActivity {
       this.adapter = new HistoryAdapter(new HistoryAdapter.Listener() {
          public void onClearBatch(HistoryAdapter.Batch batch) {
             HistoryActivity.this.confirmClearBatch(batch);
+         }
+
+         public void onToggleBatch(HistoryAdapter.Batch batch) {
+            HistoryActivity.this.toggleBatch(batch.batchId);
          }
 
          public void onEdit(BillEntity bill) {
@@ -272,10 +277,12 @@ public class HistoryActivity extends AppCompatActivity {
       for(ImportBatchEntity batch : this.batches) {
          List<BillEntity> group = (List)groups.remove(batch.id);
          if (group != null && !group.isEmpty()) {
-            items.add(this.batchHeader(batch.id, batch.name, batch.source + " · " + this.formatBatchTime(batch.createTime), group.size()));
-
-            for(BillEntity bill : group) {
-               items.add(this.billItem(bill));
+            boolean expanded = this.expandedBatches.contains(batch.id);
+            items.add(this.batchHeader(batch.id, batch.name, batch.source + " · " + this.formatBatchTime(batch.createTime), group.size(), expanded));
+            if (expanded) {
+               for(BillEntity bill : group) {
+                  items.add(this.billItem(bill));
+               }
             }
 
             ++batchCount;
@@ -284,10 +291,12 @@ public class HistoryActivity extends AppCompatActivity {
 
       List<BillEntity> manual = (List)groups.remove(0L);
       if (manual != null && !manual.isEmpty()) {
-         items.add(this.batchHeader(0L, this.getString(string.history_batch_legacy), this.getString(string.history_batch_legacy_meta), manual.size()));
-
-         for(BillEntity bill : manual) {
-            items.add(this.billItem(bill));
+         boolean expanded = this.expandedBatches.contains(0L);
+         items.add(this.batchHeader(0L, this.getString(string.history_batch_legacy), this.getString(string.history_batch_legacy_meta), manual.size(), expanded));
+         if (expanded) {
+            for(BillEntity bill : manual) {
+               items.add(this.billItem(bill));
+            }
          }
 
          ++batchCount;
@@ -296,10 +305,12 @@ public class HistoryActivity extends AppCompatActivity {
       for(Map.Entry<Long, List<BillEntity>> entry : groups.entrySet()) {
          List<BillEntity> group = (List)entry.getValue();
          if (!group.isEmpty()) {
-            items.add(this.batchHeader((Long)entry.getKey(), this.getString(string.history_batch_unknown), this.getString(string.history_batch_unknown_meta), group.size()));
-
-            for(BillEntity bill : group) {
-               items.add(this.billItem(bill));
+            boolean expanded = this.expandedBatches.contains((Long)entry.getKey());
+            items.add(this.batchHeader((Long)entry.getKey(), this.getString(string.history_batch_unknown), this.getString(string.history_batch_unknown_meta), group.size(), expanded));
+            if (expanded) {
+               for(BillEntity bill : group) {
+                  items.add(this.billItem(bill));
+               }
             }
 
             ++batchCount;
@@ -330,12 +341,21 @@ public class HistoryActivity extends AppCompatActivity {
       this.binding.tvEmptyDesc.setText(noMatch ? string.history_no_match_desc : string.history_empty_desc);
    }
 
-   private HistoryAdapter.Item batchHeader(long batchId, String name, String meta, int count) {
+   private void toggleBatch(long batchId) {
+      if (!this.expandedBatches.remove(batchId)) {
+         this.expandedBatches.add(batchId);
+      }
+
+      this.applyFilters();
+   }
+
+   private HistoryAdapter.Item batchHeader(long batchId, String name, String meta, int count, boolean expanded) {
       HistoryAdapter.Batch batch = new HistoryAdapter.Batch();
       batch.batchId = batchId;
       batch.name = name != null && !name.trim().isEmpty() ? name : this.getString(string.history_batch_unknown);
       batch.meta = meta;
       batch.count = count;
+      batch.expanded = expanded;
       HistoryAdapter.Item item = new HistoryAdapter.Item();
       item.type = 0;
       item.batch = batch;

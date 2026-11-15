@@ -7,8 +7,12 @@
     android:paddingBottom="6dp">
 
     <LinearLayout
+        android:id="@+id/batchHeader"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true"
         android:gravity="center_vertical"
         android:orientation="horizontal">
 
@@ -36,6 +40,15 @@
             android:textColor="@color/color_primary"
             android:textSize="10sp"
             android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvExpand"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="@string/history_batch_expand"
+            android:textColor="@color/text_hint"
+            android:textSize="10sp" />
 
     </LinearLayout>
 
